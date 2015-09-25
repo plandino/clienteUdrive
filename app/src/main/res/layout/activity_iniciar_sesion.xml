@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/violeta_fondo">
+
+    <!-- Shows an image from your drawable resources -->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="10"
+
+        android:src="@mipmap/udrive" />
+
+    <!-- Displays keyboard when touched -->
+    <EditText
+        android:id="@+id/iniciar_sesion_usuario"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:layout_gravity="center_horizontal"
+        android:hint="@string/hint_usuario" />
+
+    <!-- Displays keyboard when touched -->
+    <EditText
+        android:id="@+id/iniciar_sesion_contraseña"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:inputType="textPassword"
+        android:layout_gravity="center_horizontal"
+        android:hint="@string/hint_contraseña" />
+
+    <!-- Set OnClickListener to trigger results when pressed -->
+    <Button
+        android:id="@+id/iniciar_sesion"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0"
+        android:text="@string/iniciar_sesion" />
+
+</LinearLayout>

@@ -1,0 +1,295 @@
+package tallerii.udrive;
+
+import android.app.Activity;
+import android.app.DownloadManager;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.app.AlertDialog;
+import android.widget.Toast;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONObject;
+
+public class MainActivity extends Activity implements FilesFragment.OnFragmentInteractionListener{
+
+    FragmentManager fragmentManager;
+
+    private static final String QUERY_URL = "http://192.168.0.27:8080/santi";
+
+    DownloadManager downloadManager;
+    String downloadFileUrl =    "http://192.168.0.27:8080/archivo";
+    private BroadcastReceiver receiverDownloadComplete;
+    private BroadcastReceiver receiverNotificationClicked;
+    private long myDownloadReference;
+
+    private String nombreArchivo;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Inicio el download manager
+        downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+
+        // Creo un fragmento dinamicamente, en un futuro voy a necesitar pedir
+        // la estructura de las carpetas y archivos antes de crear el fragmento
+
+        //Paso 1: Obtener la instancia del administrador de fragmentos
+        fragmentManager = getFragmentManager();
+
+        //Paso 2: Creo un nuevo fragmento
+        FilesFragment fragment = new FilesFragment();
+
+        // Creo un Bundle y le agrego informacion del tipo <Key, Value>
+        Bundle bundle = new Bundle();
+        bundle.putInt("groupPosition", 1);
+
+        // Le agrego el Bundle al fragmento
+        fragment.setArguments(bundle);
+
+        //Paso 3: Crear una nueva transacción
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        // Agrego el fragmento a la transaccion
+        transaction.add(R.id.contenedor, fragment);
+
+        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
+        // cuando apreto la flecha de para atras
+        transaction.addToBackStack("inicio");
+
+        //Paso 4: Confirmar el cambio
+        transaction.commit();
+
+    }
+
+    private void get(String carpetaPadre) {
+
+        // Prepare your search string to be put in a URL
+        // It might have reserved characters or something
+        //String urlString = "";
+        //try {
+        //urlString = URLEncoder.encode(searchString, "UTF-8");
+        //} catch (UnsupportedEncodingException e) {
+
+        // if this fails for some reason, let the user know why
+        //  e.printStackTrace();
+        // Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        //}
+
+        // Creo un cliente asyncronico, para comunicarme con el servidor
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        // Le mando un GET al server, pidiendo la estructura interna de la carpeta que seleccione
+        // QUERY_URL + carpetaPadre
+        client.get(QUERY_URL, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(JSONObject jsonObject) {
+                crearNuevoFragmento(jsonObject);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onGroupClick(String id) {
+        get(id);
+    }
+
+    public void crearNuevoFragmento(JSONObject jsonObject){
+        // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
+        // que me devuelva la estructura de carpetas y archivos que estan adentro de esa.
+        // Luego creo un nuevo fragmento con esa estructura y reemplazo el anterior
+
+        //Paso 3: Creo un nuevo fragmento
+        FilesFragment fragment = new FilesFragment();
+
+        // Creo un Bundle y le agrego informacion del tipo <Key, Value>
+        Bundle bundle = new Bundle();
+        bundle.putInt("groupPosition", 2);
+
+        // Le agrego el Bundle al fragmento
+        fragment.setArguments(bundle);
+
+        //Paso 2: Crear una nueva transacción
+        FragmentTransaction transaction2 = fragmentManager.beginTransaction().replace(R.id.contenedor, fragment);
+
+        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
+        // cuando apreto la flecha de para atras
+        transaction2.addToBackStack("dos");
+
+        //Paso 4: Confirmar el cambio
+        transaction2.commit();
+    }
+
+    @Override
+    public void onOptionClick(String idCarpeta, String opcion) {
+        if(opcion.equals("Eliminar")){
+
+            // Muestro una ventana emergente para confirmar que quiere eliminar
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Eliminar!");
+            alert.setMessage("¿Esta seguro que quiere eliminar " + idCarpeta + "?");
+
+            // El boton "OK" confirma la eliminacion del archivo o carpeta
+            alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    // TODO: LINEAS PARA BORRAR EL ARCHIVO
+                    Toast.makeText(getApplicationContext(), "La cagaste en grande!", Toast.LENGTH_LONG).show();
+                }
+            });
+
+            // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {}
+            });
+
+            alert.show();
+        }
+
+        if(opcion.equals("Descargar")){
+
+            Uri uri = Uri.parse(downloadFileUrl);
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+
+            // Creo una notificacion para mostrar la descarga
+            request.setDescription("My Download").setTitle("tres.txt");
+
+            // Establezco el path donde se va a descargar el archivo, junto con el nombre
+            // del archivo
+            nombreArchivo = "tres.txt";
+            request.setDestinationInExternalFilesDir(MainActivity.this,Environment.DIRECTORY_DOWNLOADS, "tres.txt");
+           // Con esto guardo en otra carpeta
+           // request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "MyWebsiteLogo.png");
+
+            // Hago que el archivo sea visible en la aplicacion de descargas del sistema
+            request.setVisibleInDownloadsUi(true);
+
+            // Le digo a la aplicacion que baje el archivo por WIFI o por el internet del celular
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI
+                    | DownloadManager.Request.NETWORK_MOBILE);
+
+            // Encolo la descarga
+            myDownloadReference = downloadManager.enqueue(request);
+
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+        // Filtro de Intents, solo recibe Intents que notifican los clicks que se hacen sobre la descarga en curso
+        IntentFilter clickIntentFilter = new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED);
+
+        receiverNotificationClicked = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String extraId = DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS;
+                long[] references = intent.getLongArrayExtra(extraId);
+                for (long reference : references) {
+                    if (reference == myDownloadReference) {
+//                        do something with the download file
+                    }
+                }
+            }
+        };
+        registerReceiver(receiverNotificationClicked, clickIntentFilter);
+
+        // Filtra los Intents, solo recibe los que avisan que se completo una descarga
+        IntentFilter completedIntentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+
+        receiverDownloadComplete = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                long reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                if (myDownloadReference == reference) {
+//                    do something with the download file
+                    DownloadManager.Query query = new DownloadManager.Query();
+                    query.setFilterById(reference);
+                    Cursor cursor = downloadManager.query(query);
+
+                    cursor.moveToFirst();
+//                        get the status of the download
+                    int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int status = cursor.getInt(columnIndex);
+
+                    int fileNameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
+                    String savedFilePath = cursor.getString(fileNameIndex);
+
+//                        get the reason - more detail on the status
+                    int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+                    int reason = cursor.getInt(columnReason);
+
+                    switch (status) {
+                        case DownloadManager.STATUS_SUCCESSFUL:
+
+                            // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
+                            Intent intentDisplay = new Intent(MainActivity.this,DisplayActivity.class);
+                            if(false){
+                                intentDisplay.putExtra("extensionArchivo", "foto");
+                            } else{
+                                intentDisplay.putExtra("extensionArchivo", "texto");
+                            }
+                            intentDisplay.putExtra("filePath", savedFilePath);
+                            intentDisplay.putExtra("nombreArchivo", nombreArchivo);
+                            startActivity(intentDisplay);
+                            break;
+                        case DownloadManager.STATUS_FAILED:
+                            Toast.makeText(MainActivity.this,
+                                    "FAILED: " + reason,
+                                    Toast.LENGTH_LONG).show();
+                            break;
+                        case DownloadManager.STATUS_PAUSED:
+                            Toast.makeText(MainActivity.this,
+                                    "PAUSED: " + reason,
+                                    Toast.LENGTH_LONG).show();
+                            break;
+                        case DownloadManager.STATUS_PENDING:
+                            Toast.makeText(MainActivity.this,
+                                    "PENDING!",
+                                    Toast.LENGTH_LONG).show();
+                            break;
+                        case DownloadManager.STATUS_RUNNING:
+                            Toast.makeText(MainActivity.this,
+                                    "RUNNING!",
+                                    Toast.LENGTH_LONG).show();
+                            break;
+                    }
+                    cursor.close();
+                }
+            }
+        };
+        registerReceiver(receiverDownloadComplete, completedIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiverDownloadComplete);
+        unregisterReceiver(receiverNotificationClicked);
+    }
+}
+
