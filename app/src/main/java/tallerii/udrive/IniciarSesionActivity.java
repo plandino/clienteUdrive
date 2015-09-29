@@ -11,10 +11,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.apache.http.Header;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class IniciarSesionActivity extends AppCompatActivity implements View.OnClickListener  {
@@ -23,7 +24,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     EditText usuarioEditText;
     EditText contraseniaEditText;
 
-    private static final String QUERY_URL = "http://192.168.0.27:8080/santi";
+    private static final String QUERY_URL = "http://192.168.0.31:8080/session";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_all, menu);
         return true;
     }
 
@@ -66,17 +67,31 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
 
     @Override
     public void onClick(View v) {
-        String usuarioYContrasenia = usuarioEditText.getText().toString() + contraseniaEditText.getText().toString();
-        iniciarSesion(usuarioYContrasenia);
+        String usuario = usuarioEditText.getText().toString();
+        String contrasenia = contraseniaEditText.getText().toString();
+        if(usuario.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        if(contrasenia.isEmpty()){
+            Toast.makeText(getApplicationContext(), "No puede ingresar una contraseña vacia.",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        if( (!usuario.isEmpty()) && (!contrasenia.isEmpty())){
+            iniciarSesion(usuario, contrasenia);
+        }
     }
 
-    private void pasarAlMain(){
+    private void pasarAlMain(String token, String user){
 
         // Creo un Intent para pasar al main
         Intent mainIntent = new Intent(this, MainActivity.class);
 
         // Agrego la informacion que quiero al Intent
-        mainIntent.putExtra("yaInicio", true);
+        mainIntent.putExtra("username", user);
+        mainIntent.putExtra("token", token);
 
         // Inicio la actividad con el Intent
         startActivity(mainIntent);
@@ -85,7 +100,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         finish();
     }
 
-    private void iniciarSesion(String usuarioYContrasenia) {
+    private void iniciarSesion(final String usuario, String contrasenia) {
 
         // Prepare your search string to be put in a URL
         // It might have reserved characters or something
@@ -102,31 +117,27 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         // Creo un cliente para mandar la informacion de usuario y contraseña
         AsyncHttpClient client = new AsyncHttpClient();
 
-        client.get(QUERY_URL, new JsonHttpResponseHandler() {
+        RequestParams params = new RequestParams();
+        params.put("user", usuario);
+        params.put("pass", contrasenia);
 
+        client.post(QUERY_URL, params, new JsonHttpResponseHandler() {
+            //
             @Override
-            public void onSuccess(JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Ha iniciado sesion correctaente", Toast.LENGTH_LONG).show();
-                pasarAlMain();
+            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
+                String token = "";
+                try{
+                    token = jsonObject.getString("token");
+                } catch (JSONException e){
+
+                }
+                pasarAlMain(token, usuario);
             }
 
             @Override
-            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
                 Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
-
-            }
-        });
-    }
-
-    private void post() {
-        AsyncHttpClient myClient = new AsyncHttpClient();
-        RequestParams params1 = new RequestParams();
-        params1.put("username", "pepito");
-        params1.put("password", "pepita");
-        myClient.post(QUERY_URL + "/archivo", params1, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(String response) {
-                System.out.println("login success");
             }
         });
     }

@@ -8,13 +8,35 @@
     <string name="activity_elegir_sesion">Elegir Sesion</string>
     <string name="activity_registrarse">Registrarse</string>
     <string name="activity_display">Display</string>
+    <string name="activity_perfil">Perfil</string>
+
 
 
     <string name="conectando">Conectando con el servidor...</string>
     <string name="iniciar_sesion">Iniciar sesión</string>
     <string name="registrarse">Registrar nuevo usuario</string>
+    <string name="actualizar">Actualizar perfil</string>
+
+    <string name="buscar">Buscar archivo</string>
+    <string name="subir">Subir archivo</string>
+    <string name="crear_carpeta">Crear carpeta</string>
+    <string name="ver_perfil">Ver perfil</string>
+
+
+
+
+    <string name="nombre">Nombre: </string>
+    <string name="mail">Mail: </string>
+    <string name="foto">Foto: </string>
+
+
     <string name="hint_usuario">Usuario</string>
     <string name="hint_contraseña">Contraseña</string>
+    <string name="hint_nombre">Pancho</string>
+    <string name="hint_mail">udrive@tallerii.com</string>
+    <string name="hint_foto">/sdcard/foto.png</string>
+
+
 
 
 </resources>

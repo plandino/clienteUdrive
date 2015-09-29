@@ -1,6 +1,5 @@
 package tallerii.udrive;
 
-import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -14,18 +13,27 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.json.JSONObject;
 
-public class MainActivity extends Activity implements FilesFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements FilesFragment.OnFragmentInteractionListener{
 
     FragmentManager fragmentManager;
 
-    private static final String QUERY_URL = "http://192.168.0.27:8080/santi";
+    private String QUERY_URL = "http://192.168.0.27:8080/santi";
+
+    private String token = "";
+    private String username = "";
 
     DownloadManager downloadManager;
     String downloadFileUrl =    "http://192.168.0.27:8080/archivo";
@@ -41,6 +49,10 @@ public class MainActivity extends Activity implements FilesFragment.OnFragmentIn
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = getIntent();
+        token = intent.getStringExtra("token");
+        username = intent.getStringExtra("username");
 
         // Inicio el download manager
         downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -73,6 +85,35 @@ public class MainActivity extends Activity implements FilesFragment.OnFragmentIn
 
         //Paso 4: Confirmar el cambio
         transaction.commit();
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.subir_archivo:
+                return true;
+            case R.id.crear_carpeta:
+                return true;
+            case R.id.buscar_archivo:
+                return true;
+            case R.id.ver_perfil:
+                pasarAVerPerfil();
+                return true;
+            case R.id.action_settings:
+                //metodoSettings()
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
 
     }
 
@@ -111,7 +152,8 @@ public class MainActivity extends Activity implements FilesFragment.OnFragmentIn
 
     @Override
     public void onGroupClick(String id) {
-        get(id);
+        crearNuevoFragmento(new JSONObject());
+//        get(id);
     }
 
     public void crearNuevoFragmento(JSONObject jsonObject){
@@ -192,6 +234,14 @@ public class MainActivity extends Activity implements FilesFragment.OnFragmentIn
 
             // Encolo la descarga
             myDownloadReference = downloadManager.enqueue(request);
+
+        }
+
+        if(opcion.equals("Detalles")){
+            cerrarSesion();
+        }
+
+        if(opcion.equals("Compartir")){
 
         }
     }
@@ -290,6 +340,110 @@ public class MainActivity extends Activity implements FilesFragment.OnFragmentIn
         super.onPause();
         unregisterReceiver(receiverDownloadComplete);
         unregisterReceiver(receiverNotificationClicked);
+    }
+
+    private void pasarAElegir(){
+
+        // Creo un Intent para pasar al main
+        Intent elegirIntent = new Intent(this, ElegirSesionActivity.class);
+
+        // Agrego la informacion que quiero al Intent
+        elegirIntent.putExtra("yaInicio", true);
+
+        // Inicio la actividad con el Intent
+        startActivity(elegirIntent);
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
+    }
+
+    private void pasarAVerPerfil(){
+        // Creo un Intent para pasar al main
+        Intent perfilIntent = new Intent(this, PerfilActivity.class);
+
+        // Agrego la informacion que quiero al Intent
+        perfilIntent.putExtra("yaInicio", true);
+        perfilIntent.putExtra("token", token);
+        perfilIntent.putExtra("username", username);
+
+        // Inicio la actividad con el Intent
+        startActivity(perfilIntent);
+    }
+
+    void cerrarSesion(){
+
+        QUERY_URL = "http://192.168.0.31:8080/session" + "/" + token;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("user", "pepito");
+
+        // El delete pide que le pase Headers, le pongo basura
+        Header[] header = {
+                new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Accep", "text/html,text/xml,application/xml")
+                ,new BasicHeader("Connection", "keep-alive")
+                ,new BasicHeader("keep-alive", "115")
+                ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
+        };
+
+        client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Toast.makeText(getApplicationContext(), "Sesión cerrada", Toast.LENGTH_LONG).show();
+                pasarAElegir();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    void subirArchivo(){
+        String user = "";
+        String filename = "";
+        QUERY_URL = "http://192.168.0.31:8080/file" + "/" + user + "/" + filename;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", user);
+
+        // URI:
+        // username :
+        // filename : el path al archivo en el servidor, con la jerarquia de carpetas
+
+        // Parametros:
+        // user : el mio, el que pide el request
+        // token : mi token
+
+        client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
+            //
+            @Override
+            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() == 1) {
+            this.finish();
+        } else {
+            getFragmentManager().popBackStack();
+        }
     }
 }
 
