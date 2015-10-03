@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,8 +97,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View clickedView, int groupPosition, int childPosition, long id) {
-                Toast.makeText(getActivity(), "Selected " + miHashMap.get(hasMapKeys.get(groupPosition)).get(childPosition)
-                        + " from " + hasMapKeys.get(groupPosition), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "Selected " + miHashMap.get(hasMapKeys.get(groupPosition)).get(childPosition)
+//                        + " from " + hasMapKeys.get(groupPosition), Toast.LENGTH_SHORT).show();
                 mListener.onOptionClick(hasMapKeys.get(groupPosition), miHashMap.get(hasMapKeys.get(groupPosition)).get(childPosition));
                 return false;
             }

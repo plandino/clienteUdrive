@@ -5,4 +5,5 @@ package tallerii.udrive;
 * */
 public class MyDataArrays {
     static String[] opciones = {"Descargar", "Compartir", "Detalles", "Eliminar"};
+    public static String direccion = "http://192.168.0.27:8080";
 }

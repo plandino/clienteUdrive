@@ -30,11 +30,22 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     String nombreUsuario = "";
     String email = "";
     String fotopath = "";
+    double  latitud = 1.0;
+    double longitud = 2.0;
 
     private String token = "";
     private String username = "";
 
-    private String QUERY_URL = "http://192.168.0.31:8080/profile";
+    // FACULTAD
+    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
+
+    // MI CASA
+//    private String QUERY_URL = "http://192.168.0.27:8080/profile";
+
+    // compu santi mi casa
+//    public static String QUERY_URL = "http://192.168.0.39:8080/profile";
+
+    private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +87,12 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                 return true;
             case R.id.crear_carpeta:
                 return true;
-            case R.id.buscar_archivo:
-                return true;
+//            case R.id.buscar_archivo:
+//                return true;
             case R.id.ver_perfil:
                 return true;
             case R.id.action_settings:
+
                 recibirPerfil();
                 return true;
             default:
@@ -103,23 +115,23 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
 //        QUERY_URL = QUERY_URL + "/" + username;
 
-        JSONObject perfil = new JSONObject();
-        try{
-            perfil.put("nombre", nombre);
-            perfil.put("email", mail);
-            perfil.put("pathFotoPerfil", fotoPath );
-            perfil.put("ultimaUbicacion", 15.0);
-        } catch(JSONException e){
-
-        }
+//        JSONObject perfil = new JSONObject();
+//        try{
+//            perfil.put("nombre", nombre);
+//            perfil.put("email", mail);
+//            perfil.put("pathFotoPerfil", fotoPath );
+//            perfil.put("ultimaUbicacion", 15.0);
+//        } catch(JSONException e){
+//
+//        }
 
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("nombre", nombre);
         params.put("email", mail);
-        params.put("pathFotoPerfil", fotoPath);
-        params.put("ultimaUbicacion", 15.0);
-
+        params.put("pathFoto", fotoPath);
+        params.put("latitud", "15.0");
+        params.put("longitud", "16.0");
 
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
@@ -145,27 +157,30 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         Toast.makeText(getApplicationContext(), "Mando: " + token + "con uri: " + QUERY_URL, Toast.LENGTH_LONG).show();
 
-
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                 @Override
-                public void onSuccess(JSONObject jasito){
+                public void onSuccess(JSONObject jasito) {
                     Toast.makeText(getApplicationContext(), "Recibi perfil", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                    Toast.makeText(getApplicationContext(), "Recibi perfil", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Recibi perfil en objeto", Toast.LENGTH_LONG).show();
                     try {
                         JSONObject perfilazo = jsonObject.getJSONObject("perfil");
                         nombreUsuario = perfilazo.getString("nombre");
                         email = perfilazo.getString("email");
-                        fotopath = perfilazo.getString("pathFotoPerfil");
+                        fotopath = perfilazo.getString("path foto de perfil");
+                        JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
+                        latitud = ubicacion.getDouble("latitud");
+                        longitud = ubicacion.getDouble("longitud");
                     } catch (JSONException e){
-                        nombreEditText.setText(nombreUsuario);
-                        mailEditText.setText(email);
-                        fotoEditText.setText(fotopath);
+
                     }
+                    nombreEditText.setText(nombreUsuario);
+                    mailEditText.setText(email);
+                    fotoEditText.setText(fotopath);
                 }
 
                 @Override

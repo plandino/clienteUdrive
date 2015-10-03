@@ -25,7 +25,17 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
     EditText usuarioEditText;
     EditText contraseniaEditText;
 
-    private String QUERY_URL = "http://192.168.0.31:8080/profile";
+    // FACULTAD
+    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
+
+    // MI CASA
+//    private String QUERY_URL = "http://192.168.0.27:8080/profile";
+
+    // compu santi mi casa
+//    private String QUERY_URL = "http://192.168.0.39:8080/profile";
+
+    public String QUERY_URL = MyDataArrays.direccion + "/profile";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +112,10 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
     private void iniciarSesion(final String usuario, String contrasenia) {
 
-        QUERY_URL = "http://192.168.0.31:8080/session";
+//        QUERY_URL = "http://192.168.0.27:8080/session";
+
+        QUERY_URL = MyDataArrays.direccion + "/session";
+
 
         // Prepare your search string to be put in a URL
         // It might have reserved characters or something
@@ -127,7 +140,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
             //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
                 String token = "";
                 try {
                     token = jsonObject.getString("token");
@@ -157,7 +170,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
             //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Usuario registrado: ", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), "Usuario registrado: ", Toast.LENGTH_LONG).show();
                 iniciarSesion(usuario,contrasenia);
 //                pasarAlMain();
             }

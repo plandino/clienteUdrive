@@ -42,7 +42,9 @@ public class DisplayActivity extends AppCompatActivity {
                 String inputString;
 
                 while ((inputString = inputReader.readLine()) != null) {
-                    stringBuffer.append(inputString + "\n");
+                    if(stringBuffer.length() < 4194304){
+                        stringBuffer.append(inputString + "\n");
+                    }
                 }
                 textView.setText(stringBuffer.toString());
             } catch (IOException e) {

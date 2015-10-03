@@ -15,11 +15,11 @@
         android:orderInCategory="2"
         app:showAsAction="ifRoom"/>
 
-    <item android:id="@+id/buscar_archivo"
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="@string/buscar"
-        android:orderInCategory="3"
-        app:showAsAction="never"/>
+    <!--<item android:id="@+id/buscar_archivo"-->
+        <!--android:icon="@android:drawable/ic_menu_search"-->
+        <!--android:title="@string/buscar"-->
+        <!--android:orderInCategory="3"-->
+        <!--app:showAsAction="never"/>-->
 
     <item android:id="@+id/ver_perfil"
         android:title="@string/ver_perfil"

@@ -24,8 +24,16 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     EditText usuarioEditText;
     EditText contraseniaEditText;
 
-    private static final String QUERY_URL = "http://192.168.0.31:8080/session";
+    // FACULTAD
+    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
 
+    // MI CASA
+//    private String QUERY_URL = "http://192.168.0.27:8080/session";
+
+    // Compu santi mi casa
+//    private String QUERY_URL = "http://192.168.0.39:8080/session";
+
+    private String QUERY_URL = MyDataArrays.direccion + "/session";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +133,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
             //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
                 String token = "";
                 try{
                     token = jsonObject.getString("token");
