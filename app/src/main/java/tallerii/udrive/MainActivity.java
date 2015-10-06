@@ -35,19 +35,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private String token = "";
     private String username = "";
 
-    // FACULTAD
-    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
-
-    // MI CASA
-//    private String QUERY_URL = "http://192.168.0.27:8080/archivo";
-
-    // Compu santi mi casa
-//    private String QUERY_URL = "http://192.168.0.39:8080/archivo";
-
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
     DownloadManager downloadManager;
-//    String downloadFileUrl =    "http://192.168.0.27:8080/archivo";
     private BroadcastReceiver receiverDownloadComplete;
     private BroadcastReceiver receiverNotificationClicked;
     private long myDownloadReference;
@@ -507,19 +497,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     void subir(String path){
-        String user = "";
-        String filename = "";
-        QUERY_URL = MyDataArrays.direccion + "/" + user + "/" + filename;
+        String filename = "texto.txt";
+        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username + "/" + filename;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
         params.put("token", token);
-        params.put("user", user);
-        params.put("tipoDeArchivo", "foto");
+        params.put("user", username);
+//        params.put("tipoDeArchivo", "foto");
         try{
             File archivo = new File(path);
-            params.put("archivo", archivo);
+            params.put("file", archivo);
         } catch (FileNotFoundException e){
             Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
         }
@@ -532,6 +521,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Parametros:
         // user : el mio, el que pide el request
         // token : mi token
+
+
 
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
@@ -564,8 +555,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                         @Override
                         public void onChosenDir(String chosenDir)
                         {
+
                             // Aca tengo que mandar la carpeta
-                            Toast.makeText(getApplicationContext(), "SELECCIONO CARPETA", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
+                            subir(chosenDir);
                         }
                     }
             );

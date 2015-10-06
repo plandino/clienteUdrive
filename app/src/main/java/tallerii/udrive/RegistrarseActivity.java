@@ -152,7 +152,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en iniciar", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -164,7 +164,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         RequestParams params = new RequestParams();
         params.put("user", usuario);
         params.put("pass", contrasenia);
-        params.put("profile", "holaadadsad" );
+        params.put("profile", "{\"nombre\" : \"pancheitor\"," +
+                "               \"email\" : \"pancheitor@gmail.com\"}" );
 
         client.post(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
@@ -177,7 +178,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en registrar", Toast.LENGTH_LONG).show();
             }
         });
     }
