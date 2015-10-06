@@ -26,6 +26,11 @@
         android:orderInCategory="4"
         app:showAsAction="never"/>
 
+    <item android:id="@+id/cerrar_sesion"
+        android:title="@string/cerrar_sesion"
+        android:orderInCategory="5"
+        app:showAsAction="never"/>
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

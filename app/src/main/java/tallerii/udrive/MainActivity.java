@@ -1,14 +1,9 @@
 package tallerii.udrive;
 
-import android.app.DownloadManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -37,11 +32,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
-    DownloadManager downloadManager;
-    private BroadcastReceiver receiverDownloadComplete;
-    private BroadcastReceiver receiverNotificationClicked;
-    private long myDownloadReference;
-
     private String nombreArchivo;
 
 
@@ -54,9 +44,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = getIntent();
         token = intent.getStringExtra("token");
         username = intent.getStringExtra("username");
-
-        // Inicio el download manager
-        downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
 
         // Creo un fragmento dinamicamente, en un futuro voy a necesitar pedir
         // la estructura de las carpetas y archivos antes de crear el fragmento
@@ -104,11 +91,15 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 subirArchivo();
                 return true;
             case R.id.crear_carpeta:
+                crearCarpeta();
                 return true;
 //            case R.id.buscar_archivo:
 //                return true;
             case R.id.ver_perfil:
                 pasarAVerPerfil();
+                return true;
+            case R.id.cerrar_sesion:
+                cerrarSesion();
                 return true;
             case R.id.action_settings:
                 //metodoSettings()
@@ -185,152 +176,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     @Override
-    public void onOptionClick(String idCarpeta, String opcion) {
+    public void onOptionClick(String id, String opcion) {
         if(opcion.equals("Eliminar")){
-
-            QUERY_URL = QUERY_URL + "/file/" + username + "/filename" ;
-
-            // Muestro una ventana emergente para confirmar que quiere eliminar
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            alert.setTitle("Eliminar!");
-            alert.setMessage("¿Esta seguro que quiere eliminar " + idCarpeta + "?");
-
-            // El boton "OK" confirma la eliminacion del archivo o carpeta
-            alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
-
-                public void onClick(DialogInterface dialog, int whichButton) {
-
-                    // TODO: LINEAS PARA BORRAR EL ARCHIVO
-                    Toast.makeText(getApplicationContext(), "La cagaste en grande!", Toast.LENGTH_LONG).show();
-                }
-            });
-
-            // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
-            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
-                public void onClick(DialogInterface dialog, int whichButton) {}
-            });
-
-            alert.show();
+            confirmarEliminarArchivo(id);
+            eliminarArchivo(id);
         }
 
         if(opcion.equals("Descargar")){
-
-//            GET en /file/<username_de_propietario>/<filename>
-
-            nombreArchivo = "texto.txt";
-            QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + nombreArchivo ;
-            AsyncHttpClient client = new AsyncHttpClient();
-
-            RequestParams params = new RequestParams();
-            params.put("token", token);
-            params.put("user", username);
-
-            final String savedFilePath = "/data/data/tallerii.udrive/files/" + nombreArchivo;
-
-            File file=new File(savedFilePath);
-//            apkFile.deleteOnExit();
-            new AsyncHttpClient().get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
-//                        @Override
-//                        public void onProgress(int bytesWritten, int totalSize) {
-//                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
-//                        }
-
-                        @Override
-                        public void onSuccess(File file) {
-
-                            Toast.makeText(getApplicationContext(), "termine", Toast.LENGTH_LONG).show();
-
-                            // CON ESTO PUEDO ESCRIBIR EN EL ARCHIVO //
-//                            String filename = "bajo.txt";
-//                            String string = "Hello world!";
-//                            FileOutputStream outputStream;
-//
-//                            try {
-//                                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-//                                outputStream.write(string.getBytes());
-//                                outputStream.close();
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-                            // CON ESTO PUEDO ESCRIBIR EN EL ARCHIVO //
-
-                            // CON ESTO LEO EL TEXTO DEL ARCHIVO //
-//                            try {
-//                                FileInputStream fileIn=openFileInput(nombreArchivo);
-//                                InputStreamReader InputRead= new InputStreamReader(fileIn);
-//
-//                                char[] inputBuffer= new char[100];
-//                                String s="";
-//                                int charRead;
-//
-//                                while ((charRead=InputRead.read(inputBuffer))>0) {
-//                                    // char to string conversion
-//                                    String readstring=String.copyValueOf(inputBuffer,0,charRead);
-//                                    s +=readstring;
-//                                }
-//                                InputRead.close();
-//                                Toast.makeText(getBaseContext(), s,Toast.LENGTH_SHORT).show();
-//
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-
-                            // CON ESTO LEO EL TEXTO DEL ARCHIVO //
-
-
-                            // CON ESTO PASO AL DISPLAY ACTIVITY //
-                            // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
-                            Intent intentDisplay = new Intent(MainActivity.this,DisplayActivity.class);
-                            if(false){
-                                intentDisplay.putExtra("extensionArchivo", "foto");
-                            } else{
-                                intentDisplay.putExtra("extensionArchivo", "texto");
-                            }
-                            intentDisplay.putExtra("filePath", savedFilePath);
-                            intentDisplay.putExtra("nombreArchivo", nombreArchivo);
-                            startActivity(intentDisplay);
-                        }
-
-                        @Override
-                        public void onFailure(Throwable e, File response) {
-                            Toast.makeText(getApplicationContext(), "cague", Toast.LENGTH_LONG).show();
-                        }
-                    }
-            );
-
-//
-//
-//            nombreArchivo = "texto.txt";
-//
-//            QUERY_URL = QUERY_URL + "/file/" + username + "/" + nombreArchivo ;
-//
-//            Uri uri = Uri.parse(QUERY_URL);
-//            DownloadManager.Request request = new DownloadManager.Request(uri);
-//
-//            // Creo una notificacion para mostrar la descarga
-//            request.setDescription("My Download").setTitle(nombreArchivo);
-//
-//            // Establezco el path donde se va a descargar el archivo, junto con el nombre
-//            // del archivo
-//            request.setDestinationInExternalFilesDir(MainActivity.this,Environment.DIRECTORY_DOWNLOADS, nombreArchivo);
-//           // Con esto guardo en otra carpeta
-//           // request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "MyWebsiteLogo.png");
-//
-//            // Hago que el archivo sea visible en la aplicacion de descargas del sistema
-//            request.setVisibleInDownloadsUi(true);
-//
-//            // Le digo a la aplicacion que baje el archivo por WIFI o por el internet del celular
-//            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI
-//                    | DownloadManager.Request.NETWORK_MOBILE);
-//
-//            // Encolo la descarga
-//            myDownloadReference = downloadManager.enqueue(request);
-
+            descargarArchivo();
         }
 
         if(opcion.equals("Detalles")){
-            cerrarSesion();
+            obtenerMetadatos(id);
         }
 
         if(opcion.equals("Compartir")){
@@ -338,138 +195,196 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void subir(String path){
+        String filename = "texto.txt";
+        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username + "/" + filename;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+//        params.put("tipoDeArchivo", "foto");
+        try{
+            File archivo = new File(path);
+            params.put("file", archivo);
+        } catch (FileNotFoundException e){
+            Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
+        }
 
 
-        // Filtro de Intents, solo recibe Intents que notifican los clicks que se hacen sobre la descarga en curso
-        IntentFilter clickIntentFilter = new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED);
+        // URI:
+        // username :
+        // filename : el path al archivo en el servidor, con la jerarquia de carpetas
 
-        receiverNotificationClicked = new BroadcastReceiver() {
+        // Parametros:
+        // user : el mio, el que pide el request
+        // token : mi token
+
+        client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
+            //
             @Override
-            public void onReceive(Context context, Intent intent) {
-                String extraId = DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS;
-                long[] references = intent.getLongArrayExtra(extraId);
-                for (long reference : references) {
-                    if (reference == myDownloadReference) {
-//                        do something with the download file
+            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void subirArchivo(){
+
+            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
+                    new FileDialog.SimpleFileDialogListener() {
+
+                        @Override
+                        public void onChosenDir(String chosenDir)
+                        {
+                            // Aca tengo que mandar la carpeta
+//                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
+                            subir(chosenDir);
+                        }
+                    }
+            );
+            fileOpenDialog.default_file_name =  "/data/data/tallerii.udrive/files";
+            fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
+    }
+
+    private void descargarArchivo(){
+
+        nombreArchivo = "texto.txt";
+        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + nombreArchivo ;
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+
+        final String savedFilePath = "/data/data/tallerii.udrive/files/" + nombreArchivo;
+
+        File file=new File(savedFilePath);
+        client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
+//                        @Override
+//                        public void onProgress(int bytesWritten, int totalSize) {
+//                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
+//                        }
+
+                    @Override
+                    public void onSuccess(File file) {
+
+                        // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
+                        Intent intentDisplay = new Intent(MainActivity.this, DisplayActivity.class);
+                        if (false) {
+                            intentDisplay.putExtra("extensionArchivo", "foto");
+                        } else {
+                            intentDisplay.putExtra("extensionArchivo", "texto");
+                        }
+                        intentDisplay.putExtra("filePath", savedFilePath);
+                        intentDisplay.putExtra("nombreArchivo", nombreArchivo);
+                        startActivity(intentDisplay);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e, File response) {
+                        Toast.makeText(getApplicationContext(), "Error al descargar el archivo", Toast.LENGTH_LONG).show();
                     }
                 }
+        );
+    }
+
+    private void crearCarpeta(){
+        // Muestro una ventana emergente para que introduzca el nombre de la carpeta a crear
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Crear carpeta");
+        alert.setMessage("Introduzca el nombre de la nueva carpeta");
+
+        // El boton "Subir" confirma subir el archivo
+        alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+
+                // TODO: LINEAS PARA BORRAR EL ARCHIVO
+                Toast.makeText(getApplicationContext(), "Cree la nueva carpeta", Toast.LENGTH_LONG).show();
             }
+        });
+
+        // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {}
+        });
+
+        alert.show();
+    }
+
+    private void confirmarEliminarArchivo(final String id){
+
+        // Muestro una ventana emergente para confirmar que quiere eliminar
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Eliminar!");
+        alert.setMessage("¿Esta seguro que quiere eliminar " + id + "?");
+
+        // El boton "OK" confirma la eliminacion del archivo o carpeta
+        alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+
+                eliminarArchivo(id);
+                Toast.makeText(getApplicationContext(), "Eliminaste el archivo: " + id, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {}
+        });
+
+        alert.show();
+    }
+
+    private void eliminarArchivo(String id){
+        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + id;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+
+        // El delete pide que le pase Headers, le pongo basura
+        Header[] header = {
+                new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Accep", "text/html,text/xml,application/xml")
+                ,new BasicHeader("Connection", "keep-alive")
+                ,new BasicHeader("keep-alive", "115")
+                ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
         };
-        registerReceiver(receiverNotificationClicked, clickIntentFilter);
 
-        // Filtra los Intents, solo recibe los que avisan que se completo una descarga
-        IntentFilter completedIntentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-
-        receiverDownloadComplete = new BroadcastReceiver() {
+        client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                long reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                if (myDownloadReference == reference) {
-//                    do something with the download file
-                    DownloadManager.Query query = new DownloadManager.Query();
-                    query.setFilterById(reference);
-                    Cursor cursor = downloadManager.query(query);
-
-                    cursor.moveToFirst();
-//                        get the status of the download
-                    int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                    int status = cursor.getInt(columnIndex);
-
-                    int fileNameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-//                    String savedFilePath = cursor.getString(fileNameIndex);
-
-//                        get the reason - more detail on the status
-                    int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-                    int reason = cursor.getInt(columnReason);
-
-                    switch (status) {
-                        case DownloadManager.STATUS_SUCCESSFUL:
-
-                            // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
-                            Intent intentDisplay = new Intent(MainActivity.this,DisplayActivity.class);
-                            if(false){
-                                intentDisplay.putExtra("extensionArchivo", "foto");
-                            } else{
-                                intentDisplay.putExtra("extensionArchivo", "texto");
-                            }
-//                            intentDisplay.putExtra("filePath", savedFilePath);
-                            intentDisplay.putExtra("nombreArchivo", nombreArchivo);
-                            startActivity(intentDisplay);
-                            break;
-                        case DownloadManager.STATUS_FAILED:
-                            Toast.makeText(MainActivity.this,
-                                    "FAILED: " + reason,
-                                    Toast.LENGTH_LONG).show();
-                            break;
-                        case DownloadManager.STATUS_PAUSED:
-                            Toast.makeText(MainActivity.this,
-                                    "PAUSED: " + reason,
-                                    Toast.LENGTH_LONG).show();
-                            break;
-                        case DownloadManager.STATUS_PENDING:
-                            Toast.makeText(MainActivity.this,
-                                    "PENDING!",
-                                    Toast.LENGTH_LONG).show();
-                            break;
-                        case DownloadManager.STATUS_RUNNING:
-                            Toast.makeText(MainActivity.this,
-                                    "RUNNING!",
-                                    Toast.LENGTH_LONG).show();
-                            break;
-                    }
-                    cursor.close();
-                }
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Toast.makeText(getApplicationContext(), "Archivo eliminado", Toast.LENGTH_LONG).show();
             }
-        };
-        registerReceiver(receiverDownloadComplete, completedIntentFilter);
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(receiverDownloadComplete);
-        unregisterReceiver(receiverNotificationClicked);
-    }
-
-    private void pasarAElegir(){
-
-        // Creo un Intent para pasar al main
-        Intent elegirIntent = new Intent(this, ElegirSesionActivity.class);
-
-        // Agrego la informacion que quiero al Intent
-        elegirIntent.putExtra("yaInicio", true);
-
-        // Inicio la actividad con el Intent
-        startActivity(elegirIntent);
-        Intent returnIntent = new Intent();
-        setResult(RESULT_OK, returnIntent);
-        finish();
-    }
-
-    private void pasarAVerPerfil(){
-        // Creo un Intent para pasar al main
-        Intent perfilIntent = new Intent(this, PerfilActivity.class);
-
-        // Agrego la informacion que quiero al Intent
-        perfilIntent.putExtra("yaInicio", true);
-        perfilIntent.putExtra("token", token);
-        perfilIntent.putExtra("username", username);
-
-        // Inicio la actividad con el Intent
-        startActivity(perfilIntent);
-    }
-
-    void cerrarSesion(){
+    private void cerrarSesion(){
 
         QUERY_URL = MyDataArrays.direccion + "/session" + token;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
-        params.put("user", "pepito");
+        params.put("user", username);
 
         // El delete pide que le pase Headers, le pongo basura
         Header[] header = {
@@ -496,48 +411,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
-    void subir(String path){
-        String filename = "texto.txt";
-        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username + "/" + filename;
-
-        AsyncHttpClient client = new AsyncHttpClient();
-
-        RequestParams params = new RequestParams();
-        params.put("token", token);
-        params.put("user", username);
-//        params.put("tipoDeArchivo", "foto");
-        try{
-            File archivo = new File(path);
-            params.put("file", archivo);
-        } catch (FileNotFoundException e){
-            Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
-        }
-
-
-        // URI:
-        // username :
-        // filename : el path al archivo en el servidor, con la jerarquia de carpetas
-
-        // Parametros:
-        // user : el mio, el que pide el request
-        // token : mi token
-
-
-
-        client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
-            //
-            @Override
-            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
-            }
-        });
+    private void obtenerMetadatos(String id){
+        
     }
 
+    // Este metodo es para volver para atras en los fragmentos
+    // y cerrar la aplicacion cuando volvi al inicio de todo
     @Override
     public void onBackPressed() {
         if (getFragmentManager().getBackStackEntryCount() == 1) {
@@ -547,48 +426,30 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         }
     }
 
-    public void subirArchivo(){
+    // Este metodo sirve para ir a la activity de iniciar sesion o registrarse
+    private void pasarAElegir(){
 
-            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
-                    new FileDialog.SimpleFileDialogListener() {
+        // Creo un Intent para pasar a la activity de elegir para iniciar sesion o registrarse
+        Intent elegirIntent = new Intent(this, ElegirSesionActivity.class);
 
-                        @Override
-                        public void onChosenDir(String chosenDir)
-                        {
-
-                            // Aca tengo que mandar la carpeta
-                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
-                            subir(chosenDir);
-                        }
-                    }
-            );
-            fileOpenDialog.default_file_name =  "/data/data/tallerii.udrive/files";
-            fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
+        // Inicio la actividad con el Intent
+        startActivity(elegirIntent);
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
     }
 
-    public void crearCarpeta(){
-        // Muestro una ventana emergente para confirmar que quiere eliminar
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Crear carpeta");
-        alert.setMessage("Introduzca el nombre de la nueva carpeta");
+    // Este metodo sirve para ir a la activity de ver y actualizar perfil
+    private void pasarAVerPerfil(){
+        // Creo un Intent para pasar a la activity de ver y actualizar perfil
+        Intent perfilIntent = new Intent(this, PerfilActivity.class);
 
-        // El boton "Subir" confirma subir el archivo
-        alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
+        // Agrego la informacion que quiero al Intent
+        perfilIntent.putExtra("token", token);
+        perfilIntent.putExtra("username", username);
 
-            public void onClick(DialogInterface dialog, int whichButton) {
-
-                // TODO: LINEAS PARA BORRAR EL ARCHIVO
-                Toast.makeText(getApplicationContext(), "Cree la nueva carpeta", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
-        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int whichButton) {}
-        });
-
-        alert.show();
+        // Inicio la actividad con el Intent
+        startActivity(perfilIntent);
     }
+
 }
-

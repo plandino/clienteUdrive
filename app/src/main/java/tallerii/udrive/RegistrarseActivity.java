@@ -112,22 +112,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
     private void iniciarSesion(final String usuario, String contrasenia) {
 
-//        QUERY_URL = "http://192.168.0.27:8080/session";
-
         QUERY_URL = MyDataArrays.direccion + "/session";
-
-
-        // Prepare your search string to be put in a URL
-        // It might have reserved characters or something
-        //String urlString = "";
-        //try {
-        //urlString = URLEncoder.encode(searchString, "UTF-8");
-        //} catch (UnsupportedEncodingException e) {
-
-        // if this fails for some reason, let the user know why
-        //  e.printStackTrace();
-        // Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        //}
 
         // Creo un cliente para mandar la informacion de usuario y contraseña
         AsyncHttpClient client = new AsyncHttpClient();
@@ -137,10 +122,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         params.put("pass", contrasenia);
 
         client.post(QUERY_URL, params, new JsonHttpResponseHandler() {
-            //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-//                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
                 String token = "";
                 try {
                     token = jsonObject.getString("token");
@@ -171,9 +154,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
             //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-//                Toast.makeText(getApplicationContext(), "Usuario registrado: ", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Usuario registrado: " + usuario, Toast.LENGTH_LONG).show();
                 iniciarSesion(usuario,contrasenia);
-//                pasarAlMain();
             }
 
             @Override

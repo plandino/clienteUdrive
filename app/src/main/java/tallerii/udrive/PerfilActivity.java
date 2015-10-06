@@ -30,20 +30,11 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     String nombreUsuario = "";
     String email = "";
     String fotopath = "";
-    double  latitud = 1.0;
+    double latitud = 1.0;
     double longitud = 2.0;
 
     private String token = "";
     private String username = "";
-
-    // FACULTAD
-    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
-
-    // MI CASA
-//    private String QUERY_URL = "http://192.168.0.27:8080/profile";
-
-    // compu santi mi casa
-//    public static String QUERY_URL = "http://192.168.0.39:8080/profile";
 
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
@@ -112,18 +103,6 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     public void actualizarPerfil(final String nombre, String mail, String fotoPath){
 
         AsyncHttpClient client = new AsyncHttpClient();
-
-//        QUERY_URL = QUERY_URL + "/" + username;
-
-//        JSONObject perfil = new JSONObject();
-//        try{
-//            perfil.put("nombre", nombre);
-//            perfil.put("email", mail);
-//            perfil.put("pathFotoPerfil", fotoPath );
-//            perfil.put("ultimaUbicacion", 15.0);
-//        } catch(JSONException e){
-//
-//        }
 
         RequestParams params = new RequestParams();
         params.put("token", token);
