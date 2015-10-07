@@ -10,6 +10,9 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +76,15 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
         int groupPosition = getArguments().getInt("groupPosition");
-        miHashMap = MyDataProvider.getDataHashMap(groupPosition);
+        JSONObject jsonEstructuraCarpetas = new JSONObject();
+        try{
+            if( getArguments().getString("estructura") != null ){
+                jsonEstructuraCarpetas = new JSONObject(getArguments().getString("estructura"));
+            }
+        }catch (JSONException e ){
+
+        }
+        miHashMap = MyDataProvider.getDataHashMap(groupPosition, jsonEstructuraCarpetas);
 
         hasMapKeys = new ArrayList<String>(miHashMap.keySet());
 

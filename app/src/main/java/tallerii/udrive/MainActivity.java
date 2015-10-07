@@ -18,6 +18,7 @@ import com.loopj.android.http.RequestParams;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -32,7 +33,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
+    private String QUERY_URL_CARPETAS = MyDataArrays.direccion + "/folder/";
+
+    private String PATH_ACTUAL = "/";
+
     private String nombreArchivo;
+    private String estructuraCarpetas;
+
+    private Bundle bundle;
 
 
     @Override
@@ -44,6 +52,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = getIntent();
         token = intent.getStringExtra("token");
         username = intent.getStringExtra("username");
+//        estructuraCarpetas = intent.getStringExtra("estructuraCarpetas");
+
+        QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
+
 
         // Creo un fragmento dinamicamente, en un futuro voy a necesitar pedir
         // la estructura de las carpetas y archivos antes de crear el fragmento
@@ -51,28 +63,30 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         //Paso 1: Obtener la instancia del administrador de fragmentos
         fragmentManager = getFragmentManager();
 
-        //Paso 2: Creo un nuevo fragmento
-        FilesFragment fragment = new FilesFragment();
+//        //Paso 2: Creo un nuevo fragmento
+//        FilesFragment fragment = new FilesFragment();
 
         // Creo un Bundle y le agrego informacion del tipo <Key, Value>
-        Bundle bundle = new Bundle();
-        bundle.putInt("groupPosition", 1);
+//        bundle = new Bundle();
+//        bundle.putInt("groupPosition", 1);
+        get(null);
+//        bundle.putString("json", estructuraCarpetas);
 
-        // Le agrego el Bundle al fragmento
-        fragment.setArguments(bundle);
-
-        //Paso 3: Crear una nueva transacción
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-        // Agrego el fragmento a la transaccion
-        transaction.add(R.id.contenedor, fragment);
-
-        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
-        // cuando apreto la flecha de para atras
-        transaction.addToBackStack("inicio");
-
-        //Paso 4: Confirmar el cambio
-        transaction.commit();
+//        // Le agrego el Bundle al fragmento
+//        fragment.setArguments(bundle);
+//
+//        //Paso 3: Crear una nueva transacción
+//        FragmentTransaction transaction = fragmentManager.beginTransaction();
+//
+//        // Agrego el fragmento a la transaccion
+//        transaction.add(R.id.contenedor, fragment);
+//
+//        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
+//        // cuando apreto la flecha de para atras
+//        transaction.addToBackStack("inicio");
+//
+//        //Paso 4: Confirmar el cambio
+//        transaction.commit();
 
     }
 
@@ -111,45 +125,54 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void get(String carpetaPadre) {
+//        GET en /folder/<username_de_propietario>/<path>
 
-        // Prepare your search string to be put in a URL
-        // It might have reserved characters or something
-        //String urlString = "";
-        //try {
-        //urlString = URLEncoder.encode(searchString, "UTF-8");
-        //} catch (UnsupportedEncodingException e) {
+        if(carpetaPadre == null){
+//            Toast.makeText(this, "Estoy en root: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
+        } else {
+            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + carpetaPadre + "/";
+            PATH_ACTUAL = PATH_ACTUAL + carpetaPadre + "/";
+            Toast.makeText(this, "URI: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
+        }
 
-        // if this fails for some reason, let the user know why
-        //  e.printStackTrace();
-        // Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        //}
-
-        // Creo un cliente asyncronico, para comunicarme con el servidor
         AsyncHttpClient client = new AsyncHttpClient();
 
-        // Le mando un GET al server, pidiendo la estructura interna de la carpeta que seleccione
-        // QUERY_URL + carpetaPadre
-        client.get(QUERY_URL, new JsonHttpResponseHandler() {
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+
+        client.get(QUERY_URL_CARPETAS, params, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
-                crearNuevoFragmento(jsonObject);
+//                    Toast.makeText(getApplicationContext(), "Baje la estructura de carpetas", Toast.LENGTH_LONG).show();
+                try {
+                    estructuraCarpetas = jsonObject.getString("estructura");
+                } catch (JSONException e) {
+
+                }
+//                Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
+
+                crearNuevoFragmento(estructuraCarpetas);
             }
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "No pude bajar la estructura", Toast.LENGTH_LONG).show();
             }
+
         });
+
+
     }
 
     @Override
     public void onGroupClick(String id) {
-        crearNuevoFragmento(new JSONObject());
-//        get(id);
+//        crearNuevoFragmento(new JSONObject());
+        get(id);
     }
 
-    public void crearNuevoFragmento(JSONObject jsonObject){
+    public void crearNuevoFragmento(String jsonObject){
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
         // que me devuelva la estructura de carpetas y archivos que estan adentro de esa.
         // Luego creo un nuevo fragmento con esa estructura y reemplazo el anterior
@@ -160,16 +183,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Creo un Bundle y le agrego informacion del tipo <Key, Value>
         Bundle bundle = new Bundle();
         bundle.putInt("groupPosition", 2);
+        bundle.putString("estructura", jsonObject);
 
         // Le agrego el Bundle al fragmento
         fragment.setArguments(bundle);
 
         //Paso 2: Crear una nueva transacción
         FragmentTransaction transaction2 = fragmentManager.beginTransaction().replace(R.id.contenedor, fragment);
-
-        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
-        // cuando apreto la flecha de para atras
-        transaction2.addToBackStack("dos");
 
         //Paso 4: Confirmar el cambio
         transaction2.commit();
@@ -179,11 +199,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     public void onOptionClick(String id, String opcion) {
         if(opcion.equals("Eliminar")){
             confirmarEliminarArchivo(id);
-            eliminarArchivo(id);
         }
 
         if(opcion.equals("Descargar")){
-            descargarArchivo();
+            descargarArchivo(id);
         }
 
         if(opcion.equals("Detalles")){
@@ -197,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void subir(String path){
         String filename = "texto.txt";
-        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username + "/" + filename;
+        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username +  PATH_ACTUAL + filename;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -226,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
                 Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
+                get(null);
             }
 
             @Override
@@ -253,10 +273,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
     }
 
-    private void descargarArchivo(){
+    private void descargarArchivo(String id){
 
-        nombreArchivo = "texto.txt";
-        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + nombreArchivo ;
+        nombreArchivo = id;
+        QUERY_URL = MyDataArrays.direccion + "/file/" + username + PATH_ACTUAL + nombreArchivo ;
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
@@ -346,6 +366,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void eliminarArchivo(String id){
+        id = "texto.txt";
         QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + id;
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -412,18 +433,38 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void obtenerMetadatos(String id){
-        
+
     }
 
     // Este metodo es para volver para atras en los fragmentos
     // y cerrar la aplicacion cuando volvi al inicio de todo
     @Override
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() == 1) {
-            this.finish();
-        } else {
+
+        // Este boolean sirve para saber si quiero volver a la carpeta superior
+        boolean volver = true;
+        int index = -1 , indice =  -1;
+        if(PATH_ACTUAL.equals("/")){
             getFragmentManager().popBackStack();
+            getFragmentManager().popBackStack();
+            this.finish();
+            volver = false; // Ya llegue a la raiz, no quiero volver mas
         }
+
+        for( int i = 0; volver && i < 2; i++){
+
+             index = QUERY_URL_CARPETAS.lastIndexOf("/");
+            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS.substring(0, index);
+
+            indice = PATH_ACTUAL.lastIndexOf("/");
+            PATH_ACTUAL = PATH_ACTUAL.substring(0, indice);
+
+        }
+        QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + "/";
+        PATH_ACTUAL = PATH_ACTUAL + "/";
+
+
+        if(volver)  get(null);
     }
 
     // Este metodo sirve para ir a la activity de iniciar sesion o registrarse

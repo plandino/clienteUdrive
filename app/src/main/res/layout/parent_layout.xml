@@ -11,7 +11,7 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/violeta_fondo"
+        android:textColor="@color/blue"
         android:textStyle="bold"/>
 
         <!-- Shows an image from your drawable resources -->

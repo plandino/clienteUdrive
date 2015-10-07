@@ -2,12 +2,14 @@ package tallerii.udrive;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -90,6 +92,9 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
 
         TextView parentTextView = (TextView) convertView.findViewById(R.id.textViewParent);
         ImageView listHeaderArrow = (ImageView) convertView.findViewById(R.id.arrow);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams( Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+
+        listHeaderArrow.setLayoutParams(layoutParams);
 
         parentTextView.setText(groupTitle);
 

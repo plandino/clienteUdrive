@@ -24,15 +24,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
     Button registrarseButton;
     EditText usuarioEditText;
     EditText contraseniaEditText;
-
-    // FACULTAD
-    // private String QUERY_URL = "http://192.168.0.31:8080/profile";
-
-    // MI CASA
-//    private String QUERY_URL = "http://192.168.0.27:8080/profile";
-
-    // compu santi mi casa
-//    private String QUERY_URL = "http://192.168.0.39:8080/profile";
+    EditText nombreEditText;
+    EditText mailEditText;
 
     public String QUERY_URL = MyDataArrays.direccion + "/profile";
 
@@ -46,7 +39,13 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         usuarioEditText = (EditText) findViewById(R.id.registrarse_usuario);
 
         // Edit text para la contraseña
-        contraseniaEditText = (EditText) findViewById(R.id.registrarse_contrasenia);
+        contraseniaEditText = (EditText) findViewById(R.id.registrarse_contraseña);
+
+        // Edit text para el nombre
+        nombreEditText = (EditText) findViewById(R.id.registrarse_nombre);
+
+        // Edit text para el mail
+        mailEditText = (EditText) findViewById(R.id.registrarse_mail);
 
         // Boton para registrarse
         registrarseButton = (Button) findViewById(R.id.registrarse);
@@ -77,8 +76,14 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        String usuario = usuarioEditText.getText().toString();
-        String contrasenia = contraseniaEditText.getText().toString();
+        String usuario      = usuarioEditText.getText().toString();
+        String contrasenia  = contraseniaEditText.getText().toString();
+        String mail         = mailEditText.getText().toString();
+        String nombre       = nombreEditText.getText().toString();
+
+        // TODO: SACAR ESTE HARDOCDEO
+        mail = "pancheitor@gmail.com";
+        nombre = "pancheitor";
         if(usuario.isEmpty()) {
             Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
                     Toast.LENGTH_LONG).show();
@@ -90,7 +95,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         }
 
         if( (!usuario.isEmpty()) && (!contrasenia.isEmpty())){
-            registrar(usuario, contrasenia);
+            registrar(usuario, contrasenia, mail, nombre);
         }
     }
 
@@ -140,15 +145,17 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         });
     }
 
-    private void registrar(final String usuario, final String contrasenia) {
+    private void registrar(final String usuario, final String contrasenia, final String mail, final String nombre) {
 
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
         params.put("user", usuario);
         params.put("pass", contrasenia);
-        params.put("profile", "{\"nombre\" : \"pancheitor\"," +
-                "               \"email\" : \"pancheitor@gmail.com\"}" );
+        params.put("profile", "{\"nombre\" : \"" + nombre + "\",\"email\" :  \"" + mail + "\"}" );
+//
+//        Toast.makeText(getApplicationContext(), "{\"nombre\" : \" " + nombre + "\"," +
+//                "               \"email\" :  \" " + mail + "\"}", Toast.LENGTH_LONG).show();
 
         client.post(QUERY_URL, params, new JsonHttpResponseHandler() {
             //

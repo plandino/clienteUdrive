@@ -23,6 +23,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     Button iniciarSesionButton;
     EditText usuarioEditText;
     EditText contraseniaEditText;
+//    String jsonEstructuraCarpetas;
 
     // FACULTAD
     // private String QUERY_URL = "http://192.168.0.31:8080/profile";
@@ -100,6 +101,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         // Agrego la informacion que quiero al Intent
         mainIntent.putExtra("username", user);
         mainIntent.putExtra("token", token);
+//        mainIntent.putExtra("estructuraCarpetas", jsonEstructuraCarpetas);
 
         // Inicio la actividad con el Intent
         startActivity(mainIntent);
@@ -110,17 +112,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
 
     private void iniciarSesion(final String usuario, String contrasenia) {
 
-        // Prepare your search string to be put in a URL
-        // It might have reserved characters or something
-        //String urlString = "";
-        //try {
-        //urlString = URLEncoder.encode(searchString, "UTF-8");
-        //} catch (UnsupportedEncodingException e) {
-
-        // if this fails for some reason, let the user know why
-        //  e.printStackTrace();
-        // Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        //}
+//        JSONObject jsonEstructuraCarpetas;
 
         // Creo un cliente para mandar la informacion de usuario y contraseña
         AsyncHttpClient client = new AsyncHttpClient();
@@ -136,7 +128,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
 //                Toast.makeText(getApplicationContext(), "Token: " + jsonObject.toString(), Toast.LENGTH_LONG).show();
                 String token = "";
                 try{
-                    token = jsonObject.getString("token");
+                    token                   = jsonObject.getString("token");
                 } catch (JSONException e){
 
                 }

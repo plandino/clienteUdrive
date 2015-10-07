@@ -15,24 +15,110 @@
 
         android:src="@mipmap/udrive" />
 
-    <!-- Displays keyboard when touched -->
-    <EditText
-        android:id="@+id/registrarse_usuario"
-        android:layout_width="180dp"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal"
         android:layout_weight="0"
-        android:layout_gravity="center_horizontal"
-        android:hint="@string/hint_usuario" />
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
 
-    <!-- Displays keyboard when touched -->
-    <EditText
-        android:id="@+id/registrarse_contrasenia"
-        android:layout_width="180dp"
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:hint="@string/nombre"
+            android:gravity="start|center"
+            android:textSize="18sp" />
+
+        <!-- Displays keyboard when touched -->
+        <EditText
+            android:id="@+id/registrarse_nombre"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal"
+            android:hint="@string/hint_nombre" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal"
         android:layout_weight="0"
-        android:inputType="textPassword"
-        android:layout_gravity="center_horizontal"
-        android:hint="@string/hint_contraseña" />
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:hint="@string/usuario"
+            android:gravity="start|center"
+            android:textSize="18sp" />
+
+        <!-- Displays keyboard when touched -->
+        <EditText
+            android:id="@+id/registrarse_usuario"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal"
+            android:hint="@string/hint_usuario" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal"
+        android:layout_weight="0"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:hint="@string/contraseña"
+            android:gravity="start|center"
+            android:textSize="18sp" />
+
+        <!-- Displays keyboard when touched -->
+        <EditText
+            android:id="@+id/registrarse_contraseña"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal"
+            android:hint="@string/hint_contraseña"
+            android:inputType="textPassword"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal"
+        android:layout_weight="0"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:hint="@string/mail"
+            android:gravity="start|center"
+            android:textSize="18sp" />
+
+        <!-- Displays keyboard when touched -->
+        <EditText
+            android:id="@+id/registrarse_mail"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal"
+            android:hint="@string/hint_mail" />
+    </LinearLayout>
 
     <!-- Set OnClickListener to trigger results when pressed -->
     <Button
