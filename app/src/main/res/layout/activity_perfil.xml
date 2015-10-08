@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/violeta_fondo">
+    android:background="@color/violeta_fondo"
+    android:paddingBottom="20dp">
 
     <!-- Shows an image from your drawable resources -->
     <ImageView
@@ -38,7 +39,9 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_nombre" />
+            android:hint="@string/hint_nombre"
+            android:nextFocusDown="@+id/perfil_mail"
+            android:imeOptions="actionNext"/>
     </LinearLayout>
 
     <LinearLayout
@@ -63,7 +66,9 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_mail" />
+            android:hint="@string/hint_mail"
+            android:nextFocusDown="@+id/perfil_foto"
+            android:imeOptions="actionNext"/>
     </LinearLayout>
 
     <LinearLayout
@@ -89,7 +94,9 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_foto" />
+            android:hint="@string/hint_foto"
+            android:nextFocusDown="@+id/perfil_ubicacion"
+            android:imeOptions="actionNext"/>
     </LinearLayout>
 
     <LinearLayout
@@ -124,6 +131,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_weight="0"
-        android:text="@string/actualizar" />
+        android:text="@string/actualizar"
+        />
 
 </LinearLayout>

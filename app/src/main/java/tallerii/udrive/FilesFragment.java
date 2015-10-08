@@ -40,6 +40,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     private OnFragmentInteractionListener mListener;
 
     HashMap<String, List<String>> miHashMap;
+    HashMap<String, String>       hashTipoArchivos;
     List<String> hasMapKeys;
     ExpandableListView expandableListView;
     MyCustomAdapter adapter;
@@ -85,10 +86,11 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
         }
         miHashMap = MyDataProvider.getDataHashMap(groupPosition, jsonEstructuraCarpetas);
+        hashTipoArchivos = MyDataProvider.getTypeHashMap(jsonEstructuraCarpetas);
 
         hasMapKeys = new ArrayList<String>(miHashMap.keySet());
 
-        adapter = new MyCustomAdapter(getActivity(), miHashMap, hasMapKeys);
+        adapter = new MyCustomAdapter(getActivity(), miHashMap, hasMapKeys, hashTipoArchivos);
         expandableListView.setAdapter(adapter);
 
         expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {

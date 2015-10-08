@@ -10,18 +10,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:divider="@color/green"
-    android:dividerHeight="10dp"
-    android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft"/>
-
-
-    <!--<ListView android:id="@android:id/list"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent" />-->
-
-    <!--<TextView android:id="@android:id/empty"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:gravity="center"-->
-        <!--/>-->
+    android:dividerHeight="10dp"/>
 
 </FrameLayout>

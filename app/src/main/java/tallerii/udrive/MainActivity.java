@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         } else {
             QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + carpetaPadre + "/";
             PATH_ACTUAL = PATH_ACTUAL + carpetaPadre + "/";
-            Toast.makeText(this, "URI: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "URI: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
         }
 
         AsyncHttpClient client = new AsyncHttpClient();

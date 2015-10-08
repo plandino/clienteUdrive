@@ -60,7 +60,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         // Boton para iniciar sesion
         actualizarButton = (Button) findViewById(R.id.actualizar);
         actualizarButton.setOnClickListener(this);
-//        recibirPerfil();
+
+
+        recibirPerfil();
     }
 
     @Override
@@ -134,18 +136,18 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         RequestParams params = new RequestParams();
         params.put("token", token);
 
-        Toast.makeText(getApplicationContext(), "Mando: " + token + "con uri: " + QUERY_URL, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "Mando: " + token + "con uri: " + QUERY_URL, Toast.LENGTH_LONG).show();
 
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                 @Override
                 public void onSuccess(JSONObject jasito) {
-                    Toast.makeText(getApplicationContext(), "Recibi perfil", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), "Recibi perfil", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                    Toast.makeText(getApplicationContext(), "Recibi perfil en objeto", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), "Recibi perfil en objeto", Toast.LENGTH_LONG).show();
                     try {
                         JSONObject perfilazo = jsonObject.getJSONObject("perfil");
                         nombreUsuario = perfilazo.getString("nombre");

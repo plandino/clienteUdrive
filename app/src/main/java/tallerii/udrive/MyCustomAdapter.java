@@ -21,34 +21,35 @@ import java.util.List;
 public class MyCustomAdapter extends BaseExpandableListAdapter {
 
     private Context context;
-    private HashMap<String, List<String>> countriesHashMap;
-    private List<String> countryList;
+    private HashMap<String, List<String>> hashMap;
+    private List<String> opciones;
+    private HashMap<String, String> hashTipoArchivos;
 
-    public MyCustomAdapter(Context context, HashMap<String, List<String>> hashMap, List<String> list) {
-        countriesHashMap = hashMap;
+    public MyCustomAdapter(Context context, HashMap<String, List<String>> hashMap, List<String> list, HashMap<String, String> hashTipoArchivos) {
         this.context = context;
-        this.countriesHashMap = hashMap;
-        this.countryList = list;
+        this.hashMap = hashMap;
+        this.opciones = list;
+        this.hashTipoArchivos = hashTipoArchivos;
     }
 
     @Override
     public int getGroupCount() {
-        return countriesHashMap.size();
+        return hashMap.size();
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return countriesHashMap.get(countryList.get(groupPosition)).size();
+        return hashMap.get(opciones.get(groupPosition)).size();
     }
 
     @Override
     public Object getGroup(int groupPosition) {
-        return countryList.get(groupPosition);
+        return opciones.get(groupPosition);
     }
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        return countriesHashMap.get(countryList.get(groupPosition)).get(childPosition);
+        return hashMap.get(opciones.get(groupPosition)).get(childPosition);
     }
 
     @Override
@@ -100,16 +101,25 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
 
         ImageView iconImage;
         iconImage = (ImageView) convertView.findViewById(R.id.icono);
-        String tipo = getGroup(groupPosition).toString();
-        if(tipo == "Ruby"){
-            iconImage.setImageResource(R.drawable.folder);
+        String tipo = hashTipoArchivos.get(groupTitle);
+
+//        Toast.makeText(context, tipo, Toast.LENGTH_SHORT).show();
+
+        if(tipo.equals("#folder")){
+            iconImage.setImageResource(R.mipmap.folder);
+        } else if((tipo.equals("png")) || (tipo.equals("jpg")) || (tipo.equals("jpeg")) || (tipo.equals("gif"))){
+            iconImage.setImageResource(R.mipmap.image);
+        } else if((tipo.equals("pdf")) || (tipo.equals("doc")) || (tipo.equals("docx")) || (tipo.equals("txt")) || (tipo.equals("odt"))){
+            iconImage.setImageResource(R.mipmap.file);
         } else {
-            iconImage.setImageResource(R.drawable.file);
+            iconImage.setImageResource(R.mipmap.binary);
         }
 
         //Set the arrow programatically, so we can control it
         int imageResourceId = isExpanded ? android.R.drawable.arrow_up_float : android.R.drawable.arrow_down_float;
         listHeaderArrow.setImageResource(imageResourceId);
+        listHeaderArrow.setScaleX(2.0f);
+        listHeaderArrow.setScaleY(2.0f);
 
         listHeaderArrow.setOnClickListener(new View.OnClickListener() {
 
