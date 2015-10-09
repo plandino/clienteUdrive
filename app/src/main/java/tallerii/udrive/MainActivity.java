@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -320,14 +321,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Crear carpeta");
         alert.setMessage("Introduzca el nombre de la nueva carpeta");
+        final EditText nombreCarpeta = new EditText(this);
+        alert.setView(nombreCarpeta);
 
         // El boton "Subir" confirma subir el archivo
         alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
 
-                // TODO: LINEAS PARA BORRAR EL ARCHIVO
-                Toast.makeText(getApplicationContext(), "Cree la nueva carpeta", Toast.LENGTH_LONG).show();
+                agregarCarpeta(nombreCarpeta.getText().toString());
+//                Toast.makeText(getApplicationContext(), "Cree la nueva carpeta: " + nombreCarpeta.getText().toString(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -338,6 +341,32 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
 
         alert.show();
+    }
+
+    private void agregarCarpeta(String nombreCarpeta){
+
+
+        QUERY_URL = MyDataArrays.direccion + "/folder/" + username +  PATH_ACTUAL + nombreCarpeta;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+
+        client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                Toast.makeText(getApplicationContext(), "Carpeta creada", Toast.LENGTH_LONG).show();
+                get(null);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void confirmarEliminarArchivo(final String id){
