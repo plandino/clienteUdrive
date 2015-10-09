@@ -82,8 +82,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         String nombre       = nombreEditText.getText().toString();
 
         // TODO: SACAR ESTE HARDOCDEO
-        mail = "pancheitor@gmail.com";
-        nombre = "pancheitor";
+//        mail = "pancheitor@gmail.com";
+//        nombre = "pancheitor";
         if(usuario.isEmpty()) {
             Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
                     Toast.LENGTH_LONG).show();

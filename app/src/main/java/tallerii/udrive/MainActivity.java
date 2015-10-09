@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
 
-        final String savedFilePath = "/data/data/tallerii.udrive/files/" + nombreArchivo;
+        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + nombreArchivo; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
 
         File file=new File(savedFilePath);
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                     @Override
                     public void onFailure(Throwable e, File response) {
-                        Toast.makeText(getApplicationContext(), "Error al descargar el archivo", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "No se pudo descargar el archivo", Toast.LENGTH_LONG).show();
                     }
                 }
         );
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void eliminarArchivo(String id){
-        id = "texto.txt";
+//        id = "texto.txt";
         QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + id;
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -389,6 +389,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 Toast.makeText(getApplicationContext(), "Archivo eliminado", Toast.LENGTH_LONG).show();
+                get(null);
             }
 
             @Override
