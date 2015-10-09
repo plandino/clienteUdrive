@@ -38,11 +38,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private String PATH_ACTUAL = "/";
 
-    private String nombreArchivo;
     private String estructuraCarpetas;
-
-    private Bundle bundle;
-
+    private JSONObject estructuraCarpetasJSON;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,42 +50,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = getIntent();
         token = intent.getStringExtra("token");
         username = intent.getStringExtra("username");
-//        estructuraCarpetas = intent.getStringExtra("estructuraCarpetas");
 
         QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
 
-
-        // Creo un fragmento dinamicamente, en un futuro voy a necesitar pedir
-        // la estructura de las carpetas y archivos antes de crear el fragmento
-
-        //Paso 1: Obtener la instancia del administrador de fragmentos
         fragmentManager = getFragmentManager();
 
-//        //Paso 2: Creo un nuevo fragmento
-//        FilesFragment fragment = new FilesFragment();
-
-        // Creo un Bundle y le agrego informacion del tipo <Key, Value>
-//        bundle = new Bundle();
-//        bundle.putInt("groupPosition", 1);
         get(null);
-//        bundle.putString("json", estructuraCarpetas);
-
-//        // Le agrego el Bundle al fragmento
-//        fragment.setArguments(bundle);
-//
-//        //Paso 3: Crear una nueva transacción
-//        FragmentTransaction transaction = fragmentManager.beginTransaction();
-//
-//        // Agrego el fragmento a la transaccion
-//        transaction.add(R.id.contenedor, fragment);
-//
-//        // Agrego la transaccion al backStack, para que pueda volver a las carpetas superiores
-//        // cuando apreto la flecha de para atras
-//        transaction.addToBackStack("inicio");
-//
-//        //Paso 4: Confirmar el cambio
-//        transaction.commit();
-
     }
 
     @Override
@@ -108,6 +75,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             case R.id.crear_carpeta:
                 crearCarpeta();
                 return true;
+            case R.id.carpetas_compartidas:
+                get("#compartidos");
+                return true;
+            case R.id.papelera:
+                get("#trash");
+                return true;
 //            case R.id.buscar_archivo:
 //                return true;
             case R.id.ver_perfil:
@@ -116,24 +89,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             case R.id.cerrar_sesion:
                 cerrarSesion();
                 return true;
-            case R.id.action_settings:
-                //metodoSettings()
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
     }
 
-    private void get(String carpetaPadre) {
-//        GET en /folder/<username_de_propietario>/<path>
+    private void get(String id) {
 
-        if(carpetaPadre == null){
-//            Toast.makeText(this, "Estoy en root: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
-        } else {
-            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + carpetaPadre + "/";
-            PATH_ACTUAL = PATH_ACTUAL + carpetaPadre + "/";
-//            Toast.makeText(this, "URI: " + QUERY_URL_CARPETAS, Toast.LENGTH_SHORT).show();
+        if(id != null){
+            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + id + "/";
+            PATH_ACTUAL = PATH_ACTUAL + id + "/";
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -146,31 +112,31 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
-//                    Toast.makeText(getApplicationContext(), "Baje la estructura de carpetas", Toast.LENGTH_LONG).show();
                 try {
                     estructuraCarpetas = jsonObject.getString("estructura");
+                    estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
                 } catch (JSONException e) {
 
                 }
-//                Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
-
                 crearNuevoFragmento(estructuraCarpetas);
             }
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "No pude bajar la estructura", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "No pude acceder a la carpeta.", Toast.LENGTH_LONG).show();
             }
-
         });
-
-
     }
 
     @Override
     public void onGroupClick(String id) {
-//        crearNuevoFragmento(new JSONObject());
-        get(id);
+        String tipoDeArchivo = obtenerTipoDeArchivo(id);
+
+        if(tipoDeArchivo.equals("#folder")) {
+            get(id);
+        } else {
+            obtenerMetadatos(id);
+        }
     }
 
     public void crearNuevoFragmento(String jsonObject){
@@ -183,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Creo un Bundle y le agrego informacion del tipo <Key, Value>
         Bundle bundle = new Bundle();
-        bundle.putInt("groupPosition", 2);
         bundle.putString("estructura", jsonObject);
 
         // Le agrego el Bundle al fragmento
@@ -198,20 +163,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     @Override
     public void onOptionClick(String id, String opcion) {
-        if(opcion.equals("Eliminar")){
-            confirmarEliminarArchivo(id);
-        }
 
         if(opcion.equals("Descargar")){
             descargarArchivo(id);
         }
 
-        if(opcion.equals("Detalles")){
-            obtenerMetadatos(id);
-        }
-
         if(opcion.equals("Compartir")){
 
+        }
+
+        if(opcion.equals("Eliminar")){
+            confirmarEliminar(id);
         }
     }
 
@@ -270,21 +232,20 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                         }
                     }
             );
-            fileOpenDialog.default_file_name =  "/data/data/tallerii.udrive/files";
+            fileOpenDialog.default_file_name =  getApplicationContext().getFilesDir().getAbsolutePath(); //"/data/data/tallerii.udrive/files";
             fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
     }
 
-    private void descargarArchivo(String id){
+    private void descargarArchivo(final String id){
 
-        nombreArchivo = id;
-        QUERY_URL = MyDataArrays.direccion + "/file/" + username + PATH_ACTUAL + nombreArchivo ;
+        QUERY_URL = MyDataArrays.direccion + "/file/" + username + PATH_ACTUAL + id ;
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
 
-        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + nombreArchivo; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
+        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + id; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
 
         File file=new File(savedFilePath);
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
@@ -298,13 +259,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                         // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
                         Intent intentDisplay = new Intent(MainActivity.this, DisplayActivity.class);
-                        if (false) {
-                            intentDisplay.putExtra("extensionArchivo", "foto");
-                        } else {
-                            intentDisplay.putExtra("extensionArchivo", "texto");
-                        }
+
+                        intentDisplay.putExtra("extensionArchivo", obtenerTipoDeArchivo(id));
                         intentDisplay.putExtra("filePath", savedFilePath);
-                        intentDisplay.putExtra("nombreArchivo", nombreArchivo);
+                        intentDisplay.putExtra("nombreArchivo", id);
                         startActivity(intentDisplay);
                     }
 
@@ -324,20 +282,19 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         final EditText nombreCarpeta = new EditText(this);
         alert.setView(nombreCarpeta);
 
-        // El boton "Subir" confirma subir el archivo
+        // El boton "Crear" crea la carpeta
         alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
 
                 agregarCarpeta(nombreCarpeta.getText().toString());
-//                Toast.makeText(getApplicationContext(), "Cree la nueva carpeta: " + nombreCarpeta.getText().toString(), Toast.LENGTH_LONG).show();
             }
         });
 
         // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
         alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int whichButton) {}
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
         });
 
         alert.show();
@@ -358,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                Toast.makeText(getApplicationContext(), "Carpeta creada", Toast.LENGTH_LONG).show();
                 get(null);
             }
 
@@ -369,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
-    private void confirmarEliminarArchivo(final String id){
+    private void confirmarEliminar(final String id){
 
         // Muestro una ventana emergente para confirmar que quiere eliminar
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -380,23 +336,29 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
-
-                eliminarArchivo(id);
-                Toast.makeText(getApplicationContext(), "Eliminaste el archivo: " + id, Toast.LENGTH_LONG).show();
+                eliminar(id);
             }
         });
 
         // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {}
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
         });
 
         alert.show();
     }
 
-    private void eliminarArchivo(String id){
-//        id = "texto.txt";
-        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/" + id;
+    private void eliminar(final String id){
+        String tipoDeArchivo = obtenerTipoDeArchivo(id);
+
+        if(tipoDeArchivo.equals("#folder")){
+            QUERY_URL = MyDataArrays.direccion + "/folder/";
+        } else {
+            QUERY_URL = MyDataArrays.direccion + "/file/";
+        }
+
+        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -417,13 +379,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Toast.makeText(getApplicationContext(), "Archivo eliminado", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), id + " se ha movido a la papelera.", Toast.LENGTH_LONG).show();
                 get(null);
             }
 
+
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor" + statusCode, Toast.LENGTH_LONG).show();
+
+                Toast.makeText(getApplicationContext(), QUERY_URL, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -530,6 +495,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Inicio la actividad con el Intent
         startActivity(perfilIntent);
+    }
+
+    private String obtenerTipoDeArchivo(String id){
+        String tipoDeArchivo = "#desconocido";
+        try{
+            tipoDeArchivo = estructuraCarpetasJSON.getString(id);
+        } catch (JSONException e){
+
+        }
+        return tipoDeArchivo;
     }
 
 }

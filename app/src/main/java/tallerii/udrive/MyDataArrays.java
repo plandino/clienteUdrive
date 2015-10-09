@@ -4,7 +4,8 @@ package tallerii.udrive;
 * www.101apps.co.za
 * */
 public class MyDataArrays {
-    static String[] opciones = {"Descargar", "Compartir", "Detalles", "Eliminar"};
+    static String[] opcionesArchivos = {"Descargar", "Compartir", "Eliminar"};
+    static String[] opcionesCarpetas = {"Eliminar"};
     // MI CASA
     // public static String direccion = "http://192.168.0.27:8080";
     // CASA SANTI

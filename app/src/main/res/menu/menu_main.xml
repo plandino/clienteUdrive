@@ -15,24 +15,38 @@
         android:orderInCategory="2"
         app:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/ver_perfil"
+        android:title="@string/ver_perfil"
+        android:orderInCategory="3"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/carpetas_compartidas"
+        android:title="@string/carpetas_compartidas"
+        android:orderInCategory="4"
+        app:showAsAction="never"/>
+
+
+    <item android:id="@+id/papelera"
+        android:title="@string/papelera"
+        android:orderInCategory="5"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/actualizar"
+        android:title="@string/actualizar"
+        android:orderInCategory="6"
+        app:showAsAction="never"/>
+
+
+
     <!--<item android:id="@+id/buscar_archivo"-->
         <!--android:icon="@android:drawable/ic_menu_search"-->
         <!--android:title="@string/buscar"-->
         <!--android:orderInCategory="3"-->
         <!--app:showAsAction="never"/>-->
 
-    <item android:id="@+id/ver_perfil"
-        android:title="@string/ver_perfil"
-        android:orderInCategory="4"
-        app:showAsAction="never"/>
 
     <item android:id="@+id/cerrar_sesion"
         android:title="@string/cerrar_sesion"
-        android:orderInCategory="5"
+        android:orderInCategory="6"
         app:showAsAction="never"/>
-
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
 </menu>

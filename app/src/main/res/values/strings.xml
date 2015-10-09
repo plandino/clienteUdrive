@@ -18,6 +18,8 @@
     <string name="ver_perfil">Ver perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
     <string name="actualizar">Actualizar</string>
+    <string name="papelera">Papelera</string>
+    <string name="carpetas_compartidas">Archivos compartidos</string>
 
 
     <!-- Campos botones -->

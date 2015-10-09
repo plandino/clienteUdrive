@@ -76,7 +76,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         View view = inflater.inflate(R.layout.fragment_files, container, false);
 
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
-        int groupPosition = getArguments().getInt("groupPosition");
         JSONObject jsonEstructuraCarpetas = new JSONObject();
         try{
             if( getArguments().getString("estructura") != null ){
@@ -85,7 +84,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         }catch (JSONException e ){
 
         }
-        miHashMap = MyDataProvider.getDataHashMap(groupPosition, jsonEstructuraCarpetas);
+        miHashMap = MyDataProvider.getDataHashMap(jsonEstructuraCarpetas);
         hashTipoArchivos = MyDataProvider.getTypeHashMap(jsonEstructuraCarpetas);
 
         hasMapKeys = new ArrayList<String>(miHashMap.keySet());
