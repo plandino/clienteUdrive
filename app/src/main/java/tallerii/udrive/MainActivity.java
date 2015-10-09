@@ -463,7 +463,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void obtenerMetadatos(String id){
+        // Creo un Intent para pasar a la activity de mostrar metadatos
+        Intent metadatosIntent = new Intent(this, MetadatosActivity.class);
 
+        // Agrego la informacion que quiero al Intent
+        metadatosIntent.putExtra("token", token);
+        metadatosIntent.putExtra("username", username);
+        metadatosIntent.putExtra("pathArchivo", PATH_ACTUAL + id);
+
+        // Inicio la actividad con el Intent
+        startActivity(metadatosIntent);
     }
 
     // Este metodo es para volver para atras en los fragmentos

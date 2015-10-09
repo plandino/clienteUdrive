@@ -8,6 +8,7 @@
     <string name="activity_registrarse">Registrarse</string>
     <string name="activity_display">Display</string>
     <string name="activity_perfil">Perfil</string>
+    <string name="activity_metadatos">Detalles</string>
 
     <!-- Campos del menu de Action Bar -->
     <string name="action_settings">Settings</string>
@@ -16,12 +17,14 @@
     <string name="crear_carpeta">Crear carpeta</string>
     <string name="ver_perfil">Ver perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
+    <string name="actualizar">Actualizar</string>
 
 
     <!-- Campos botones -->
     <string name="iniciar_sesion">Iniciar sesión</string>
     <string name="registrarse">Registrar nuevo usuario</string>
-    <string name="actualizar">Actualizar perfil</string>
+    <string name="actualizar_perfil">Actualizar perfil</string>
+    <string name="actualizar_metadatos">Actualizar</string>
 
     <!-- Campos EditText -->
     <string name="hint_usuario">Nombre de usuario</string>
@@ -39,6 +42,12 @@
     <string name="usuario"> Usuario: </string>
     <string name="contraseña">Contaseña: </string>
     <string name="ubicacion">Ubicación: </string>
+    <string name="fecha">Fecha ultima modificacion: </string>
+    <string name="usrUltimaModificacion">Modificador por: </string>
+    <string name="propietario">Propietario: </string>
+    <string name="usrCompartidos">Usuarios compartidos: </string>
+    <string name="etiquetas">Etiquetas: </string>
+
 
 
     <string name="conectando">Conectando con el servidor...</string>

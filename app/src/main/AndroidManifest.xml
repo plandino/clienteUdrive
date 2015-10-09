@@ -72,6 +72,15 @@
                 android:value=".MainActivity"/>
         </activity>
 
+        <activity
+            android:name=".MetadatosActivity"
+            android:label="@string/activity_metadatos"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+
 </application>
 
 </manifest>

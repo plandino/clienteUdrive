@@ -68,7 +68,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_actualizar, menu);
         return true;
     }
 
@@ -76,18 +76,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.subir_archivo:
-                return true;
-            case R.id.crear_carpeta:
-                return true;
-//            case R.id.buscar_archivo:
-//                return true;
-            case R.id.ver_perfil:
-                return true;
-            case R.id.action_settings:
-
+            case R.id.actualizar:
                 recibirPerfil();
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -106,21 +98,31 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         AsyncHttpClient client = new AsyncHttpClient();
 
+        JSONObject profile = new JSONObject();
+        JSONObject ultimaUbicacion = new JSONObject();
+
+        try{
+            profile.put("nombre", nombre);
+            profile.put("email", mail);
+            profile.put("path foto de perfil", fotoPath);
+
+            ultimaUbicacion.put("latitud", 15.0);
+            ultimaUbicacion.put("longitud", 16.0);
+            profile.put("ultima ubicacion",ultimaUbicacion);
+
+        } catch (JSONException e){
+
+        }
+
         RequestParams params = new RequestParams();
         params.put("token", token);
-        params.put("nombre", nombre);
-        params.put("email", mail);
-        params.put("pathFoto", fotoPath);
-        params.put("latitud", "15.0");
-        params.put("longitud", "16.0");
+        params.put("profile", profile.toString());
 
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
                 Toast.makeText(getApplicationContext(), "Perfil actualizado", Toast.LENGTH_LONG).show();
-                nombreEditText.setText("ttajsdakadssadkñkaslklñsa");
-//                recibirPerfil();
             }
 
             @Override
@@ -136,18 +138,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         RequestParams params = new RequestParams();
         params.put("token", token);
 
-//        Toast.makeText(getApplicationContext(), "Mando: " + token + "con uri: " + QUERY_URL, Toast.LENGTH_LONG).show();
-
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                 @Override
-                public void onSuccess(JSONObject jasito) {
-//                    Toast.makeText(getApplicationContext(), "Recibi perfil", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
                 public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-//                    Toast.makeText(getApplicationContext(), "Recibi perfil en objeto", Toast.LENGTH_LONG).show();
                     try {
                         JSONObject perfilazo = jsonObject.getJSONObject("perfil");
                         nombreUsuario = perfilazo.getString("nombre");
@@ -162,6 +156,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                     nombreEditText.setText(nombreUsuario);
                     mailEditText.setText(email);
                     fotoEditText.setText(fotopath);
+
                 }
 
                 @Override
