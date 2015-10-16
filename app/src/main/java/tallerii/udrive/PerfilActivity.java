@@ -1,7 +1,12 @@
 package tallerii.udrive;
 
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +22,10 @@ import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Created by panchoubuntu on 29/09/15.
  */
@@ -26,6 +35,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     EditText nombreEditText;
     EditText mailEditText;
     EditText fotoEditText;
+    EditText ubicacionEditText;
 
     String nombreUsuario = "";
     String email = "";
@@ -38,10 +48,29 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
+    MyLocationListener locationListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_perfil);
+
+        // Creo el LocationManager y le digo que se puede ubicar usando Internet o el GPS
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+
+        locationListener = new MyLocationListener();
+
+        try{
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        } catch (SecurityException e){
+            Log.e("GPS ACCESS PROBLEM:", e.getMessage());
+        }
+        try{
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+        } catch (SecurityException e){
+            Log.e("NETWORK ACCESS PROBLEM:", e.getMessage());
+        }
+
 
         token = getIntent().getStringExtra("token");
         username = getIntent().getStringExtra("username");
@@ -56,6 +85,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         // Edit para el path de la foto
         fotoEditText = (EditText) findViewById(R.id.perfil_foto);
+
+        // Edit para la ubicacion
+        ubicacionEditText = (EditText) findViewById(R.id.perfil_ubicacion);
+
 
         // Boton para iniciar sesion
         actualizarButton = (Button) findViewById(R.id.actualizar);
@@ -101,13 +134,16 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         JSONObject profile = new JSONObject();
         JSONObject ultimaUbicacion = new JSONObject();
 
+        double latitud = locationListener.getLatitud();
+        double longitud = locationListener.getLongitud();
+
         try{
             profile.put("nombre", nombre);
             profile.put("email", mail);
             profile.put("path foto de perfil", fotoPath);
 
-            ultimaUbicacion.put("latitud", 15.0);
-            ultimaUbicacion.put("longitud", 16.0);
+            ultimaUbicacion.put("latitud", latitud);
+            ultimaUbicacion.put("longitud", longitud);
             profile.put("ultima ubicacion",ultimaUbicacion);
 
         } catch (JSONException e){
@@ -140,32 +176,70 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
-                @Override
-                public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-                    try {
-                        JSONObject perfilazo = jsonObject.getJSONObject("perfil");
-                        nombreUsuario = perfilazo.getString("nombre");
-                        email = perfilazo.getString("email");
-                        fotopath = perfilazo.getString("path foto de perfil");
-                        JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
-                        latitud = ubicacion.getDouble("latitud");
-                        longitud = ubicacion.getDouble("longitud");
-                    } catch (JSONException e){
+                    @Override
+                    public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                        try {
+                            JSONObject perfilazo = jsonObject.getJSONObject("perfil");
+                            nombreUsuario = perfilazo.getString("nombre");
+                            email = perfilazo.getString("email");
+                            fotopath = perfilazo.getString("path foto de perfil");
+                            JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
+                            latitud = ubicacion.getDouble("latitud");
+                            longitud = ubicacion.getDouble("longitud");
 
+                        } catch (JSONException e) {
+
+                        }
+                        nombreEditText.setText(nombreUsuario);
+                        mailEditText.setText(email);
+                        fotoEditText.setText(fotopath);
+                        obtenerDireccion(latitud, longitud);
                     }
-                    nombreEditText.setText(nombreUsuario);
-                    mailEditText.setText(email);
-                    fotoEditText.setText(fotopath);
 
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable
+                            throwable, JSONObject error) {
+                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                    }
                 }
-
-                @Override
-                public void onFailure ( int statusCode, Header[] headers, Throwable
-                throwable, JSONObject error){
-                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
-                }
-            }
 
         );
     }
+
+    public void obtenerDireccion(double latitud, double longitud){
+
+        Geocoder geocoder= new Geocoder(this, Locale.ENGLISH);
+        try {
+
+            List<Address> addresses = geocoder.getFromLocation(latitud, longitud, 1);
+
+            if( (addresses != null) && (addresses.size() != 0)){
+
+                Address fetchedAddress = addresses.get(0);
+                StringBuilder strAddress = new StringBuilder();
+
+                for(int i=0; i<fetchedAddress.getMaxAddressLineIndex(); i++) {
+
+                    strAddress.append(fetchedAddress.getAddressLine(i));
+
+                    if(i < fetchedAddress.getMaxAddressLineIndex() - 1){
+                        strAddress.append("\n");
+                    }
+                }
+
+                ubicacionEditText.setText(strAddress.toString());
+
+            }
+
+            else
+                ubicacionEditText.setText("Ubicacion fallida");
+
+        }
+        catch (IOException e) {
+            Log.w("UBICACION: ", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }
