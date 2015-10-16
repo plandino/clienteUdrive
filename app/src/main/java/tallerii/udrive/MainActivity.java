@@ -98,8 +98,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void get(String id) {
 
         if(id != null){
-            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + id + "/";
-            PATH_ACTUAL = PATH_ACTUAL + id + "/";
+            if(id.equals("#trash") || (id.equals("#compartidos"))){
+                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + "/" + id + "/";
+                PATH_ACTUAL = "/" + id + "/";
+            } else {
+                QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + id + "/";
+                PATH_ACTUAL = PATH_ACTUAL + id + "/";
+            }
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -178,7 +183,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void subir(String path){
-        String filename = "texto.txt";
+
+        int index = path.lastIndexOf("/");
+        String filename = path.substring(index + 1);
         QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username +  PATH_ACTUAL + filename;
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -186,7 +193,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
-//        params.put("tipoDeArchivo", "foto");
         try{
             File archivo = new File(path);
             params.put("file", archivo);
