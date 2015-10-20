@@ -4,9 +4,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private String estructuraCarpetas;
     private JSONObject estructuraCarpetasJSON;
+
+    int PICKFILE_RESULT_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +97,32 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        switch(requestCode){
+            case 1:
+                if(resultCode==RESULT_OK){
+
+                    if (null == data) return;
+
+                    String selectedImagePath;
+                    Uri selectedImageUri = data.getData();
+
+                    // Tengo que obtener el path del archivo. Uso el FilePathGetter para traducir
+                    // de una Uri a un file path absoluto
+                    selectedImagePath = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
+                    Log.i("Image File Path", "" + selectedImagePath);
+
+                    subir(selectedImagePath);
+                    Toast.makeText(getApplicationContext(), "Path: " + selectedImagePath, Toast.LENGTH_LONG).show();
+                }
+                break;
+
+        }
     }
 
     private void get(String id) {
@@ -226,20 +256,25 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void subirArchivo(){
 
-            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
-                    new FileDialog.SimpleFileDialogListener() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        int PICKFILE_RESULT_CODE = 1;
+        startActivityForResult(intent,PICKFILE_RESULT_CODE);
 
-                        @Override
-                        public void onChosenDir(String chosenDir)
-                        {
-                            // Aca tengo que mandar la carpeta
-//                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
-                            subir(chosenDir);
-                        }
-                    }
-            );
-            fileOpenDialog.default_file_name =  getApplicationContext().getFilesDir().getAbsolutePath(); //"/data/data/tallerii.udrive/files";
-            fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
+//            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
+//                    new FileDialog.SimpleFileDialogListener() {
+//
+//                        @Override
+//                        public void onChosenDir(String chosenDir)
+//                        {
+//                            // Aca tengo que mandar la carpeta
+////                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
+//                            subir(chosenDir);
+//                        }
+//                    }
+//            );
+//            fileOpenDialog.default_file_name = getApplicationContext().getFilesDir().getAbsolutePath(); //"/data/data/tallerii.udrive/files";
+//            fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
     }
 
     private void descargarArchivo(final String id){
@@ -253,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + id; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
 
-        File file=new File(savedFilePath);
+        File file = new File(savedFilePath);
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
 //                        @Override
 //                        public void onProgress(int bytesWritten, int totalSize) {
@@ -309,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void agregarCarpeta(String nombreCarpeta){
 
 
-        QUERY_URL = MyDataArrays.direccion + "/folder/" + username +  PATH_ACTUAL + nombreCarpeta;
+        QUERY_URL = MyDataArrays.direccion + "/folder/" + username + PATH_ACTUAL + nombreCarpeta;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -415,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 ,new BasicHeader("Accep", "text/html,text/xml,application/xml")
                 ,new BasicHeader("Connection", "keep-alive")
                 ,new BasicHeader("keep-alive", "115")
-                ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
+                , new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
         };
 
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
