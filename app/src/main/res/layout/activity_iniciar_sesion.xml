@@ -1,87 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/violeta_fondo"
-    android:paddingBottom="20dp">
+    android:layout_height="match_parent" >
 
-    <!-- Shows an image from your drawable resources -->
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="10"
-
-        android:src="@mipmap/udrive" />
-
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:layout_marginLeft="10dp">
+        android:layout_height="match_parent"
+        android:background="@color/violeta_fondo"
+        android:paddingBottom="20dp">
 
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="left"
-            android:hint="@string/usuario"
-            android:textSize="18sp"
-            android:gravity="left|center" />
-
-        <!-- Displays keyboard when touched -->
-        <EditText
-            android:id="@+id/iniciar_sesion_usuario"
-            android:layout_width="200dp"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_usuario"
-            android:nextFocusDown="@+id/iniciar_sesion_contraseña"
-            android:imeOptions="actionNext"
-            android:singleLine="true"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:layout_marginLeft="7dp">
-
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:hint="@string/contraseña"
-            android:gravity="center"
-            android:textSize="18dp" />
-
-        <!-- Displays keyboard when touched -->
-        <EditText
-            android:id="@+id/iniciar_sesion_contraseña"
-            android:layout_width="200dp"
+        <!-- Shows an image from your drawable resources -->
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:inputType="textPassword"
+            android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_contraseña"
-            android:singleLine="true"/>
+            android:layout_weight="10"
+
+            android:src="@mipmap/udrive" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal"
+            android:layout_weight="0"
+            android:layout_marginLeft="10dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="left"
+                android:hint="@string/usuario"
+                android:textSize="18sp"
+                android:gravity="left|center" />
+
+            <!-- Displays keyboard when touched -->
+            <EditText
+                android:id="@+id/iniciar_sesion_usuario"
+                android:layout_width="200dp"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_usuario"
+                android:nextFocusDown="@+id/iniciar_sesion_contraseña"
+                android:imeOptions="actionNext"
+                android:singleLine="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal"
+            android:layout_weight="0"
+            android:layout_marginLeft="7dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:hint="@string/contraseña"
+                android:gravity="center"
+                android:textSize="18dp" />
+
+            <!-- Displays keyboard when touched -->
+            <EditText
+                android:id="@+id/iniciar_sesion_contraseña"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:inputType="textPassword"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_contraseña"
+                android:singleLine="true"/>
+        </LinearLayout>
+
+
+
+
+        <!-- Set OnClickListener to trigger results when pressed -->
+        <Button
+            android:id="@+id/iniciar_sesion"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"
+            android:text="@string/iniciar_sesion" />
+
     </LinearLayout>
 
-
-
-
-    <!-- Set OnClickListener to trigger results when pressed -->
-    <Button
-        android:id="@+id/iniciar_sesion"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0"
-        android:text="@string/iniciar_sesion" />
-
-</LinearLayout>
+</ScrollView>

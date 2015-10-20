@@ -1,151 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/violeta_fondo"
-    android:paddingBottom="20dp">
+    android:id="@+id/scrollView">
 
-    <!-- Shows an image from your drawable resources -->
-    <ImageView
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="8"
-        android:id="@+id/foto"
+        android:background="@color/violeta_fondo"
+        android:paddingBottom="20dp">
 
-        android:src="@mipmap/udrive" />
+        <!-- Shows an image from your drawable resources -->
+        <ImageView
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
-
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:hint="@string/nombre"
-            android:gravity="start|center"
-            android:textSize="18sp" />
-
-        <!-- Displays keyboard when touched -->
-        <EditText
-            android:id="@+id/perfil_nombre"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_nombre"
-            android:nextFocusDown="@+id/perfil_mail"
-            android:imeOptions="actionNext"
-            android:singleLine="true"/>
+            android:id="@+id/foto"
+
+            android:src="@mipmap/fotovacia" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal"
+            android:layout_weight="0"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:hint="@string/nombre"
+                android:gravity="start|center"
+                android:textSize="18sp" />
+
+            <!-- Displays keyboard when touched -->
+            <EditText
+                android:id="@+id/perfil_nombre"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_nombre"
+                android:nextFocusDown="@+id/perfil_mail"
+                android:imeOptions="actionNext"
+                android:singleLine="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal"
+            android:layout_weight="0"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:hint="@string/mail"
+                android:gravity="start|center"
+                android:textSize="18sp" />
+
+            <!-- Displays keyboard when touched -->
+            <EditText
+                android:id="@+id/perfil_mail"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_mail"
+                android:nextFocusDown="@+id/perfil_foto"
+                android:imeOptions="actionNext"
+                android:singleLine="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal"
+            android:layout_weight="0"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:hint="@string/foto"
+                android:gravity="start|center"
+                android:textSize="18sp" />
+
+            <!-- Displays keyboard when touched -->
+            <EditText
+                android:id="@+id/perfil_foto"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_foto"
+                android:nextFocusDown="@+id/perfil_ubicacion"
+                android:imeOptions="actionNext"
+                android:singleLine="true"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="vertical"
+            android:layout_weight="0"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:hint="@string/ubicacion"
+                android:gravity="start|center"
+                android:textSize="18sp" />
+
+            <!--<EditText-->
+                <!--android:id="@+id/perfil_ubicacion"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:layout_gravity="center_horizontal"-->
+                <!--android:hint="@string/hint_ubicacion"-->
+                <!--android:imeOptions="actionDone"/>-->
+            <fragment
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:name="com.google.android.gms.maps.MapFragment"
+                android:id="@+id/map_fragment"
+                android:layout_gravity="center_horizontal"
+                class="tallerii.udrive.CustomMapFragment" />
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/actualizar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"
+            android:text="@string/actualizar_perfil"
+            />
+
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:hint="@string/mail"
-            android:gravity="start|center"
-            android:textSize="18sp" />
-
-        <!-- Displays keyboard when touched -->
-        <EditText
-            android:id="@+id/perfil_mail"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_mail"
-            android:nextFocusDown="@+id/perfil_foto"
-            android:imeOptions="actionNext"
-            android:singleLine="true"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
-
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:hint="@string/foto"
-            android:gravity="start|center"
-            android:textSize="18sp" />
-
-        <!-- Displays keyboard when touched -->
-        <EditText
-            android:id="@+id/perfil_foto"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_foto"
-            android:nextFocusDown="@+id/perfil_ubicacion"
-            android:imeOptions="actionNext"
-            android:singleLine="true"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:orientation="horizontal"
-        android:layout_weight="0"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
-
-        <TextView
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:hint="@string/ubicacion"
-            android:gravity="start|center"
-            android:textSize="18sp" />
-
-        <EditText
-            android:id="@+id/perfil_ubicacion"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal"
-            android:hint="@string/hint_ubicacion"
-            android:imeOptions="actionDone"/>
-    </LinearLayout>
-
-    <fragment
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:name="com.google.android.gms.maps.MapFragment"
-        android:id="@+id/map_fragment"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="8" />
-
-
-    <Button
-        android:id="@+id/actualizar"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0"
-        android:text="@string/actualizar_perfil"
-        />
-
-</LinearLayout>
+</ScrollView>

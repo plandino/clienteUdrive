@@ -43,7 +43,7 @@
     <string name="foto">Foto: </string>
     <string name="usuario"> Usuario: </string>
     <string name="contraseña">Contaseña: </string>
-    <string name="ubicacion">Ubicación: </string>
+    <string name="ubicacion">Ultima ubicación: </string>
     <string name="fecha">Fecha ultima modificacion: </string>
     <string name="usrUltimaModificacion">Modificador por: </string>
     <string name="propietario">Propietario: </string>

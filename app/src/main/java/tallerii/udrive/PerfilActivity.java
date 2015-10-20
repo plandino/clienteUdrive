@@ -15,11 +15,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -64,6 +64,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     MyLocationListener locationListener;
 
     private GoogleMap mMap;
+
+    ScrollView mScrollView;
 
 
     @Override
@@ -114,9 +116,18 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         recibirPerfil();
 
-        MapFragment mapFragment = (MapFragment) getFragmentManager()
-                .findFragmentById(R.id.map_fragment);
-        mapFragment.getMapAsync(this);
+        // Tengo que crear un MapFragment propio, para poder hacer scroll adentro del mapa
+        // teniendo el MapFragment adentro de un ScrollView
+        mMap = ((CustomMapFragment) getFragmentManager().findFragmentById(R.id.map_fragment)).getMap();
+        mScrollView = (ScrollView) findViewById(R.id.scrollView);
+
+        ((CustomMapFragment) getFragmentManager().findFragmentById(R.id.map_fragment))
+                .setListener(new CustomMapFragment.OnTouchListener() {
+            @Override
+            public void onTouch() {
+                mScrollView.requestDisallowInterceptTouchEvent(true);
+            }
+        });
     }
 
     @Override
@@ -253,14 +264,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         params.put("token", token);
         params.put("user", username);
 
-        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/perfil.jpg" ; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
+        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/perfil.jpg" ;
 
         File file=new File(savedFilePath);
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
-//                        @Override
-//                        public void onProgress(int bytesWritten, int totalSize) {
-//                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
-//                        }
 
                     @Override
                     public void onSuccess(File file) {
@@ -298,12 +305,12 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 }
 
-                ubicacionEditText.setText(strAddress.toString());
-                actualizarMapa();
+//                ubicacionEditText.setText(strAddress.toString());
+                actualizarMapa(strAddress.toString());
                 return true;
 
             } else{
-                ubicacionEditText.setText("Ubicacion fallida");
+//                ubicacionEditText.setText("Ubicacion fallida");
                 return false;
             }
 
@@ -316,11 +323,11 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         return true;
     }
 
-    private void actualizarMapa(){
+    private void actualizarMapa(String direccion){
 
         // Add a marker in Sydney and move the camera
         LatLng marker = new LatLng(latitud, longitud);
-        mMap.addMarker(new MarkerOptions().position(marker).title("Ultima Ubicación"));
+        mMap.addMarker(new MarkerOptions().position(marker).title(direccion));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(marker));
 
         CameraPosition cameraPosition = CameraPosition.builder()
@@ -330,9 +337,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                 .build();
 
         // Animate the change in camera view over 2 seconds
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),
-                3000, null);
-
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 3000, null);
     }
 
 }
