@@ -1,6 +1,8 @@
 package tallerii.udrive;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -12,9 +14,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -22,6 +33,7 @@ import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -29,8 +41,9 @@ import java.util.Locale;
 /**
  * Created by panchoubuntu on 29/09/15.
  */
-public class PerfilActivity extends AppCompatActivity implements View.OnClickListener {
+public class PerfilActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback {
 
+    ImageView fotoPerfil;
     Button actualizarButton;
     EditText nombreEditText;
     EditText mailEditText;
@@ -40,8 +53,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     String nombreUsuario = "";
     String email = "";
     String fotopath = "";
-    double latitud = 1.0;
-    double longitud = 2.0;
+    double latitud = -34.0;
+    double longitud = 151.0;
 
     private String token = "";
     private String username = "";
@@ -49,6 +62,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
     MyLocationListener locationListener;
+
+    private GoogleMap mMap;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +110,23 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         actualizarButton = (Button) findViewById(R.id.actualizar);
         actualizarButton.setOnClickListener(this);
 
+        fotoPerfil = (ImageView) findViewById(R.id.foto);
 
         recibirPerfil();
+
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map_fragment);
+        mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(latitud, longitud);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Ultima Ubicación"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
@@ -183,6 +214,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                             nombreUsuario = perfilazo.getString("nombre");
                             email = perfilazo.getString("email");
                             fotopath = perfilazo.getString("path foto de perfil");
+                            Toast.makeText(getApplicationContext(), "Path: " + fotopath, Toast.LENGTH_LONG).show();
+                            if( fotopath.equals("/perfil.jpg") || fotopath.equals("perfil.jpg")){
+                                obtenerFotoPerfil();
+                            }
                             JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
                             latitud = ubicacion.getDouble("latitud");
                             longitud = ubicacion.getDouble("longitud");
@@ -193,7 +228,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                         nombreEditText.setText(nombreUsuario);
                         mailEditText.setText(email);
                         fotoEditText.setText(fotopath);
-                        obtenerDireccion(latitud, longitud);
+                        boolean ubicado = false;
+                        while (!ubicado) {
+                            ubicado = obtenerDireccion(latitud, longitud);
+                        }
                     }
 
                     @Override
@@ -206,7 +244,40 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         );
     }
 
-    public void obtenerDireccion(double latitud, double longitud){
+    private void obtenerFotoPerfil(){
+
+        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/perfil.jpg" ;
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+
+        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/perfil.jpg" ; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
+
+        File file=new File(savedFilePath);
+        client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
+//                        @Override
+//                        public void onProgress(int bytesWritten, int totalSize) {
+//                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
+//                        }
+
+                    @Override
+                    public void onSuccess(File file) {
+                        Bitmap bitmap = BitmapFactory.decodeFile(savedFilePath);
+
+                        fotoPerfil.setImageBitmap(bitmap);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e, File response) {
+                        Toast.makeText(getApplicationContext(), "No se pudo descargar el archivo", Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    public boolean obtenerDireccion(double latitud, double longitud){
 
         Geocoder geocoder= new Geocoder(this, Locale.ENGLISH);
         try {
@@ -228,18 +299,40 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                 }
 
                 ubicacionEditText.setText(strAddress.toString());
+                actualizarMapa();
+                return true;
 
+            } else{
+                ubicacionEditText.setText("Ubicacion fallida");
+                return false;
             }
 
-            else
-                ubicacionEditText.setText("Ubicacion fallida");
 
         }
         catch (IOException e) {
             Log.w("UBICACION: ", e.getMessage());
             e.printStackTrace();
         }
+        return true;
     }
 
+    private void actualizarMapa(){
+
+        // Add a marker in Sydney and move the camera
+        LatLng marker = new LatLng(latitud, longitud);
+        mMap.addMarker(new MarkerOptions().position(marker).title("Ultima Ubicación"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(marker));
+
+        CameraPosition cameraPosition = CameraPosition.builder()
+                .target(marker)
+                .zoom(13)
+                .bearing(90)
+                .build();
+
+        // Animate the change in camera view over 2 seconds
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),
+                3000, null);
+
+    }
 
 }

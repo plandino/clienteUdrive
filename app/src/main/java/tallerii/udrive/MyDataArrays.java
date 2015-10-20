@@ -9,9 +9,9 @@ public class MyDataArrays {
     // MI CASA
     // public static String direccion = "http://192.168.0.27:8080";
     // CASA SANTI
-//     public static String direccion = "http://192.168.43.140:8080";
+     public static String direccion = "http://192.168.0.31:8080";
     // CELU TOBI
 //    public static String direccion = "http://192.168.43.224:8080";
     // CASA TOBI
-    public static String direccion = "http://192.168.1.113:8080";
+//    public static String direccion = "http://192.168.1.113:8080";
 }
