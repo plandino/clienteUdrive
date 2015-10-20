@@ -260,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         intent.setType("*/*");
         int PICKFILE_RESULT_CODE = 1;
         startActivityForResult(intent,PICKFILE_RESULT_CODE);
+        
 
 //            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
 //                    new FileDialog.SimpleFileDialogListener() {
