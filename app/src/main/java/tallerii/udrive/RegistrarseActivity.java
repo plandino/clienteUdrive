@@ -68,6 +68,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         // TODO: SACAR ESTE HARDOCDEO
 //        mail = "pancheitor@gmail.com";
 //        nombre = "pancheitor";
+//        usuario = "p";
+//        contrasenia = "pppppppp";
         if(usuario.isEmpty()) {
             Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
                     Toast.LENGTH_LONG).show();
@@ -81,22 +83,6 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         if( (!usuario.isEmpty()) && (!contrasenia.isEmpty())){
             registrar(usuario, contrasenia, mail, nombre);
         }
-    }
-
-    private void pasarAlMain(String token, String user){
-
-        // Creo el Intent para pasar al MainActivity
-        Intent mainIntent = new Intent(this, MainActivity.class);
-
-        // Agrego la informacion al Intent
-        mainIntent.putExtra("username", user);
-        mainIntent.putExtra("token", token);
-
-        // Arranco la Activity con el Intent
-        startActivity(mainIntent);
-        Intent returnIntent = new Intent();
-        setResult(RESULT_OK, returnIntent);
-        finish();
     }
 
     private void iniciarSesion(final String usuario, String contrasenia) {
@@ -136,6 +122,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         RequestParams params = new RequestParams();
         params.put("user", usuario);
         params.put("pass", contrasenia);
+        params.put("premium", false);
         params.put("profile", "{\"nombre\" : \"" + nombre + "\",\"email\" :  \"" + mail + "\"}" );
 //
 //        Toast.makeText(getApplicationContext(), "{\"nombre\" : \" " + nombre + "\"," +
@@ -146,14 +133,29 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
                 Toast.makeText(getApplicationContext(), "Usuario registrado: " + usuario, Toast.LENGTH_LONG).show();
-                iniciarSesion(usuario,contrasenia);
+                iniciarSesion(usuario, contrasenia);
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en registrar", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en registrar.\nStatus code: " + statusCode, Toast.LENGTH_LONG).show();
             }
         });
     }
 
-}
+    private void pasarAlMain(String token, String user){
+
+        // Creo el Intent para pasar al MainActivity
+        Intent mainIntent = new Intent(this, MainActivity.class);
+
+        // Agrego la informacion al Intent
+        mainIntent.putExtra("username", user);
+        mainIntent.putExtra("token", token);
+
+        // Arranco la Activity con el Intent
+        startActivity(mainIntent);
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
+    }
+    }

@@ -61,6 +61,8 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     public void onClick(View v) {
         String usuario = usuarioEditText.getText().toString();
         String contrasenia = contraseniaEditText.getText().toString();
+//        usuario = "p";
+//        contrasenia = "pppppppp";
         if(usuario.isEmpty()) {
             Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
                     Toast.LENGTH_LONG).show();

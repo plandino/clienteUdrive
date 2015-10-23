@@ -37,11 +37,23 @@ public class MyDataProvider {
             } catch (JSONException e){
 
             }
-            if( ( ! key.equals("#trash") ) && ( ! key.equals("#compartidos")) ){
-                if((value.equals("#folder"))   ){
-                    miHashMap.put(key, opcionesCarpetasList);
+
+            int index = value.lastIndexOf(".");
+            String nombre = "";
+            String extension = "";
+            if(index >= 0){
+                nombre = value.substring(0, index);
+                extension = value.substring(index);
+            } else {
+                nombre = value;
+            }
+
+
+            if( ( ! nombre.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombre.equals(MyDataArrays.caracterReservado + "compartidos")) ){
+                if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
+                    miHashMap.put(nombre, opcionesCarpetasList);
                 } else {
-                    miHashMap.put(key, opcionesArchivosList);
+                    miHashMap.put(nombre, opcionesArchivosList);
                 }
             }
 
@@ -65,7 +77,16 @@ public class MyDataProvider {
             } catch (JSONException e){
 
             }
-            hashTipoArchivos.put(key, value);
+            int index = value.lastIndexOf(".");
+            String nombre = "";
+            String extension = "";
+            if(index >= 0){
+                nombre = value.substring(0, index);
+                extension = value.substring(index+1);
+            } else {
+                nombre = value;
+            }
+            hashTipoArchivos.put(nombre, extension);
 
             Log.v("MyDataProvider","FILES: "+ key);
         }

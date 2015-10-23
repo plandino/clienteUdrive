@@ -1,11 +1,13 @@
 package tallerii.udrive;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -34,6 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -104,6 +107,19 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         // Edit para el path de la foto
         fotoEditText = (EditText) findViewById(R.id.perfil_foto);
 
+        fotoEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus){
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    int PICKFILE_RESULT_CODE = 1;
+                    startActivityForResult(intent,PICKFILE_RESULT_CODE);
+                }else{
+                }
+            }
+        });
+
         // Edit para la ubicacion
         ubicacionEditText = (EditText) findViewById(R.id.perfil_ubicacion);
 
@@ -129,6 +145,33 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        switch(requestCode){
+            case 1:
+                if(resultCode==RESULT_OK){
+
+                    if (null == data) return;
+
+                    String selectedImagePath;
+                    Uri selectedImageUri = data.getData();
+
+                    // Tengo que obtener el path del archivo. Uso el FilePathGetter para traducir
+                    // de una Uri a un file path absoluto
+                    selectedImagePath = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
+                    Log.i("Image File Path", "" + selectedImagePath);
+
+                    fotoEditText.setText(selectedImagePath);
+//                    Toast.makeText(getApplicationContext(), "Path: " + selectedImagePath, Toast.LENGTH_LONG).show();
+                }
+                break;
+
+        }
+    }
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -171,6 +214,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
     public void actualizarPerfil(final String nombre, String mail, String fotoPath){
 
+        QUERY_URL = MyDataArrays.direccion + "/profile/" + username;
         AsyncHttpClient client = new AsyncHttpClient();
 
         JSONObject profile = new JSONObject();
@@ -179,22 +223,33 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         double latitud = locationListener.getLatitud();
         double longitud = locationListener.getLongitud();
 
-        try{
-            profile.put("nombre", nombre);
-            profile.put("email", mail);
-            profile.put("path foto de perfil", fotoPath);
-
-            ultimaUbicacion.put("latitud", latitud);
-            ultimaUbicacion.put("longitud", longitud);
-            profile.put("ultima ubicacion",ultimaUbicacion);
-
-        } catch (JSONException e){
-
-        }
+//        try{
+//            profile.put("nombre", nombre);
+//            profile.put("email", mail);
+//            profile.put("path foto de perfil", fotoPath);
+//
+//            ultimaUbicacion.put("latitud", latitud);
+//            ultimaUbicacion.put("longitud", longitud);
+//            profile.put("ultima ubicacion",ultimaUbicacion);
+//
+//        } catch (JSONException e){
+//
+//        }
 
         RequestParams params = new RequestParams();
         params.put("token", token);
-        params.put("profile", profile.toString());
+        params.put("nombre", nombre);
+        params.put("email", mail);
+        try{
+            File archivo = new File(fotoPath);
+            params.put("picture", archivo);
+        } catch (FileNotFoundException e){
+            Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
+        }
+
+
+//        params.put("profile", profile.toString());
+
 
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
@@ -205,7 +260,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor" + statusCode, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -215,6 +270,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         RequestParams params = new RequestParams();
         params.put("token", token);
+        params.put("user", username);
 
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
@@ -225,10 +281,11 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                             nombreUsuario = perfilazo.getString("nombre");
                             email = perfilazo.getString("email");
                             fotopath = perfilazo.getString("path foto de perfil");
-                            Toast.makeText(getApplicationContext(), "Path: " + fotopath, Toast.LENGTH_LONG).show();
-                            if( fotopath.equals("/perfil.jpg") || fotopath.equals("perfil.jpg")){
-                                obtenerFotoPerfil();
-                            }
+//                            Toast.makeText(getApplicationContext(), "Path: " + fotopath, Toast.LENGTH_LONG).show();
+                            obtenerFotoPerfil();
+//                            if( fotopath.equals("/perfil.jpg") || fotopath.equals("perfil.jpg")){
+//                                obtenerFotoPerfil();
+//                            }
                             JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
                             latitud = ubicacion.getDouble("latitud");
                             longitud = ubicacion.getDouble("longitud");
@@ -238,17 +295,23 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                         }
                         nombreEditText.setText(nombreUsuario);
                         mailEditText.setText(email);
-                        fotoEditText.setText(fotopath);
+                        int index = fotopath.lastIndexOf("/");
+                        String nombreFoto = fotopath.substring(index + 1);
+                        fotoEditText.setText(nombreFoto);
+
                         boolean ubicado = false;
                         while (!ubicado) {
                             ubicado = obtenerDireccion(latitud, longitud);
+                            if ( (latitud == 0) || (longitud == 0) ){
+                                ubicado = true;
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(int statusCode, Header[] headers, Throwable
                             throwable, JSONObject error) {
-                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor" + statusCode, Toast.LENGTH_LONG).show();
                     }
                 }
 
@@ -257,7 +320,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
     private void obtenerFotoPerfil(){
 
-        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/perfil.jpg" ;
+//        QUERY_URL = MyDataArrays.direccion + "/file/" + username + "/perfil.jpg" ;
+        QUERY_URL = MyDataArrays.direccion + "/profile/" + fotopath ;
+
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();

@@ -105,7 +105,7 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
 
 //        Toast.makeText(context, tipo, Toast.LENGTH_SHORT).show();
 
-        if(tipo.equals("#folder")){
+        if(tipo.equals(MyDataArrays.caracterReservado + "folder")){
             iconImage.setImageResource(R.mipmap.folder);
         } else if((tipo.equals("png")) || (tipo.equals("jpg")) || (tipo.equals("jpeg")) || (tipo.equals("gif"))){
             iconImage.setImageResource(R.mipmap.image);

@@ -2,8 +2,10 @@ package tallerii.udrive;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -26,6 +28,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity implements FilesFragment.OnFragmentInteractionListener{
 
@@ -43,7 +47,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private String estructuraCarpetas;
     private JSONObject estructuraCarpetasJSON;
 
-    int PICKFILE_RESULT_CODE = 1;
+    HashMap<String, String> hashTipoArchivos;
+
+    private static final int METADATOS = 2;
+
+    private static final int PICKFILE_RESULT_CODE = 1;
+
+    MyLocationListener locationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +68,22 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
 
         fragmentManager = getFragmentManager();
+
+        // Creo el LocationManager y le digo que se puede ubicar usando Internet o el GPS
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+
+        locationListener = new MyLocationListener();
+
+        try{
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        } catch (SecurityException e){
+            Log.e("GPS ACCESS PROBLEM:", e.getMessage());
+        }
+        try{
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+        } catch (SecurityException e){
+            Log.e("NETWORK ACCESS PROBLEM:", e.getMessage());
+        }
 
         get(null);
     }
@@ -80,10 +106,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 crearCarpeta();
                 return true;
             case R.id.carpetas_compartidas:
-                get("#compartidos");
+                get(MyDataArrays.caracterReservado + "compartidos");
                 return true;
             case R.id.papelera:
-                get("#trash");
+                get(MyDataArrays.caracterReservado + "trash");
                 return true;
 //            case R.id.buscar_archivo:
 //                return true;
@@ -104,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         switch(requestCode){
-            case 1:
+            case PICKFILE_RESULT_CODE:
                 if(resultCode==RESULT_OK){
 
                     if (null == data) return;
@@ -121,6 +147,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     Toast.makeText(getApplicationContext(), "Path: " + selectedImagePath, Toast.LENGTH_LONG).show();
                 }
                 break;
+            case METADATOS:
+                if(resultCode==RESULT_OK){
+                    get(null);
+                }
 
         }
     }
@@ -128,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void get(String id) {
 
         if(id != null){
-            if(id.equals("#trash") || (id.equals("#compartidos"))){
+            if(id.equals(MyDataArrays.caracterReservado + "trash") || (id.equals(MyDataArrays.caracterReservado + "compartidos"))){
                 QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + "/" + id + "/";
                 PATH_ACTUAL = "/" + id + "/";
             } else {
@@ -150,6 +180,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 try {
                     estructuraCarpetas = jsonObject.getString("estructura");
                     estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
+                    guardarMapaArchivos(estructuraCarpetasJSON);
+//                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
+
+
                 } catch (JSONException e) {
 
                 }
@@ -167,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     public void onGroupClick(String id) {
         String tipoDeArchivo = obtenerTipoDeArchivo(id);
 
-        if(tipoDeArchivo.equals("#folder")) {
+        if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")) {
             get(id);
         } else {
             obtenerMetadatos(id);
@@ -223,6 +257,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
+        double latitud = locationListener.getLatitud();
+        double longitud = locationListener.getLongitud();
+        params.put("latitud", String.valueOf(latitud));
+        params.put("longitud", String.valueOf(longitud));
         try{
             File archivo = new File(path);
             params.put("file", archivo);
@@ -258,7 +296,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
-        int PICKFILE_RESULT_CODE = 1;
         startActivityForResult(intent,PICKFILE_RESULT_CODE);
         
 
@@ -394,13 +431,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void eliminar(final String id){
         String tipoDeArchivo = obtenerTipoDeArchivo(id);
 
-        if(tipoDeArchivo.equals("#folder")){
+        if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")){
             QUERY_URL = MyDataArrays.direccion + "/folder/";
         } else {
             QUERY_URL = MyDataArrays.direccion + "/file/";
         }
 
-        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id;
+        String extension = "";
+        if( obtenerTipoDeArchivo(id) != null)
+            extension = "." + obtenerTipoDeArchivo(id);
+        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id + extension;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -470,16 +510,21 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void obtenerMetadatos(String id){
+
+        String extension = "";
+        if( obtenerTipoDeArchivo(id) != null)
+            extension = "." + obtenerTipoDeArchivo(id);
+
         // Creo un Intent para pasar a la activity de mostrar metadatos
         Intent metadatosIntent = new Intent(this, MetadatosActivity.class);
 
         // Agrego la informacion que quiero al Intent
         metadatosIntent.putExtra("token", token);
         metadatosIntent.putExtra("username", username);
-        metadatosIntent.putExtra("pathArchivo", PATH_ACTUAL + id);
+        metadatosIntent.putExtra("pathArchivo", PATH_ACTUAL + id + extension);
 
         // Inicio la actividad con el Intent
-        startActivity(metadatosIntent);
+        startActivityForResult(metadatosIntent, METADATOS);
     }
 
     // Este metodo es para volver para atras en los fragmentos
@@ -540,13 +585,35 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private String obtenerTipoDeArchivo(String id){
-        String tipoDeArchivo = "#desconocido";
-        try{
-            tipoDeArchivo = estructuraCarpetasJSON.getString(id);
-        } catch (JSONException e){
+        String tipoDeArchivo = hashTipoArchivos.get(id);
+        return tipoDeArchivo;
+    }
+
+    private void guardarMapaArchivos(JSONObject estructuraCarpetasJSON){
+        hashTipoArchivos = new HashMap<String, String>();
+
+        Iterator<?> keys = estructuraCarpetasJSON.keys();
+
+        while( keys.hasNext() ) {
+            String key = (String)keys.next();
+            String value = "";
+            try{
+                value = estructuraCarpetasJSON.getString(key);
+            } catch (JSONException e){
+
+            }
+            int index = value.lastIndexOf(".");
+            String nombre = "";
+            String extension = "";
+            if(index >= 0){
+                nombre = value.substring(0, index);
+                extension = value.substring(index+1);
+            } else {
+                nombre = value;
+            }
+            hashTipoArchivos.put(nombre, extension);
 
         }
-        return tipoDeArchivo;
     }
 
 }

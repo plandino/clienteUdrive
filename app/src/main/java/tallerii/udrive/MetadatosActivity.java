@@ -1,5 +1,6 @@
 package tallerii.udrive;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -53,7 +54,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         username = getIntent().getStringExtra("username");
         pathArchivo = getIntent().getStringExtra("pathArchivo");
 
-        QUERY_URL = QUERY_URL + username + "/" + pathArchivo;
+        QUERY_URL = QUERY_URL + username  + pathArchivo;
 
         nombreEditText                  = (EditText) findViewById(R.id.metadatos_nombre);
         etiquetasEditText               = (EditText) findViewById(R.id.metadatos_etiquetas);
@@ -175,11 +176,15 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
+        Toast.makeText(getApplicationContext(), "Mando: " + QUERY_URL, Toast.LENGTH_LONG).show();
+
 
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                     @Override
                     public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+//                        Toast.makeText(getApplicationContext(), "Recibi metadatos\n" + jsonObject.toString(), Toast.LENGTH_LONG).show();
+
                         try {
 
                             JSONObject metadatos = jsonObject.getJSONObject("metadatos");
@@ -231,6 +236,13 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                 }
 
         );
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
     }
 }
 

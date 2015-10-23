@@ -18,9 +18,7 @@
             android:layout_height="200dp"
             android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:id="@+id/foto"
-
-            android:src="@mipmap/fotovacia" />
+            android:id="@+id/foto"/>
 
         <LinearLayout
             android:layout_width="fill_parent"
