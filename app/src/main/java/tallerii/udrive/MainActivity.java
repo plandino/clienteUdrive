@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private JSONObject estructuraCarpetasJSON;
 
     HashMap<String, String> hashTipoArchivos;
+    HashMap<String, String> URLArchivos;
+
 
     private static final int METADATOS = 2;
 
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 crearCarpeta();
                 return true;
             case R.id.carpetas_compartidas:
-                get(MyDataArrays.caracterReservado + "compartidos");
+                get(MyDataArrays.caracterReservado + "permisos");
                 return true;
             case R.id.papelera:
                 get(MyDataArrays.caracterReservado + "trash");
@@ -158,7 +160,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void get(String id) {
 
         if(id != null){
-            if(id.equals(MyDataArrays.caracterReservado + "trash") || (id.equals(MyDataArrays.caracterReservado + "compartidos"))){
+            if(id.equals(MyDataArrays.caracterReservado + "permisos")){
+                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/"  + id + "/" + username;
+                Toast.makeText(getApplicationContext(), QUERY_URL_CARPETAS, Toast.LENGTH_LONG).show();
+
+            } else if(id.equals(MyDataArrays.caracterReservado + "trash") || (id.equals(MyDataArrays.caracterReservado + "compartidos"))){
                 QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + "/" + id + "/";
                 PATH_ACTUAL = "/" + id + "/";
             } else {
@@ -181,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     estructuraCarpetas = jsonObject.getString("estructura");
                     estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
                     guardarMapaArchivos(estructuraCarpetasJSON);
-//                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
+                    guardarURLArchivos(estructuraCarpetasJSON);
+                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
 
 
                 } catch (JSONException e) {
@@ -193,6 +200,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
                 Toast.makeText(getApplicationContext(), "No pude acceder a la carpeta.", Toast.LENGTH_LONG).show();
+                try {
+                    Toast.makeText(getApplicationContext(), statusCode + error.getString("error"), Toast.LENGTH_LONG).show();
+                } catch (JSONException e) {
+
+                }
             }
         });
     }
@@ -207,6 +219,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             obtenerMetadatos(id);
         }
     }
+
+    @Override
+    public void onDownScroll(){
+        get(null);
+        Toast.makeText(getApplicationContext(), "Actualizado", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void eliminar(){
+        Toast.makeText(getApplicationContext(), "elimino", Toast.LENGTH_LONG).show();
+    }
+
 
     public void crearNuevoFragmento(String jsonObject){
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
@@ -242,7 +266,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         }
 
         if(opcion.equals("Eliminar")){
-            confirmarEliminar(id);
+            confirmarEliminarORestaurar(id, false);
+        }
+
+        if(opcion.equals("Restaurar")){
+            confirmarEliminarORestaurar(id, true);
         }
     }
 
@@ -261,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         double longitud = locationListener.getLongitud();
         params.put("latitud", String.valueOf(latitud));
         params.put("longitud", String.valueOf(longitud));
+        Toast.makeText(getApplicationContext(), "Longitud: " + longitud + " Latitud: " + latitud, Toast.LENGTH_LONG).show();
+
         try{
             File archivo = new File(path);
             params.put("file", archivo);
@@ -296,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
-        startActivityForResult(intent,PICKFILE_RESULT_CODE);
+        startActivityForResult(intent, PICKFILE_RESULT_CODE);
         
 
 //            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
@@ -404,20 +434,35 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
-    private void confirmarEliminar(final String id){
+    private void confirmarEliminarORestaurar(final String id, final boolean restaurar){
 
         // Muestro una ventana emergente para confirmar que quiere eliminar
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Eliminar!");
-        alert.setMessage("¿Esta seguro que quiere eliminar " + id + "?");
 
-        // El boton "OK" confirma la eliminacion del archivo o carpeta
-        alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+        if(restaurar){
+            alert.setTitle("Restaurar!");
+            alert.setMessage("¿Esta seguro que quiere restaurar " + id + "?");
+            // El boton "OK" confirma la restauracion del archivo o carpeta
+            alert.setPositiveButton("Restaurar", new DialogInterface.OnClickListener() {
 
-            public void onClick(DialogInterface dialog, int whichButton) {
-                eliminar(id);
-            }
-        });
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    eliminarORestaurar(id, restaurar);
+                }
+            });
+        } else {
+            alert.setTitle("Eliminar!");
+            alert.setMessage("¿Esta seguro que quiere eliminar " + id + "?");
+            // El boton "OK" confirma la eliminacion del archivo o carpeta
+            alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    eliminarORestaurar(id, restaurar);
+                }
+            });
+        }
+
+
+
 
         // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -428,7 +473,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         alert.show();
     }
 
-    private void eliminar(final String id){
+    private void eliminarORestaurar(final String id, boolean restore){
         String tipoDeArchivo = obtenerTipoDeArchivo(id);
 
         if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")){
@@ -440,13 +485,25 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         String extension = "";
         if( obtenerTipoDeArchivo(id) != null)
             extension = "." + obtenerTipoDeArchivo(id);
-        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id + extension;
+//        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id + extension;
+        QUERY_URL = QUERY_URL +  obtenerURLArchivos(id + extension);
+
+
+//        Toast.makeText(getApplicationContext(), id + extension, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), QUERY_URL, Toast.LENGTH_LONG).show();
+
+
 
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
+        if(restore){
+                    Toast.makeText(getApplicationContext(), "Levantate y anda Lazaro", Toast.LENGTH_LONG).show();
+
+            params.put("restore", "true");
+        }
 
         // El delete pide que le pase Headers, le pongo basura
         Header[] header = {
@@ -614,6 +671,38 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             hashTipoArchivos.put(nombre, extension);
 
         }
+    }
+
+    private void guardarURLArchivos(JSONObject estructuraCarpetasJSON){
+        URLArchivos = new HashMap<String, String>();
+
+        Iterator<?> keys = estructuraCarpetasJSON.keys();
+
+        while( keys.hasNext() ) {
+            String key = (String)keys.next();
+            String value = "";
+            try{
+                value = estructuraCarpetasJSON.getString(key);
+            } catch (JSONException e){
+
+            }
+//            int index = value.lastIndexOf(".");
+//            String nombre = "";
+//            String extension = "";
+//            if(index >= 0){
+//                nombre = value.substring(0, index);
+//                extension = value.substring(index+1);
+//            } else {
+//                nombre = value;
+//            }
+            URLArchivos.put(value, key);
+
+        }
+    }
+
+    private String obtenerURLArchivos(String id){
+        String tipoDeArchivo = URLArchivos.get(id);
+        return tipoDeArchivo;
     }
 
 }

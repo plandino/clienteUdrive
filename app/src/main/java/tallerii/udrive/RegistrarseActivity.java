@@ -66,8 +66,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         String nombre       = nombreEditText.getText().toString();
 
         // TODO: SACAR ESTE HARDOCDEO
-//        mail = "pancheitor@gmail.com";
-//        nombre = "pancheitor";
+        mail = "pancheitor@gmail.com";
+        nombre = "pancheitor";
 //        usuario = "p";
 //        contrasenia = "pppppppp";
         if(usuario.isEmpty()) {
@@ -139,6 +139,12 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
                 Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en registrar.\nStatus code: " + statusCode, Toast.LENGTH_LONG).show();
+                try{
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+
+                } catch (JSONException e){
+
+                }
             }
         });
     }

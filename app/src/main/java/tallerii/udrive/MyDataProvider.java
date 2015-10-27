@@ -26,6 +26,11 @@ public class MyDataProvider {
             opcionesCarpetasList.add(MyDataArrays.opcionesCarpetas[i]);
         }
 
+        List<String> opcionesPapelera = new ArrayList<String>();
+        for (int i = 0; i < MyDataArrays.opcionesPapelera.length; i++) {
+            opcionesPapelera.add(MyDataArrays.opcionesPapelera[i]);
+        }
+
 
         Iterator<?> keys = json.keys();
 
@@ -38,6 +43,7 @@ public class MyDataProvider {
 
             }
 
+            int estamosEnPapelera = key.lastIndexOf(MyDataArrays.caracterReservado);
             int index = value.lastIndexOf(".");
             String nombre = "";
             String extension = "";
@@ -50,7 +56,9 @@ public class MyDataProvider {
 
 
             if( ( ! nombre.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombre.equals(MyDataArrays.caracterReservado + "compartidos")) ){
-                if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
+                if(estamosEnPapelera > 0){
+                    miHashMap.put(nombre, opcionesPapelera);
+                } else if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
                     miHashMap.put(nombre, opcionesCarpetasList);
                 } else {
                     miHashMap.put(nombre, opcionesArchivosList);

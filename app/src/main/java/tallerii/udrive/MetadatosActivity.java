@@ -137,6 +137,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             String[] partesUsuarios = usrCompartidos.split(";");
 
             for(String usuario : partesUsuarios){
+                usuario = usuario.trim();
                 usuariosCompartidosJSONArray.put(usuario);
             }
             jsonMetadatos.put("usuarios", usuariosCompartidosJSONArray);

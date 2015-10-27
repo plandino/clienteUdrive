@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,7 +71,10 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -102,7 +107,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
             @Override
             public void onGroupCollapse(int groupPosition) {
-//                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " collapsed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " collapsed", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -122,6 +127,41 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
                 mListener.onGroupClick(hasMapKeys.get(groupPosition));
                 return true;
+            }
+        });
+
+
+//        expandableListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(AbsListView view, int scrollState) {
+//                if (scrollState == SCROLL_STATE_FLING) mListener.onDownScroll();
+//            }
+//
+//            @Override
+//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//                if ()
+//            }
+//        });
+
+        expandableListView.setOnTouchListener(new OnSwipeTouchListener(getActivity().getApplicationContext()) {
+            public void onSwipeTop() {
+                Toast.makeText(getActivity(), "top", Toast.LENGTH_SHORT).show();
+            }
+            public void onSwipeRight() {
+                Toast.makeText(getActivity(), "right", Toast.LENGTH_SHORT).show();
+            }
+            public void onSwipeLeft() {
+                Toast.makeText(getActivity(), "left" + " X: " + getX() + " Y: " + getY(), Toast.LENGTH_SHORT).show();
+//                expandableListView.getSelectedPosition();
+                mListener.eliminar();
+            }
+            public void onSwipeBottom() {
+                mListener.onDownScroll();
+//                Toast.makeText(getActivity(), "bottom", Toast.LENGTH_SHORT).show();
+            }
+
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
             }
         });
 
@@ -162,6 +202,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 //        public void onFragmentInteraction(String id);
         public void onGroupClick(String idGroup);
         public void onOptionClick(String idCarpeta, String opcion);
+        public void onDownScroll();
+        public void eliminar();
     }
 
 }

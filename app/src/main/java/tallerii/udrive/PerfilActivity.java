@@ -289,6 +289,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                             JSONObject ubicacion = perfilazo.getJSONObject("ultima ubicacion");
                             latitud = ubicacion.getDouble("latitud");
                             longitud = ubicacion.getDouble("longitud");
+                            Toast.makeText(getApplicationContext(), "Longitud: " + longitud + " Latitud: " + latitud, Toast.LENGTH_LONG).show();
+
 
                         } catch (JSONException e) {
 
