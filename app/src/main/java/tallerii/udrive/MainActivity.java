@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
                     guardarMapaArchivos(estructuraCarpetasJSON);
                     guardarURLArchivos(estructuraCarpetasJSON);
-                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
 
 
                 } catch (JSONException e) {
@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         startActivityForResult(intent, PICKFILE_RESULT_CODE);
-        
+
 
 //            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
 //                    new FileDialog.SimpleFileDialogListener() {
@@ -500,8 +500,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
         if(restore){
-                    Toast.makeText(getApplicationContext(), "Levantate y anda Lazaro", Toast.LENGTH_LONG).show();
-
             params.put("restore", "true");
         }
 
