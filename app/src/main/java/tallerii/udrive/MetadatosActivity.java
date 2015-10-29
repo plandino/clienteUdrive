@@ -32,7 +32,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
     EditText nombreEditText;
     EditText etiquetasEditText;
 
-    TextView usuariosCompartidosEditText;
+    TextView usuariosCompartidosTextView;
     TextView fechaTextView;
     TextView usuarioUltModificacionTextView;
     TextView propietarioTextView;
@@ -58,7 +58,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
 
         nombreEditText                  = (EditText) findViewById(R.id.metadatos_nombre);
         etiquetasEditText               = (EditText) findViewById(R.id.metadatos_etiquetas);
-        usuariosCompartidosEditText     = (TextView) findViewById(R.id.metadatos_usrCompartidos);
+        usuariosCompartidosTextView     = (TextView) findViewById(R.id.metadatos_usrCompartidos);
 
         fechaTextView                   = (TextView) findViewById(R.id.metadatos_fecha);
         usuarioUltModificacionTextView  = (TextView) findViewById(R.id.metadatos_usrUltimaModificacion);
@@ -95,7 +95,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         String nombre           = nombreEditText.getText().toString();
         String etiquetas        = etiquetasEditText.getText().toString();
-//        String usrCompartidos   = usuariosCompartidosEditText.getText().toString();
+        String usrCompartidos   = usuariosCompartidosTextView.getText().toString();
 
         mandarMetadatos(nombre, etiquetas, usrCompartidos);
     }
@@ -223,7 +223,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                                     usuariosString = usuariosString + usrCompartidos.getString(i) + "; ";
                                 }
                             }
-                            usuariosCompartidosEditText.setText(usuariosString);
+                            usuariosCompartidosTextView.setText(usuariosString);
 
                         } catch (JSONException e){
 

@@ -10,10 +10,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -23,6 +29,7 @@ import com.loopj.android.http.RequestParams;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,14 +48,19 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private String QUERY_URL = MyDataArrays.direccion + "/profile";
 
     private String QUERY_URL_CARPETAS = MyDataArrays.direccion + "/folder/";
+    private String QUERY_URL_METADATOS;
 
     private String PATH_ACTUAL = "/";
 
     private String estructuraCarpetas;
     private JSONObject estructuraCarpetasJSON;
+    private JSONObject usuariosParaCompartir;
 
     HashMap<String, String> hashTipoArchivos;
     HashMap<String, String> URLArchivos;
+
+    private ArrayAdapter<String> arrayAdapter;
+    private TextView textoFallido;
 
 
     private static final int METADATOS = 2;
@@ -66,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = getIntent();
         token = intent.getStringExtra("token");
         username = intent.getStringExtra("username");
+        usuariosParaCompartir = new JSONObject();
 
         QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
 
@@ -161,10 +174,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         if(id != null){
             if(id.equals(MyDataArrays.caracterReservado + "permisos")){
-                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/"  + id + "/" + username;
+                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/"  + id + "/" + username ;
                 Toast.makeText(getApplicationContext(), QUERY_URL_CARPETAS, Toast.LENGTH_LONG).show();
+                PATH_ACTUAL = "/" + id + "/";
 
-            } else if(id.equals(MyDataArrays.caracterReservado + "trash") || (id.equals(MyDataArrays.caracterReservado + "compartidos"))){
+            } else if(id.equals(MyDataArrays.caracterReservado + "trash")){
                 QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + "/" + id + "/";
                 PATH_ACTUAL = "/" + id + "/";
             } else {
@@ -205,6 +219,62 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 } catch (JSONException e) {
 
                 }
+            }
+        });
+    }
+
+    private void getUsuarios(String id) {
+
+        String QUERY_URL_USUARIOS = MyDataArrays.direccion + "/profile";
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+        Toast.makeText(getApplicationContext(), "\"" + id + "\"", Toast.LENGTH_LONG).show();
+        params.put("busqueda", id);
+
+        client.get(QUERY_URL_USUARIOS, params, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(JSONObject jsonObject) {
+                try {
+//                    JSONObject busqueda = jsonObject.getJSONObject("busqueda");
+                    usuariosParaCompartir = jsonObject.getJSONObject("busqueda");
+
+                        String usuarios = "";
+                        try {
+                            usuarios = usuariosParaCompartir.getString("usuarios");
+                        } catch (JSONException e) {
+
+                        }
+                        if (usuarios.length() > 0) {
+                            textoFallido.setVisibility(View.INVISIBLE);
+                            String[] partes = usuarios.split(Character.toString(MyDataArrays.caracterReservado));
+                            for (int i = 0; i < partes.length; i++) {
+                                arrayAdapter.add(partes[i]);
+                            }
+                        } else {
+                            textoFallido.setVisibility(View.VISIBLE);
+                        }
+
+//                    Toast.makeText(getApplicationContext(), usuariosParaCompartir.toString(), Toast.LENGTH_LONG).show();
+
+
+                } catch (JSONException e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "No pude obtener los usuarios", Toast.LENGTH_LONG).show();
+//                try {
+//                    Toast.makeText(getApplicationContext(), statusCode + error.getString("error"), Toast.LENGTH_LONG).show();
+//                } catch (JSONException e) {
+//
+//                }
             }
         });
     }
@@ -262,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         }
 
         if(opcion.equals("Compartir")){
-
+            compartirArchivo(id);
         }
 
         if(opcion.equals("Eliminar")){
@@ -532,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void cerrarSesion(){
 
-        QUERY_URL = MyDataArrays.direccion + "/session" + token;
+        QUERY_URL = MyDataArrays.direccion + "/session/" + token;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -595,6 +665,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             getFragmentManager().popBackStack();
             this.finish();
             volver = false; // Ya llegue a la raiz, no quiero volver mas
+        }
+
+        if(PATH_ACTUAL.contains("permisos")){
+            PATH_ACTUAL = "//";
+            QUERY_URL_CARPETAS = MyDataArrays.direccion + "/folder/" + username + "//";
         }
 
         for( int i = 0; volver && i < 2; i++){
@@ -703,4 +778,262 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         return tipoDeArchivo;
     }
 
+    private void compartirArchivo(final String idArchivo){
+
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+        builderSingle.setIcon(R.drawable.files);
+        builderSingle.setTitle("Introducir nombre: ");
+        arrayAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.select_dialog_singlechoice);
+//        arrayAdapter.add("Hardik");
+//        arrayAdapter.add("Archit");
+//        arrayAdapter.add("Jignesh");
+//        arrayAdapter.add("Umang");
+//        arrayAdapter.add("Gatti");
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        final EditText usuario = new EditText(this);
+        textoFallido = new TextView(this);
+        usuario.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                arrayAdapter.clear();
+                if( s.length() > 0 ){
+                    getUsuarios(s.toString());
+                } else {
+                    arrayAdapter.clear();
+                }
+                boolean noSaque = true;
+
+
+
+//                try{
+////                    usuarios = usuariosParaCompartir.getString("usuarios");
+//                } catch (JSONException e ){
+//
+//                }
+//                arrayAdapter.add(usuarios);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                //if statement here I guess
+//                usuario.setText(usuario.getText() + "Hello, world");
+            }
+        });
+//        builderSingle.setView(usuario);
+
+
+        textoFallido.setText("La busqueda de usuarios no dio resultados.");
+        textoFallido.setVisibility(View.INVISIBLE);
+        layout.addView(textoFallido);
+        layout.addView(usuario);
+
+        builderSingle.setView(layout);
+//        builderSingle.setView(texto);
+
+        builderSingle.setNegativeButton("cancel",
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        builderSingle.setAdapter(arrayAdapter,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String strName = arrayAdapter.getItem(which);
+                        actualizarMetadatos(idArchivo, strName);
+
+//                        AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
+//                        builderInner.setMessage(strName);
+//                        builderInner.setTitle("Your Selected Item is");
+//                        builderInner.setPositiveButton("Ok",
+//                                new DialogInterface.OnClickListener() {
+//
+//                                    @Override
+//                                    public void onClick(
+//                                            DialogInterface dialog, int which) {
+//                                        dialog.dismiss();
+//                                    }
+//                                });
+//                        builderInner.show();
+                    }
+                });
+        builderSingle.create();
+        builderSingle.show();
+    }
+
+    public void actualizarMetadatos(String idArchivo, final String idUsuario){
+
+//        Toast.makeText(getApplicationContext(), "Mando: " + idArchivo + obtenerTipoDeArchivo(idArchivo), Toast.LENGTH_LONG).show();
+
+
+        QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivos(idArchivo + "." + obtenerTipoDeArchivo(idArchivo)); //idArchivo + "." + obtenerTipoDeArchivo(idArchivo);
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+        Toast.makeText(getApplicationContext(), "Mando: " + QUERY_URL_METADATOS, Toast.LENGTH_LONG).show();
+
+
+        client.get(QUERY_URL_METADATOS, params, new JsonHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+//                        Toast.makeText(getApplicationContext(), "Recibi metadatos\n" + jsonObject.toString(), Toast.LENGTH_LONG).show();
+
+                        try {
+
+                            JSONObject metadatos = jsonObject.getJSONObject("metadatos");
+
+                            JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
+
+                            int cantidadUsr = usrCompartidos.length();
+                            usrCompartidos.put(cantidadUsr, idUsuario);
+//                            for(int i = 0; i < cantidadUsr; i++){
+//
+//                                // Si estoy en el ultimo item no agego el ";"
+//                                if(i == (cantidadUsr - 1)) {
+//                                    usuariosString = usuariosString + usrCompartidos.getString(i);
+//                                } else {
+//                                    usuariosString = usuariosString + usrCompartidos.getString(i) + "; ";
+//                                }
+//                            }
+                            metadatos.put("usuarios", usrCompartidos);
+//                            metadatos.put("usuarios", metadatos.getString("usuarios").get + MyDataArrays.caracterReservado + idUsuario);
+                                    Toast.makeText(getApplicationContext(), metadatos.toString() , Toast.LENGTH_LONG).show();
+                            mandarMetadatos(metadatos);
+
+
+//                            metadatos.getString("nombre") + metadatos.getString("extension");
+//                            metadatos.getString("fecha ultima modificacion");
+//                            metadatos.getString("usuario ultima modificacion");
+//                            metadatos.getString("propietario");
+
+                            // Obtengo las etiquetas
+//                            JSONArray etiquetas = metadatos.getJSONArray("etiquetas");
+//                            int cantidadEtiquetas = etiquetas.length();
+//                            String etiquetasString = "";
+//                            for(int i = 0; i < cantidadEtiquetas; i++){
+//
+//                                // Si estoy en el ultimo item no agego el ";"
+//                                if(i == (cantidadEtiquetas - 1)) {
+//                                    etiquetasString = etiquetasString + etiquetas.getString(i);
+//                                } else {
+//                                    etiquetasString = etiquetasString + etiquetas.getString(i) + "; " ;
+//                                }
+//                            }
+//                            etiquetasEditText.setText(etiquetasString);
+//
+//                            // Obtengo los usuarios con permisos para este archivo
+//                            JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
+//                            int cantidadUsr = usrCompartidos.length();
+//                            String usuariosString = "";
+//                            for(int i = 0; i < cantidadUsr; i++){
+//
+//                                // Si estoy en el ultimo item no agego el ";"
+//                                if(i == (cantidadUsr - 1)) {
+//                                    usuariosString = usuariosString + usrCompartidos.getString(i);
+//                                } else {
+//                                    usuariosString = usuariosString + usrCompartidos.getString(i) + "; ";
+//                                }
+//                            }
+//                            usuariosCompartidosTextView.setText(usuariosString);
+
+                        } catch (JSONException e){
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure ( int statusCode, Header[] headers, Throwable throwable, JSONObject error){
+                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en recibir", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+        );
+    }
+
+    public void mandarMetadatos(JSONObject metadatos){ //final String nombre, String extension, String etiquetas, String usrCompartidos){
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+//        JSONObject jsonMetadatos = new JSONObject();
+//        String timeStamp = "";
+//        int index;
+//        String nombre = "";
+//        String extension = "";
+//        JSONArray etiquetasJSONArray =  new JSONArray();
+//        JSONArray usuariosCompartidosJSONArray = new JSONArray();
+//
+//        try{
+//            index = nombreArchivo.lastIndexOf(".");
+//            nombre = nombreArchivo.substring(0, index);
+//            extension = nombreArchivo.substring(index + 1);
+//
+//            jsonMetadatos.put("nombre", nombre);
+//            jsonMetadatos.put("extension", extension);
+//            jsonMetadatos.put("propietario", propietario);
+//            timeStamp = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());       //"mm.ss.dd.MM.yyyyyyyy").format(new Date());
+//
+//            jsonMetadatos.put("fecha ultima modificacion", timeStamp);
+//            jsonMetadatos.put("usuario ultima modificacion", username);
+//
+//
+//            String[] partesEtiquetas = etiquetas.split(";");
+//
+//            for(String etiqueta : partesEtiquetas){
+//                etiquetasJSONArray.put(etiqueta);
+//            }
+//            jsonMetadatos.put("etiquetas", etiquetasJSONArray);
+//
+//
+//            String[] partesUsuarios = usrCompartidos.split(";");
+//
+//            for(String usuario : partesUsuarios){
+//                usuario = usuario.trim();
+//                usuariosCompartidosJSONArray.put(usuario);
+//            }
+//            jsonMetadatos.put("usuarios", usuariosCompartidosJSONArray);
+//
+//        } catch (JSONException e){
+//        }
+
+//        Toast.makeText(getApplicationContext(), "tiempo: " + timeStamp, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "usuarios: " + usuariosCompartidosJSONArray.toString(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "etiquetas: " + etiquetasJSONArray.toString(), Toast.LENGTH_LONG).show();
+
+//        Toast.makeText(getApplicationContext(), jsonMetadatos.toString(), Toast.LENGTH_LONG).show();
+
+        RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+        params.put("metadatos", metadatos.toString());
+
+        client.put(QUERY_URL_METADATOS, params, new JsonHttpResponseHandler() {
+            //
+            @Override
+            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en mandar", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 }
