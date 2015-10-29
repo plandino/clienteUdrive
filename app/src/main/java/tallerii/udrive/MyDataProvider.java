@@ -58,7 +58,7 @@ public class MyDataProvider {
             if( ( ! nombre.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombre.equals(MyDataArrays.caracterReservado + "compartidos")) ){
                 if(estamosEnPapelera > 0){
                     miHashMap.put(nombre, opcionesPapelera);
-                } else if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
+                } else if((extension.equals("." + MyDataArrays.caracterReservado + "folder"))   ){
                     miHashMap.put(nombre, opcionesCarpetasList);
                 } else {
                     miHashMap.put(nombre, opcionesArchivosList);

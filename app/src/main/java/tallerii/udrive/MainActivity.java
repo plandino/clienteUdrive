@@ -2,6 +2,7 @@ package tallerii.udrive;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -107,13 +109,92 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+
+//        final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                onSearchRequested();
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                // Do something
+//                onSearchRequested();
+//
+//                return true;
+//            }
+//        };
+//
+//        searchView.setOnQueryTextListener(queryTextListener);
+
         return true;
+
+//        // Get the SearchView and set the searchable configuration
+//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
+//        // Assumes current activity is the searchable activity
+//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//        searchView.setIconifiedByDefault(true); // Do not iconify the widget; expand it by default
+//        final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                onSearchRequested();
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                // Do something
+//                onSearchRequested();
+//
+//                return true;
+//            }
+//        };
+//
+//        searchView.setOnQueryTextListener(queryTextListener);
+//        return true;
+    }
+
+    @Override
+    public boolean onSearchRequested() {
+        Bundle appDataBundle = new Bundle();
+        appDataBundle.putString("user", username);
+        appDataBundle.putString("token", token);
+        startSearch(null, false, appDataBundle, false);
+        return true;
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        // check if search intent
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            intent.putExtra("user", username);
+            intent.putExtra("token", token);
+//            Toast.makeText(getApplicationContext(), "quiero iniciar", Toast.LENGTH_LONG).show();
+
+        }
+
+        super.startActivity(intent);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+            case R.id.buscar_archivo:
+                onSearchRequested();
+                Toast.makeText(getApplicationContext(), "aprete", Toast.LENGTH_LONG).show();
+
+                return true;
             case R.id.subir_archivo:
                 subirArchivo();
                 return true;
@@ -208,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 } catch (JSONException e) {
 
                 }
+                Log.e("BUSQUEDA M: ", estructuraCarpetas);
                 crearNuevoFragmento(estructuraCarpetas);
             }
 
@@ -417,7 +499,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void descargarArchivo(final String id){
 
-        QUERY_URL = MyDataArrays.direccion + "/file/" + username + PATH_ACTUAL + id ;
+        QUERY_URL = MyDataArrays.direccion + "/file/" +  obtenerURLArchivos(id + "." + obtenerTipoDeArchivo(id)) ;
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
@@ -436,13 +518,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     @Override
                     public void onSuccess(File file) {
 
-                        // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
-                        Intent intentDisplay = new Intent(MainActivity.this, DisplayActivity.class);
+                        if(obtenerTipoDeArchivo(id).equals("txt") || obtenerTipoDeArchivo(id).equals("jpg") || obtenerTipoDeArchivo(id).equals("png") || obtenerTipoDeArchivo(id).equals("jpeg")){
+                            // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
+                            Intent intentDisplay = new Intent(MainActivity.this, DisplayActivity.class);
 
-                        intentDisplay.putExtra("extensionArchivo", obtenerTipoDeArchivo(id));
-                        intentDisplay.putExtra("filePath", savedFilePath);
-                        intentDisplay.putExtra("nombreArchivo", id);
-                        startActivity(intentDisplay);
+                            intentDisplay.putExtra("extensionArchivo", obtenerTipoDeArchivo(id));
+                            intentDisplay.putExtra("filePath", savedFilePath);
+                            intentDisplay.putExtra("nombreArchivo", id);
+                            startActivity(intentDisplay);
+                        }
+
                     }
 
                     @Override

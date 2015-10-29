@@ -26,12 +26,12 @@ public class DisplayActivity extends AppCompatActivity {
         TextView textView = (TextView) findViewById(R.id.textview);
         StringBuffer stringBuffer = new StringBuffer();
 
-        if(extensionArchivo.equals("foto")){
+        if(extensionArchivo.equals("jpg") || extensionArchivo.equals("png") || extensionArchivo.equals("jpeg")){
             Bitmap bitmap = BitmapFactory.decodeFile(filePath);
 
             ImageView imageView = (ImageView) findViewById(R.id.imageView);
             imageView.setImageBitmap(bitmap);
-        } else if(extensionArchivo.equals("texto")){
+        } else if(extensionArchivo.equals("txt") ){
 
             try {
 

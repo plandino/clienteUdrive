@@ -107,7 +107,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
             @Override
             public void onGroupCollapse(int groupPosition) {
-                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " collapsed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " collapsed", Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -93,7 +93,7 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
 
         TextView parentTextView = (TextView) convertView.findViewById(R.id.textViewParent);
         ImageView listHeaderArrow = (ImageView) convertView.findViewById(R.id.arrow);
-        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams( Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams( Gravity.TOP | Gravity.END);
 
         listHeaderArrow.setLayoutParams(layoutParams);
 

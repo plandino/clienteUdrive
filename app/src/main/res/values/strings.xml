@@ -35,6 +35,7 @@
     <string name="hint_mail">udrive@tallerii.com</string>
     <string name="hint_foto">/sdcard/foto.png</string>
     <string name="hint_ubicacion">Emiratos Arabes Unidos</string>
+    <string name="hint_search">Buscar archivos...</string>
 
 
     <!-- Campos TextView -->

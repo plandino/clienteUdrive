@@ -3,50 +3,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
 
+    <item android:id="@+id/buscar_archivo"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/buscar"
+        android:orderInCategory="1"
+        app:showAsAction="ifRoom"
+        app:actionViewClass="android.support.v7.widget.SearchView"/>
+
     <item android:id="@+id/subir_archivo"
         android:icon="@android:drawable/ic_menu_upload"
         android:title="@string/subir"
-        android:orderInCategory="1"
+        android:orderInCategory="2"
         app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/crear_carpeta"
         android:icon="@android:drawable/ic_input_add"
         android:title="@string/crear_carpeta"
-        android:orderInCategory="2"
+        android:orderInCategory="3"
         app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/ver_perfil"
         android:title="@string/ver_perfil"
-        android:orderInCategory="3"
+        android:orderInCategory="4"
         app:showAsAction="never"/>
 
     <item android:id="@+id/carpetas_compartidas"
         android:title="@string/carpetas_compartidas"
-        android:orderInCategory="4"
+        android:orderInCategory="5"
         app:showAsAction="never"/>
 
 
     <item android:id="@+id/papelera"
         android:title="@string/papelera"
-        android:orderInCategory="5"
+        android:orderInCategory="6"
         app:showAsAction="never"/>
 
     <item android:id="@+id/actualizar"
         android:title="@string/actualizar"
-        android:orderInCategory="6"
+        android:orderInCategory="7"
         app:showAsAction="never"/>
-
-
-
-    <!--<item android:id="@+id/buscar_archivo"-->
-        <!--android:icon="@android:drawable/ic_menu_search"-->
-        <!--android:title="@string/buscar"-->
-        <!--android:orderInCategory="3"-->
-        <!--app:showAsAction="never"/>-->
 
 
     <item android:id="@+id/cerrar_sesion"
         android:title="@string/cerrar_sesion"
-        android:orderInCategory="6"
+        android:orderInCategory="20"
         app:showAsAction="never"/>
 </menu>
