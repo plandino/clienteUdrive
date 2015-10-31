@@ -117,6 +117,11 @@ public class SearchableActivity extends AppCompatActivity implements FilesFragme
 
     }
 
+    @Override
+    public void subirFAB() {
+
+    }
+
     public void crearNuevoFragmento(String jsonObject){
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
         // que me devuelva la estructura de carpetas y archivos que estan adentro de esa.

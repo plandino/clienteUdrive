@@ -102,7 +102,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             Log.e("NETWORK ACCESS PROBLEM:", e.getMessage());
         }
 
+
         get(null);
+    }
+
+    @Override
+    public void subirFAB(){
+        subirArchivo();
     }
 
     @Override
@@ -479,22 +485,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         startActivityForResult(intent, PICKFILE_RESULT_CODE);
-
-
-//            FileDialog fileOpenDialog =  new FileDialog(MainActivity.this, "FileOpen..",
-//                    new FileDialog.SimpleFileDialogListener() {
-//
-//                        @Override
-//                        public void onChosenDir(String chosenDir)
-//                        {
-//                            // Aca tengo que mandar la carpeta
-////                            Toast.makeText(getApplicationContext(), "PATH: " + chosenDir, Toast.LENGTH_LONG).show();
-//                            subir(chosenDir);
-//                        }
-//                    }
-//            );
-//            fileOpenDialog.default_file_name = getApplicationContext().getFilesDir().getAbsolutePath(); //"/data/data/tallerii.udrive/files";
-//            fileOpenDialog.chooseFile_or_Dir(fileOpenDialog.default_file_name);
     }
 
     private void descargarArchivo(final String id){

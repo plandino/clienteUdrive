@@ -12,6 +12,8 @@ import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
+import com.software.shell.fab.ActionButton;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,7 +73,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-
     }
 
 
@@ -79,6 +80,16 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_files, container, false);
+
+        ActionButton actionButton = (ActionButton) view.findViewById(R.id.action_button);
+//        actionButton.setImageResource(R.id.up);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.subirFAB();
+//                subirArchivo();
+            }
+        });
 
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
         JSONObject jsonEstructuraCarpetas = new JSONObject();
@@ -204,6 +215,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         public void onOptionClick(String idCarpeta, String opcion);
         public void onDownScroll();
         public void eliminar();
+        public void subirFAB();
     }
 
 }

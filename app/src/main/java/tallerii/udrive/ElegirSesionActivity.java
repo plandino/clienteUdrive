@@ -3,6 +3,7 @@ package tallerii.udrive;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +16,9 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        Log.i("ELEGIR_SESION: ", "Se inicio la ElegirSesionActivity.");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_elegir_sesion);
 
@@ -40,12 +44,20 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         // Me fijo que boton apretaron
         switch(v.getId()) {
             case R.id.registrarse:
+
+                Log.i("ELEGIR_SESION: ", "Aprete el boton para registrar un nuevo usuario, cambio a " +
+                        "la activity correspondiente.");
+
                 // Creo un Intent para pasar a la RegistrarseActivity
                 Intent registrarseIntent = new Intent(this, RegistrarseActivity.class);
                 // Arranco la activity con el Intent
                 startActivityForResult(registrarseIntent,requestCodeUno);
                 break;
             case R.id.iniciar_sesion:
+
+                Log.i("ELEGIR_SESION: ", "Aprete el boton para iniciar sesion con un usuario existente" +
+                        ", cambio a la activity correspondiente.");
+
                 // Creo un Intent para pasar a la IniciarSesionActivity
                 Intent iniciarSesionIntent = new Intent(this, IniciarSesionActivity.class);
                 // Arranco la activity con el Intent

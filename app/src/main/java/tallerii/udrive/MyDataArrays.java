@@ -4,10 +4,22 @@ package tallerii.udrive;
 * www.101apps.co.za
 * */
 public class MyDataArrays {
-    static char   caracterReservado = '!';
+    static char     caracterReservado = '!';
+    static char     divisor = ';';
     static String[] opcionesArchivos = {"Descargar", "Compartir", "Eliminar"};
     static String[] opcionesPapelera = {"Restaurar", "Eliminar"};
     static String[] opcionesCarpetas = {"Eliminar"};
+
+    static int BAD_REQUEST  = 400;
+    static int UNAUTHORIZED = 401;
+    static int NOT_FOUND    = 404;
+    static int UNSOPORTED_METHOD = 405;
+
+
+    static int SUCCESS          = 200;
+    static int RESOURCE_CREATED = 201;
+
+
     // MI CASA
      public static String direccion = "http://192.168.0.27:8080";
     // CASA SANTI
