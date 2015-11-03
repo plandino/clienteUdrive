@@ -16,7 +16,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -123,7 +122,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                     @Override
-                    public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+                    public void onSuccess(int status, JSONObject jsonObject) {
 
                         Log.i("METADATOS: ", "Recibi los metadatos.");
 
@@ -208,7 +207,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                     }
 
                     @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+                    public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
 
                         Log.d("METADATOS: ", "StatusCode: \"" + statusCode + "\".");
 
@@ -218,8 +217,8 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                             Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
                         } else {
                             try {
-                                Log.d("METADATOS: ", "Hubo un problema en la recepción de los metadatos.");
-                                Log.d("METADATOS: ", error.getString("error"));
+                                Log.e("METADATOS: ", "Hubo un problema en la recepción de los metadatos.");
+                                Log.e("METADATOS: ", error.getString("error"));
 
                                 Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
                             } catch (JSONException e) {
@@ -336,7 +335,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject jsonObject) {
+            public void onSuccess(int statusCode, JSONObject jsonObject) {
                 Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
 
                 Log.i("METADATOS: ", "Archivo actualizado.");
@@ -344,7 +343,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
 
                 Log.d("METADATOS: ", "StatusCode: \"" + statusCode + "\".");
 
@@ -354,8 +353,8 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                     Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
                 } else {
                     try {
-                        Log.d("METADATOS: ", "Hubo un problema en el envio de los metadatos.");
-                        Log.d("METADATOS: ", error.getString("error"));
+                        Log.e("METADATOS: ", "Hubo un problema en el envio de los metadatos.");
+                        Log.e("METADATOS: ", error.getString("error"));
 
                         Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
                     } catch (JSONException e) {

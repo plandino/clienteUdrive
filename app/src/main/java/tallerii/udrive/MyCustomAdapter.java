@@ -1,7 +1,6 @@
 package tallerii.udrive;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +14,9 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.List;
 
-/*created using Android Studio (Beta) 0.8.14
-* www.101apps.co.za
-* */
+/**
+ * Adapter para cargar la informacion en la expandable list.
+ */
 public class MyCustomAdapter extends BaseExpandableListAdapter {
 
     private Context context;
@@ -67,21 +66,6 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
         return false;
     }
 
-//    @Override
-//    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-//
-//        String groupTitle = (String) getGroup(groupPosition);
-//        if (convertView == null) {
-//            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//            convertView = inflater.inflate(R.layout.parent_layout, parent, false);
-//        }
-//        TextView parentTextView = (TextView) convertView.findViewById(R.id.textViewParent);
-//        parentTextView.setText(groupTitle);
-//        return convertView;
-//    }
-
-    /////////////////////////////////////// ACA EMPIEZA LA SOLUCION ///////////////////////////////////////
-
     @Override
     public View getGroupView(final int groupPosition, final boolean isExpanded, View convertView, final ViewGroup parent) {
 
@@ -102,8 +86,6 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
         ImageView iconImage;
         iconImage = (ImageView) convertView.findViewById(R.id.icono);
         String tipo = hashTipoArchivos.get(groupTitle);
-
-//        Toast.makeText(context, tipo, Toast.LENGTH_SHORT).show();
 
         if(tipo.equals(MyDataArrays.caracterReservado + "folder")){
             iconImage.setImageResource(R.mipmap.folder);
@@ -135,20 +117,8 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
-//    @Override
-//    public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-//
-//        //Do some other stuff, but you shall not expand or collapse
-//
-//        return true;
-//    }
-
-
-    ///////////////////////// ACA TERMINA LA SOLUCION /////////////////////////////////////
-
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        Log.i("test", "parent view: " + parent.getTag());
 
         String childTitle = (String) getChild(groupPosition, childPosition);
         if (convertView == null) {

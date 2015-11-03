@@ -14,7 +14,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,7 +61,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         String usuario = usuarioEditText.getText().toString();
         String contrasenia = contraseniaEditText.getText().toString();
 
-        Log.d("INICIAR_SESION: ", "El usuario ingresados es: \"" + usuario + "\".");
+        Log.d("INICIAR_SESION: ", "El usuario ingresado es: \"" + usuario + "\".");
         Log.d("INICIAR_SESION: ", "La contraseña ingresada es: \"" + contrasenia + "\".");
 
 //        usuario = "p";
@@ -97,6 +96,8 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
      */
     private void iniciarSesion(final String usuario, String contrasenia) {
 
+        Log.d("INICIAR_SESION: ", "Voy a iniciar sesion.");
+
         // Creo un cliente para mandar la informacion de usuario y contraseña
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -114,7 +115,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         client.post(QUERY_URL, params, new JsonHttpResponseHandler() {
             //
             @Override
-            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+            public void onSuccess(int status, JSONObject jsonObject) {
                 String token = "";
                 Log.d("INICIAR_SESION: ", "Sesion iniciada.");
                 try {
@@ -130,7 +131,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
 
                 Log.d("INICIAR_SESION: ", "StatusCode: \"" + statusCode + "\".");
 
