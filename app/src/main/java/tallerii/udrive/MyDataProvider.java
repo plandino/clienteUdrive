@@ -6,31 +6,37 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Esta clase se encarga de proveer los datos necesarios para poblar la expandable list
+ */
 public class MyDataProvider {
 
+    /**
+     * Devuelve un hashmap con un String como clave y una lista de Stirng como valor.
+     * La clave es el titulo del padre en la expandable list.
+     * El valor son las opciones que aparecen cuando se despliegan los hijos de la expandable list.
+     * @param json la estructura de la carpeta a mostrar
+     * @return el hashmap con los pares de clave valor
+     */
     public static HashMap<String, List<String>> getDataHashMap(JSONObject json) {
 
-        HashMap<String, List<String>> miHashMap = new HashMap<String, List<String>>();
+        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el dataHashMap con la estructura de las carpetas.");
 
-        List<String> opcionesArchivosList = new ArrayList<String>();
-        for (int i = 0; i < MyDataArrays.opcionesArchivos.length; i++) {
-            opcionesArchivosList.add(MyDataArrays.opcionesArchivos[i]);
-        }
+        HashMap<String, List<String>> miHashMap = new HashMap<>();
 
-        List<String> opcionesCarpetasList = new ArrayList<String>();
-        for (int i = 0; i < MyDataArrays.opcionesCarpetas.length; i++) {
-            opcionesCarpetasList.add(MyDataArrays.opcionesCarpetas[i]);
-        }
+        List<String> opcionesArchivosList = new ArrayList<>();
+        opcionesArchivosList.addAll(Arrays.asList(MyDataArrays.opcionesArchivos));
 
-        List<String> opcionesPapelera = new ArrayList<String>();
-        for (int i = 0; i < MyDataArrays.opcionesPapelera.length; i++) {
-            opcionesPapelera.add(MyDataArrays.opcionesPapelera[i]);
-        }
+        List<String> opcionesCarpetasList = new ArrayList<>();
+        opcionesCarpetasList.addAll(Arrays.asList(MyDataArrays.opcionesCarpetas));
 
+        List<String> opcionesPapelera = new ArrayList<>();
+        opcionesPapelera.addAll(Arrays.asList(MyDataArrays.opcionesPapelera));
 
         Iterator<?> keys = json.keys();
 
@@ -40,12 +46,14 @@ public class MyDataProvider {
             try{
                 value = json.getString(key);
             } catch (JSONException e){
-
+                Log.e("MY_DATA_PROVIDER: ", "Hubo un error al obtener algun valor de la estructura de carpetas.");
+                Log.e("MY_DATA_PROVIDER: ", e.getMessage());
+                e.printStackTrace();
             }
 
             int estamosEnPapelera = key.lastIndexOf(MyDataArrays.caracterReservado);
             int index = value.lastIndexOf(".");
-            String nombre = "";
+            String nombre;
             String extension = "";
             if(index >= 0){
                 nombre = value.substring(0, index);
@@ -53,7 +61,6 @@ public class MyDataProvider {
             } else {
                 nombre = value;
             }
-
 
             if( ( ! nombre.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombre.equals(MyDataArrays.caracterReservado + "compartidos")) ){
                 if(estamosEnPapelera > 0){
@@ -64,8 +71,6 @@ public class MyDataProvider {
                     miHashMap.put(nombre, opcionesArchivosList);
                 }
             }
-
-            Log.v("MyDataProvider","FILES: "+ key);
         }
         return miHashMap;
 
@@ -73,7 +78,9 @@ public class MyDataProvider {
 
     public static HashMap<String, String> getTypeHashMap(JSONObject json) {
 
-        HashMap<String, String> hashTipoArchivos = new HashMap<String, String>();
+        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el typeHashMap con la estructura de las carpetas.");
+
+        HashMap<String, String> hashTipoArchivos = new HashMap<>();
 
         Iterator<?> keys = json.keys();
 
@@ -83,10 +90,12 @@ public class MyDataProvider {
             try{
                 value = json.getString(key);
             } catch (JSONException e){
-
+                Log.e("MY_DATA_PROVIDER: ", "Hubo un error al obtener algun valor de la estructura de carpetas.");
+                Log.e("MY_DATA_PROVIDER: ", e.getMessage());
+                e.printStackTrace();
             }
             int index = value.lastIndexOf(".");
-            String nombre = "";
+            String nombre;
             String extension = "";
             if(index >= 0){
                 nombre = value.substring(0, index);
@@ -95,10 +104,7 @@ public class MyDataProvider {
                 nombre = value;
             }
             hashTipoArchivos.put(nombre, extension);
-
-            Log.v("MyDataProvider","FILES: "+ key);
         }
-
 
         return hashTipoArchivos;
     }

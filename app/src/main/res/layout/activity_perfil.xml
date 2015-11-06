@@ -132,13 +132,21 @@
                 <!--android:imeOptions="actionDone"/>-->
             <fragment
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="181dp"
                 android:name="com.google.android.gms.maps.MapFragment"
                 android:id="@+id/map_fragment"
                 android:layout_gravity="center_horizontal"
                 class="tallerii.udrive.CustomMapFragment" />
         </LinearLayout>
 
+        <com.github.rahatarmanahmed.cpv.CircularProgressView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progress_view"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cpv_animAutostart="false"
+            app:cpv_indeterminate="true"
+            android:layout_gravity="center_horizontal" />
 
         <Button
             android:id="@+id/actualizar"
@@ -150,5 +158,7 @@
             />
 
     </LinearLayout>
+
+
 
 </ScrollView>

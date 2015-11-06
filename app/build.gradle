@@ -32,4 +32,7 @@ dependencies {
     compile 'org.apache.httpcomponents:httpcore:4.4.1'
 
     compile 'com.github.shell-software:fab:1.1.2'
+
+    compile 'com.github.rahatarmanahmed:circularprogressview:2.4.0'
+
 }

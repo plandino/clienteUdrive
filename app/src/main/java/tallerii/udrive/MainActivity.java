@@ -1,7 +1,6 @@
 package tallerii.udrive;
 
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -74,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        Log.i("MAIN: ", "Se inicio la MainActivity.");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -82,7 +83,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         username = intent.getStringExtra("username");
         usuariosParaCompartir = new JSONObject();
 
+        Log.d("MAIN: ", "Saque del Intent el token: \"" + token + "\".");
+        Log.d("MAIN: ", "Saque del Intent el username: \"" + username + "\".");
+
         QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
+
+        Log.d("MAIN: ", "Forme el URL_CARPETAS: \"" + QUERY_URL_CARPETAS + "\".");
 
         fragmentManager = getFragmentManager();
 
@@ -93,22 +99,30 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         try{
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            Log.i("MAIN: ", "Inicie el GPS.");
+
         } catch (SecurityException e){
-            Log.e("GPS ACCESS PROBLEM:", e.getMessage());
-        }
-        try{
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-        } catch (SecurityException e){
-            Log.e("NETWORK ACCESS PROBLEM:", e.getMessage());
+            Log.e("MAIN:", "Error al iniciar el GPS.");
+            Log.e("MAIN:", e.getMessage());
+            Toast.makeText(getApplicationContext(), "No se pudo inicializar el GPS.", Toast.LENGTH_LONG).show();
         }
 
+        try{
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+            Log.i("MAIN: ", "Inicie el GPS a traves de Internet.");
+
+        } catch (SecurityException e){
+            Log.e("MAIN:", "Error al iniciar el GPS a traves de la conexion de Internet.");
+            Log.e("MAIN:", e.getMessage());
+            Toast.makeText(getApplicationContext(), "No se pudo inicializar el GPS.", Toast.LENGTH_LONG).show();
+        }
 
         get(null);
     }
 
     @Override
     public void subirFAB(){
-        subirArchivo();
+        seleccionarArchivo();
     }
 
     @Override
@@ -185,8 +199,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             intent.putExtra("user", username);
             intent.putExtra("token", token);
-//            Toast.makeText(getApplicationContext(), "quiero iniciar", Toast.LENGTH_LONG).show();
-
         }
 
         super.startActivity(intent);
@@ -197,28 +209,31 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         switch (item.getItemId()) {
             case R.id.buscar_archivo:
+                Log.i("MAIN: ", "Hice click en el boton de buscar archivo.");
                 onSearchRequested();
-                Toast.makeText(getApplicationContext(), "aprete", Toast.LENGTH_LONG).show();
-
                 return true;
             case R.id.subir_archivo:
-                subirArchivo();
+                Log.i("MAIN: ", "Hice click en el boton de subir archivo.");
+                seleccionarArchivo();
                 return true;
             case R.id.crear_carpeta:
+                Log.i("MAIN: ", "Hice click en el boton de crear carpeta.");
                 crearCarpeta();
                 return true;
             case R.id.carpetas_compartidas:
+                Log.i("MAIN: ", "Hice click en el boton para acceder a los archivos compartidos.");
                 get(MyDataArrays.caracterReservado + "permisos");
                 return true;
             case R.id.papelera:
+                Log.i("MAIN: ", "Hice click en el boton para acceder a la papelera.");
                 get(MyDataArrays.caracterReservado + "trash");
                 return true;
-//            case R.id.buscar_archivo:
-//                return true;
             case R.id.ver_perfil:
+                Log.i("MAIN: ", "Hice click en el boton para ver el perfil.");
                 pasarAVerPerfil();
                 return true;
             case R.id.cerrar_sesion:
+                Log.i("MAIN: ", "Hice click en el boton para cerrar sesión.");
                 cerrarSesion();
                 return true;
             default:
@@ -230,12 +245,22 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
+
+        Log.i("MAIN: ", "La activity anterior me dio un resultado.");
+        Log.d("MAIN: ", "El request code es: \"" + requestCode + "\".");
+
         switch(requestCode){
             case PICKFILE_RESULT_CODE:
+                Log.i("MAIN: ", "El request fue buscar un archivo.");
+
                 if(resultCode==RESULT_OK){
 
-                    if (null == data) return;
+                    Log.i("MAIN: ", "El resultado de la activity es OK.");
+
+                    if (data == null){
+                        Log.i("MAIN: ", "No hay data en el resultado de la activity.");
+                        return;
+                    }
 
                     String selectedImagePath;
                     Uri selectedImageUri = data.getData();
@@ -243,21 +268,28 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     // Tengo que obtener el path del archivo. Uso el FilePathGetter para traducir
                     // de una Uri a un file path absoluto
                     selectedImagePath = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
-                    Log.i("Image File Path", "" + selectedImagePath);
+                    Log.d("MAIN: ", "El path del archivo seleccionado es: " + selectedImagePath);
 
                     subir(selectedImagePath);
-                    Toast.makeText(getApplicationContext(), "Path: " + selectedImagePath, Toast.LENGTH_LONG).show();
                 }
                 break;
             case METADATOS:
+                Log.i("MAIN: ", "El request fue acceder a los metadatos.");
+
                 if(resultCode==RESULT_OK){
+                    Log.i("MAIN: ", "El resultado de la activity es OK.");
                     get(null);
                 }
 
         }
     }
 
+    /**
+     * Hace un GET al archivo o carpeta segun corresponda
+     * @param id nombre del archivo o carpeta de la cual se quiere obtener informacion
+     */
     private void get(String id) {
+        Log.d("MAIN: ", "Voy a obtener la estrcutra interna de la carpeta: \"" + id + "\".");
 
         if(id != null){
             if(id.equals(MyDataArrays.caracterReservado + "permisos")){
@@ -280,38 +312,66 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
 
+        Log.d("MAIN: ", "El URL al que le pego es: \"" + QUERY_URL_CARPETAS + "\".");
+
         client.get(QUERY_URL_CARPETAS, params, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
+                Log.i("MAIN: ", "Exito al obtener la estructura interna de la carpeta.");
+
                 try {
                     estructuraCarpetas = jsonObject.getString("estructura");
+                    Log.d("MAIN: ", "La estructura de la carpeta en formato String: \"" + estructuraCarpetas + "\".");
+
                     estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
+                    Log.d("MAIN: ", "La estructura de la carpeta en formato JSON: \"" + estructuraCarpetasJSON + "\".");
+
                     guardarMapaArchivos(estructuraCarpetasJSON);
                     guardarURLArchivos(estructuraCarpetasJSON);
-//                    Toast.makeText(getApplicationContext(), estructuraCarpetas, Toast.LENGTH_LONG).show();
 
 
                 } catch (JSONException e) {
-
+                    Log.e("MAIN: ", e.getMessage());
+                    Log.e("MAIN: ", "No pude obtener los datos del JSON.");
+                    e.printStackTrace();
                 }
-                Log.e("BUSQUEDA M: ", estructuraCarpetas);
                 crearNuevoFragmento(estructuraCarpetas);
             }
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "No pude acceder a la carpeta.", Toast.LENGTH_LONG).show();
-                try {
-                    Toast.makeText(getApplicationContext(), statusCode + error.getString("error"), Toast.LENGTH_LONG).show();
-                } catch (JSONException e) {
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
+                if (error == null) {
+                    Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        Log.e("MAIN: ", "Hubo un problema al obtener la estructura de la carpeta.");
+                        Log.e("MAIN: ", error.getString("error"));
+
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        Log.e("MAIN: ", e.getMessage());
+                        Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                        e.printStackTrace();
+                    }
                 }
             }
         });
     }
 
+    /**
+     * Manda un GET al servidor, para hacer una busqueda de los usuarios que concuerdan con el texto ingresado
+     * para poder compartir un archivo.
+     * Agrego los usuarios que concuerdan con la busqueda a una lista visible en un AlertDialog.
+     * @param id String con la porcion del nombre del usuario a buscar.
+     */
     private void getUsuarios(String id) {
+
+        Log.i("MAIN: ", "Voy a obtener la busqueda de usuarios para compartir un archivo.");
 
         String QUERY_URL_USUARIOS = MyDataArrays.direccion + "/profile";
 
@@ -320,60 +380,93 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
-        Toast.makeText(getApplicationContext(), "\"" + id + "\"", Toast.LENGTH_LONG).show();
         params.put("busqueda", id);
+
+        Log.d("MAIN: ", "Voy a ingresar los siguientes datos en los parametros del GET: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+        Log.d("MAIN: ", "La busqueda es: \"" + id + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL_USUARIOS + "\".");
 
         client.get(QUERY_URL_USUARIOS, params, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
+                Log.i("MAIN: ", "Busqueda de usuarios para compartir exitosa.");
+
                 try {
-//                    JSONObject busqueda = jsonObject.getJSONObject("busqueda");
                     usuariosParaCompartir = jsonObject.getJSONObject("busqueda");
+                    Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato JSON son: \"" + usuariosParaCompartir.toString() + "\".");
 
-                        String usuarios = "";
-                        try {
-                            usuarios = usuariosParaCompartir.getString("usuarios");
-                        } catch (JSONException e) {
+                    String usuarios = usuariosParaCompartir.getString("usuarios");
+                    Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato STRING son: \"" + usuariosParaCompartir.toString() + "\".");
 
+                    if (usuarios.length() > 0) {
+                        Log.d("MAIN: ", "Agrego los usuarios a la lista.");
+
+                        textoFallido.setVisibility(View.INVISIBLE);
+                        String[] partes = usuarios.split(Character.toString(MyDataArrays.caracterReservado));
+                        for(String user : partes){
+                            arrayAdapter.add(user);
                         }
-                        if (usuarios.length() > 0) {
-                            textoFallido.setVisibility(View.INVISIBLE);
-                            String[] partes = usuarios.split(Character.toString(MyDataArrays.caracterReservado));
-                            for (int i = 0; i < partes.length; i++) {
-                                arrayAdapter.add(partes[i]);
-                            }
-                        } else {
-                            textoFallido.setVisibility(View.VISIBLE);
-                        }
+                        Log.d("MAIN: ", "Agregue todos los usuarios a la lista.");
 
-//                    Toast.makeText(getApplicationContext(), usuariosParaCompartir.toString(), Toast.LENGTH_LONG).show();
-
-
+                    } else {
+                        Log.i("MAIN: ", "Ningun usuario concuerda con la busqueda.");
+                        textoFallido.setVisibility(View.VISIBLE);
+                    }
                 } catch (JSONException e) {
-
+                    Log.e("MAIN: ", e.getMessage());
+                    Log.e("MAIN: ", "No se pudo obtener los datos del JSON.");
+                    e.printStackTrace();
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "No pude obtener los usuarios", Toast.LENGTH_LONG).show();
-//                try {
-//                    Toast.makeText(getApplicationContext(), statusCode + error.getString("error"), Toast.LENGTH_LONG).show();
-//                } catch (JSONException e) {
-//
-//                }
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                if (error == null) {
+                    Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        Log.e("MAIN: ", "Hubo un problema al realizar una busqueda de un usuario para compartir un archivo.");
+                        Log.e("MAIN: ", error.getString("error"));
+
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        Log.e("MAIN: ", e.getMessage());
+                        Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }
 
+    /**
+     * Maneja los clicks hechos sobre un padre en la ExpandableList.
+     * Cuando es una carpeta, accede a ella y obtiene la estructura interna.
+     * Cuando es un archivo, busca los metadatos del archivo.
+     * @param id nombre del item padre(carpeta o archivo) del cual se hizo click.
+     */
     @Override
     public void onGroupClick(String id) {
+
+        Log.d("MAIN: ", "Hice click sobre: \"" + id + "\".");;
+
         String tipoDeArchivo = obtenerTipoDeArchivo(id);
 
+        Log.d("MAIN: ", "El tipo de archivo es: \"" + tipoDeArchivo + "\".");;
+
         if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")) {
+            Log.i("MAIN: ", "Accedo y obtengo la estructura interna de la carpeta.");;
             get(id);
         } else {
+            Log.i("MAIN: ", "Obtengo los metadatos del archivo.");;
             obtenerMetadatos(id);
         }
     }
@@ -390,7 +483,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
 
-    public void crearNuevoFragmento(String jsonObject){
+    public void crearNuevoFragmento(String estructuraCarpetas){
+        Log.i("MAIN: ", "Voy a crear un nuevo fragmento.");;
+        Log.d("MAIN: ", "La estructura a usar es: \"" + estructuraCarpetas + "\".");;
+
+
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
         // que me devuelva la estructura de carpetas y archivos que estan adentro de esa.
         // Luego creo un nuevo fragmento con esa estructura y reemplazo el anterior
@@ -400,39 +497,46 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Creo un Bundle y le agrego informacion del tipo <Key, Value>
         Bundle bundle = new Bundle();
-        bundle.putString("estructura", jsonObject);
+        bundle.putString("estructura", estructuraCarpetas);
 
         // Le agrego el Bundle al fragmento
         fragment.setArguments(bundle);
 
         //Paso 2: Crear una nueva transacción
-        FragmentTransaction transaction2 = fragmentManager.beginTransaction().replace(R.id.contenedor, fragment);
+//        FragmentTransaction transaction2 =
+        fragmentManager.beginTransaction().replace(R.id.contenedor, fragment).commit();
 
         //Paso 4: Confirmar el cambio
-        transaction2.commit();
+//        transaction2.commit();
     }
 
     @Override
     public void onOptionClick(String id, String opcion) {
 
         if(opcion.equals("Descargar")){
+            Log.i("MAIN: ", "Hice click en la opcion DESCARGAR.");;
             descargarArchivo(id);
         }
 
         if(opcion.equals("Compartir")){
+            Log.i("MAIN: ", "Hice click en la opcion COMPARTIR.");;
             compartirArchivo(id);
         }
 
         if(opcion.equals("Eliminar")){
-            confirmarEliminarORestaurar(id, false);
+            Log.i("MAIN: ", "Hice click en la opcion ELIMINAR.");;
+            confirmarEliminarORestaurar(id, MyDataArrays.ELIMINAR);
         }
 
         if(opcion.equals("Restaurar")){
-            confirmarEliminarORestaurar(id, true);
+            Log.i("MAIN: ", "Hice click en la opcion RESTAURAR.");;
+            confirmarEliminarORestaurar(id, MyDataArrays.RESTAURAR);
         }
     }
 
     private void subir(String path){
+
+        Log.i("MAIN: ", "Voy a subir un archivo.");;
 
         int index = path.lastIndexOf("/");
         String filename = path.substring(index + 1);
@@ -447,40 +551,63 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         double longitud = locationListener.getLongitud();
         params.put("latitud", String.valueOf(latitud));
         params.put("longitud", String.valueOf(longitud));
-        Toast.makeText(getApplicationContext(), "Longitud: " + longitud + " Latitud: " + latitud, Toast.LENGTH_LONG).show();
+
+        Log.d("MAIN: ", "Voy a ingresar los siguientes datos en los parametros del PUT: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+        Log.d("MAIN: ", "Latitud: \"" + latitud + "\" || Longitud: \"" + longitud + "\".");
 
         try{
             File archivo = new File(path);
             params.put("file", archivo);
+            Log.i("MAIN: ", "Pude incluir el archivo en los parametros.");
         } catch (FileNotFoundException e){
+            Log.e("MAIN: ", e.getMessage());
+            Log.e("MAIN: ", "No se pudo encontrar el archivo.");
+            e.printStackTrace();
             Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
         }
 
-
-        // URI:
-        // username :
-        // filename : el path al archivo en el servidor, con la jerarquia de carpetas
-
-        // Parametros:
-        // user : el mio, el que pide el request
-        // token : mi token
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
-            //
             @Override
-            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+            public void onSuccess(int statusCode, JSONObject jsonObject) {
+                Log.i("MAIN: ", "Exito al subir un archivo.");
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
                 Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
+                // Luego de subir un archivo actualizo la estructura de la carpeta
                 get(null);
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                if (error == null) {
+                    Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        Log.e("MAIN: ", "Hubo un problema al subir un archivo.");
+                        Log.e("MAIN: ", error.getString("error"));
+
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        Log.e("MAIN: ", e.getMessage());
+                        Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }
 
-    private void subirArchivo(){
+    private void seleccionarArchivo(){
+
+        Log.i("MAIN: ", "Voy a seleccionar un archivo para subir.");
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -489,6 +616,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void descargarArchivo(final String id){
 
+        Log.i("MAIN: ", "Voy a descargar un archivo.");
+
         QUERY_URL = MyDataArrays.direccion + "/file/" +  obtenerURLArchivos(id + "." + obtenerTipoDeArchivo(id)) ;
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -496,39 +625,67 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
 
+        Log.d("MAIN: ", "Voy a ingresar los siguientes datos en los parametros del GET: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+
         final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + id; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
 
+        Log.d("MAIN: ", "Guardo el archivo en el path: \"" + savedFilePath + "\".");
+
         File file = new File(savedFilePath);
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
+
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
-//                        @Override
-//                        public void onProgress(int bytesWritten, int totalSize) {
-//                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
-//                        }
+                    //                        @Override
+                    //                        public void onProgress(int bytesWritten, int totalSize) {
+                    //                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
+                    //                        }
 
                     @Override
                     public void onSuccess(File file) {
 
-                        if(obtenerTipoDeArchivo(id).equals("txt") || obtenerTipoDeArchivo(id).equals("jpg") || obtenerTipoDeArchivo(id).equals("png") || obtenerTipoDeArchivo(id).equals("jpeg")){
-                            // Cuando la descarga es exitosa, cambio a otra activity que muestra el archivo
+                        Log.i("MAIN: ", "Exito al descarga el archivo.");
+
+                        String extension = obtenerTipoDeArchivo(id);
+                        Log.d("MAIN: ", "La extension del archivo es: \"" + extension + "\".");
+
+                        if (extension.equals("txt") || extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
+
+                            Log.i("MAIN: ", "Voy a visualizar el archivo.");
+
+                            // Cuando la descarga es una foto o un archivo de texto, cambio a otra
+                            // activity para ver el archivo
                             Intent intentDisplay = new Intent(MainActivity.this, DisplayActivity.class);
 
-                            intentDisplay.putExtra("extensionArchivo", obtenerTipoDeArchivo(id));
+                            intentDisplay.putExtra("extensionArchivo", extension);
                             intentDisplay.putExtra("filePath", savedFilePath);
                             intentDisplay.putExtra("nombreArchivo", id);
+
+                            Log.d("MAIN: ", "Le agrego al Intent la extension: \"" + extension + "\".");
+                            Log.d("MAIN: ", "Le agrego al Intent el path al archivo guardado: \"" + savedFilePath + "\".");
+                            Log.d("MAIN: ", "Le agrego al Intent el nombre: \"" + id + "\".");
+
                             startActivity(intentDisplay);
                         }
-
                     }
 
                     @Override
-                    public void onFailure(Throwable e, File response) {
-                        Toast.makeText(getApplicationContext(), "No se pudo descargar el archivo", Toast.LENGTH_LONG).show();
+                    public void onFailure(int statusCode, Throwable e, File response) {
+                        Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                        Log.e("MAIN: ", "Hubo un problema al descargar un archivo.");
+
+                        Toast.makeText(getApplicationContext(), "No se pudo descargar el archivo.", Toast.LENGTH_LONG).show();
                     }
                 }
         );
     }
 
     private void crearCarpeta(){
+
+        Log.i("MAIN: ", "Voy a crear una carpeta.");
+
         // Muestro una ventana emergente para que introduzca el nombre de la carpeta a crear
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Crear carpeta");
@@ -540,6 +697,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d("MAIN: ", "Hice click en Crear. El nombre introducido es: \"" + nombreCarpeta.getText().toString() + "\".");
 
                 agregarCarpeta(nombreCarpeta.getText().toString());
             }
@@ -548,14 +706,19 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
         alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en Cancelar.");
             }
         });
 
         alert.show();
+
+        Log.i("MAIN: ", "Mostre un dialogo para que introduzca el nombre de la capreta.");
+
     }
 
     private void agregarCarpeta(String nombreCarpeta){
 
+        Log.i("MAIN: ", "Voy a mandar la carpeta creada al servidor.");
 
         QUERY_URL = MyDataArrays.direccion + "/folder/" + username + PATH_ACTUAL + nombreCarpeta;
 
@@ -565,32 +728,65 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del PUT: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
+
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
 
             @Override
-            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+            public void onSuccess(int statusCode, JSONObject jsonObject) {
+                Log.i("MAIN: ", "Exito al crear la carpeta en el servidor.");
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                //Luego de crear la carpeta, actualizo la vista
                 get(null);
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                if (error == null) {
+                    Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        Log.e("MAIN: ", "Hubo un problema al crear una carpeta.");
+                        Log.e("MAIN: ", error.getString("error"));
+
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        Log.e("MAIN: ", e.getMessage());
+                        Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }
 
     private void confirmarEliminarORestaurar(final String id, final boolean restaurar){
 
+        if(restaurar){
+            Log.i("MAIN: ", "Voy a confirmar para restaurar un archivo.");
+        } else {
+            Log.i("MAIN: ", "Voy a confirmar para eliminar un archivo.");
+        }
+
         // Muestro una ventana emergente para confirmar que quiere eliminar
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        if(restaurar){
+        if(restaurar == MyDataArrays.RESTAURAR){
             alert.setTitle("Restaurar!");
             alert.setMessage("¿Esta seguro que quiere restaurar " + id + "?");
             // El boton "OK" confirma la restauracion del archivo o carpeta
             alert.setPositiveButton("Restaurar", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int whichButton) {
+                    Log.i("MAIN: ", "Hice click en Restaurar.");
                     eliminarORestaurar(id, restaurar);
                 }
             });
@@ -601,24 +797,33 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             alert.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int whichButton) {
+                    Log.i("MAIN: ", "Hice click en Eliminar.");
                     eliminarORestaurar(id, restaurar);
                 }
             });
         }
 
-
-
-
         // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en cancelar.");
             }
         });
 
         alert.show();
+
+        Log.i("MAIN: ", "Mostre un Alert Dialog para confirmar que quiero eliminar o restaurar un archivo.");
     }
 
     private void eliminarORestaurar(final String id, boolean restore){
+
+        if(restore){
+            Log.i("MAIN: ", "Voy a mandar restaurar un archivo de la papelera en el servidor.");
+        } else {
+            Log.i("MAIN: ", "Voy a eliminar un archivo.");
+
+        }
+
         String tipoDeArchivo = obtenerTipoDeArchivo(id);
 
         if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")){
@@ -633,19 +838,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 //        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id + extension;
         QUERY_URL = QUERY_URL +  obtenerURLArchivos(id + extension);
 
-
-//        Toast.makeText(getApplicationContext(), id + extension, Toast.LENGTH_LONG).show();
-//        Toast.makeText(getApplicationContext(), QUERY_URL, Toast.LENGTH_LONG).show();
-
-
-
         AsyncHttpClient client = new AsyncHttpClient();
 
+        final String restaurar;
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
         if(restore){
-            params.put("restore", "true");
+            restaurar = "true";
+            params.put("restore", restaurar);
+        } else {
+            restaurar = "false";
+            params.put("restore", restaurar);
         }
 
         // El delete pide que le pase Headers, le pongo basura
@@ -658,24 +862,45 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
         };
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del DELETE: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+        Log.d("MAIN: ", "Quiero restaurar: \"" + restaurar + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
+
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Toast.makeText(getApplicationContext(), id + " se ha movido a la papelera.", Toast.LENGTH_LONG).show();
+                if(restaurar.equals("true")){
+                    Log.i("MAIN: ", "Se ha restaurado: \"" + id + "\" exitosamente.");
+                    Toast.makeText(getApplicationContext(), "Se ha restaurado " + id , Toast.LENGTH_LONG).show();
+                } else {
+                    Log.i("MAIN: ", "Se ha eliminado: \"" + id + "\" exitosamente.");
+                    Toast.makeText(getApplicationContext(), "Se ha eliminado " + id , Toast.LENGTH_LONG).show();
+                }
+                // Luego actualizo la vista
                 get(null);
             }
 
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor" + statusCode, Toast.LENGTH_LONG).show();
-
-                Toast.makeText(getApplicationContext(), QUERY_URL, Toast.LENGTH_LONG).show();
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                if(restaurar.equals("true")){
+                    Log.e("MAIN: ", "Hubo un problema al restaurar: \"" + id + "\".");
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al restaurar: \"" + id + "\"." , Toast.LENGTH_LONG).show();
+                } else {
+                    Log.e("MAIN: ", "Hubo un problema al eliminar: \"" + id + "\".");
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al eliminar: \"" + id + "\"." , Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     private void cerrarSesion(){
+
+        Log.i("MAIN: ", "Voy a cerrar sesion.");
 
         QUERY_URL = MyDataArrays.direccion + "/session/" + token;
 
@@ -694,17 +919,28 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 , new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
         };
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del DELETE: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
+
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                Log.i("MAIN: ", "Sesion cerrada correctamente.");
+
                 Toast.makeText(getApplicationContext(), "Sesión cerrada", Toast.LENGTH_LONG).show();
                 pasarAElegir();
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                Log.e("MAIN: ", "Hubo un problema al cerrar sesion.");
+                Toast.makeText(getApplicationContext(), "Hubo un problema al cerrar sesion" , Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -734,7 +970,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Este boolean sirve para saber si quiero volver a la carpeta superior
         boolean volver = true;
-        int index = -1 , indice =  -1;
+        int index , indice ;
         if(PATH_ACTUAL.equals("/")){
             getFragmentManager().popBackStack();
             getFragmentManager().popBackStack();
@@ -790,12 +1026,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private String obtenerTipoDeArchivo(String id){
-        String tipoDeArchivo = hashTipoArchivos.get(id);
-        return tipoDeArchivo;
+        return hashTipoArchivos.get(id);
     }
 
     private void guardarMapaArchivos(JSONObject estructuraCarpetasJSON){
-        hashTipoArchivos = new HashMap<String, String>();
+        hashTipoArchivos = new HashMap<>();
 
         Iterator<?> keys = estructuraCarpetasJSON.keys();
 
@@ -808,7 +1043,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             }
             int index = value.lastIndexOf(".");
-            String nombre = "";
+            String nombre;
             String extension = "";
             if(index >= 0){
                 nombre = value.substring(0, index);
@@ -822,7 +1057,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private void guardarURLArchivos(JSONObject estructuraCarpetasJSON){
-        URLArchivos = new HashMap<String, String>();
+        URLArchivos = new HashMap<>();
 
         Iterator<?> keys = estructuraCarpetasJSON.keys();
 
@@ -849,22 +1084,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     private String obtenerURLArchivos(String id){
-        String tipoDeArchivo = URLArchivos.get(id);
-        return tipoDeArchivo;
+        return URLArchivos.get(id);
     }
 
     private void compartirArchivo(final String idArchivo){
 
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+        final AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setIcon(R.drawable.files);
         builderSingle.setTitle("Introducir nombre: ");
-        arrayAdapter = new ArrayAdapter<String>(this,
+        arrayAdapter = new ArrayAdapter<>(this,
                 android.R.layout.select_dialog_singlechoice);
-//        arrayAdapter.add("Hardik");
-//        arrayAdapter.add("Archit");
-//        arrayAdapter.add("Jignesh");
-//        arrayAdapter.add("Umang");
-//        arrayAdapter.add("Gatti");
+
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         final EditText usuario = new EditText(this);
@@ -905,7 +1135,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 //        builderSingle.setView(usuario);
 
 
-        textoFallido.setText("La busqueda de usuarios no dio resultados.");
+        String textoSinCoincidenciass = "La busqueda de usuarios no dio resultados.";
+
+        textoFallido.setText(textoSinCoincidenciass);
         textoFallido.setVisibility(View.INVISIBLE);
         layout.addView(textoFallido);
         layout.addView(usuario);
@@ -928,6 +1160,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String strName = arrayAdapter.getItem(which);
+//                        arrayAdapter.getItem(which).setI
+//                        builderSingle
                         actualizarMetadatos(idArchivo, strName);
 
 //                        AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
@@ -949,11 +1183,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         builderSingle.show();
     }
 
-    public void actualizarMetadatos(String idArchivo, final String idUsuario){
+    public void actualizarMetadatos(String idArchivo, final String busquedaUsuario){
 
-//        Toast.makeText(getApplicationContext(), "Mando: " + idArchivo + obtenerTipoDeArchivo(idArchivo), Toast.LENGTH_LONG).show();
-
-
+        Log.i("MAIN: ", "Voy a buscar los usuarios que concuerdan con la busqueda: \"" + busquedaUsuario +"\".");
         QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivos(idArchivo + "." + obtenerTipoDeArchivo(idArchivo)); //idArchivo + "." + obtenerTipoDeArchivo(idArchivo);
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -961,153 +1193,119 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
-        Toast.makeText(getApplicationContext(), "Mando: " + QUERY_URL_METADATOS, Toast.LENGTH_LONG).show();
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del GET: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL_METADATOS + "\".");
 
         client.get(QUERY_URL_METADATOS, params, new JsonHttpResponseHandler() {
 
                     @Override
-                    public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
-//                        Toast.makeText(getApplicationContext(), "Recibi metadatos\n" + jsonObject.toString(), Toast.LENGTH_LONG).show();
+                    public void onSuccess(int statusCode, JSONObject jsonObject) {
+                        Log.i("MAIN: ", "Recibi los metadatos para agregar usuarios compartidos, exitosamente.");
 
                         try {
 
                             JSONObject metadatos = jsonObject.getJSONObject("metadatos");
+                            Log.d("MAIN: ", "Los metadatos en formato JSON son: \"" + metadatos.toString() + "\".");
 
                             JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
+                            Log.d("MAIN: ", "Los usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
 
+                            // Obtengo la cantidad de usuarios con lo que esta compartido este archivo
+                            // y le agrego el usuario nuevo al final
                             int cantidadUsr = usrCompartidos.length();
-                            usrCompartidos.put(cantidadUsr, idUsuario);
-//                            for(int i = 0; i < cantidadUsr; i++){
-//
-//                                // Si estoy en el ultimo item no agego el ";"
-//                                if(i == (cantidadUsr - 1)) {
-//                                    usuariosString = usuariosString + usrCompartidos.getString(i);
-//                                } else {
-//                                    usuariosString = usuariosString + usrCompartidos.getString(i) + "; ";
-//                                }
-//                            }
+                            Log.d("MAIN: ", "La cantidad de usuarios compartidos anteriormente es: \"" + cantidadUsr + "\".");
+                            usrCompartidos.put(cantidadUsr, busquedaUsuario);
+                            Log.d("MAIN: ", "Los nuevos usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
+
+                            // Le pongo los nuevos usuarios compartidos a los metadatos y los mando
                             metadatos.put("usuarios", usrCompartidos);
-//                            metadatos.put("usuarios", metadatos.getString("usuarios").get + MyDataArrays.caracterReservado + idUsuario);
-                                    Toast.makeText(getApplicationContext(), metadatos.toString() , Toast.LENGTH_LONG).show();
                             mandarMetadatos(metadatos);
 
-
-//                            metadatos.getString("nombre") + metadatos.getString("extension");
-//                            metadatos.getString("fecha ultima modificacion");
-//                            metadatos.getString("usuario ultima modificacion");
-//                            metadatos.getString("propietario");
-
-                            // Obtengo las etiquetas
-//                            JSONArray etiquetas = metadatos.getJSONArray("etiquetas");
-//                            int cantidadEtiquetas = etiquetas.length();
-//                            String etiquetasString = "";
-//                            for(int i = 0; i < cantidadEtiquetas; i++){
-//
-//                                // Si estoy en el ultimo item no agego el ";"
-//                                if(i == (cantidadEtiquetas - 1)) {
-//                                    etiquetasString = etiquetasString + etiquetas.getString(i);
-//                                } else {
-//                                    etiquetasString = etiquetasString + etiquetas.getString(i) + "; " ;
-//                                }
-//                            }
-//                            etiquetasEditText.setText(etiquetasString);
-//
-//                            // Obtengo los usuarios con permisos para este archivo
-//                            JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
-//                            int cantidadUsr = usrCompartidos.length();
-//                            String usuariosString = "";
-//                            for(int i = 0; i < cantidadUsr; i++){
-//
-//                                // Si estoy en el ultimo item no agego el ";"
-//                                if(i == (cantidadUsr - 1)) {
-//                                    usuariosString = usuariosString + usrCompartidos.getString(i);
-//                                } else {
-//                                    usuariosString = usuariosString + usrCompartidos.getString(i) + "; ";
-//                                }
-//                            }
-//                            usuariosCompartidosTextView.setText(usuariosString);
-
                         } catch (JSONException e){
-
+                            Log.e("MAIN: ", e.getMessage());
+                            Log.e("MAIN: ", "No se pudo obtener o reempazar los metadatos-usuariosCompartidos del JSON.");
+                            e.printStackTrace();
                         }
                     }
 
                     @Override
-                    public void onFailure ( int statusCode, Header[] headers, Throwable throwable, JSONObject error){
-                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en recibir", Toast.LENGTH_LONG).show();
+                    public void onFailure ( int statusCode, Throwable throwable, JSONObject error){
+                        Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                        if (error == null) {
+                            Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                            Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+                                Log.e("MAIN: ", "Hubo un problema al recibir los metadatos con los usuarios compartidos que coinciden con la busqueda.");
+                                Log.e("MAIN: ", error.getString("error"));
+
+                                Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                Log.e("MAIN: ", e.getMessage());
+                                Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
 
         );
     }
 
-    public void mandarMetadatos(JSONObject metadatos){ //final String nombre, String extension, String etiquetas, String usrCompartidos){
+    public void mandarMetadatos(JSONObject metadatos){
+
+        Log.i("MAIN: ", "Voy a mandar los metadatos con los nuevos usuarios compartidos.");
 
         AsyncHttpClient client = new AsyncHttpClient();
-
-//        JSONObject jsonMetadatos = new JSONObject();
-//        String timeStamp = "";
-//        int index;
-//        String nombre = "";
-//        String extension = "";
-//        JSONArray etiquetasJSONArray =  new JSONArray();
-//        JSONArray usuariosCompartidosJSONArray = new JSONArray();
-//
-//        try{
-//            index = nombreArchivo.lastIndexOf(".");
-//            nombre = nombreArchivo.substring(0, index);
-//            extension = nombreArchivo.substring(index + 1);
-//
-//            jsonMetadatos.put("nombre", nombre);
-//            jsonMetadatos.put("extension", extension);
-//            jsonMetadatos.put("propietario", propietario);
-//            timeStamp = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());       //"mm.ss.dd.MM.yyyyyyyy").format(new Date());
-//
-//            jsonMetadatos.put("fecha ultima modificacion", timeStamp);
-//            jsonMetadatos.put("usuario ultima modificacion", username);
-//
-//
-//            String[] partesEtiquetas = etiquetas.split(";");
-//
-//            for(String etiqueta : partesEtiquetas){
-//                etiquetasJSONArray.put(etiqueta);
-//            }
-//            jsonMetadatos.put("etiquetas", etiquetasJSONArray);
-//
-//
-//            String[] partesUsuarios = usrCompartidos.split(";");
-//
-//            for(String usuario : partesUsuarios){
-//                usuario = usuario.trim();
-//                usuariosCompartidosJSONArray.put(usuario);
-//            }
-//            jsonMetadatos.put("usuarios", usuariosCompartidosJSONArray);
-//
-//        } catch (JSONException e){
-//        }
-
-//        Toast.makeText(getApplicationContext(), "tiempo: " + timeStamp, Toast.LENGTH_LONG).show();
-//        Toast.makeText(getApplicationContext(), "usuarios: " + usuariosCompartidosJSONArray.toString(), Toast.LENGTH_LONG).show();
-//        Toast.makeText(getApplicationContext(), "etiquetas: " + etiquetasJSONArray.toString(), Toast.LENGTH_LONG).show();
-
-//        Toast.makeText(getApplicationContext(), jsonMetadatos.toString(), Toast.LENGTH_LONG).show();
 
         RequestParams params = new RequestParams();
         params.put("token", token);
         params.put("user", username);
         params.put("metadatos", metadatos.toString());
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del PUT: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
+        Log.d("MAIN: ", "Los metadatos en formato JSON: \"" + metadatos.toString() + "\".");
+
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL_METADATOS + "\".");
+
         client.put(QUERY_URL_METADATOS, params, new JsonHttpResponseHandler() {
-            //
+
             @Override
-            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
+            public void onSuccess(int statusCode, JSONObject jsonObject) {
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+                Log.i("MAIN: ", "Se pudieron actualizar los usuarios compartidos exitosamente.");
+
                 Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject error) {
-                Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en mandar", Toast.LENGTH_LONG).show();
+            public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                if (error == null) {
+                    Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                    Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        Log.e("MAIN: ", "Hubo un problema al mandar los metadatos con los usuarios compartidos actualizados.");
+                        Log.e("MAIN: ", error.getString("error"));
+
+                        Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        Log.e("MAIN: ", e.getMessage());
+                        Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }

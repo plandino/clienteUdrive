@@ -19,9 +19,16 @@ public class MyDataArrays {
     static int SUCCESS          = 200;
     static int RESOURCE_CREATED = 201;
 
+    static boolean RESTAURAR    = true;
+    static boolean ELIMINAR     = false;
 
     // MI CASA
-     public static String direccion = "http://192.168.0.27:8080";
+//     public static String direccion = "http://192.168.0.27:8080";
+
+    // MI CASA COMPU SANTI
+    public static String direccion = "http://192.168.0.39:8080";
+
+
     // CASA SANTI
 //     public static String direccion = "http://192.168.0.31:8080";
     // CELU TOBI
