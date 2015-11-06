@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -81,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     AlertDialog.Builder alertCompartidos;
 
     ListView listaCompartidos;
+
+    SharedPreferences mSharedPreferences;
 
 
     @Override
@@ -953,6 +956,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.i("MAIN: ", "Sesion cerrada correctamente.");
 
                 Toast.makeText(getApplicationContext(), "Sesión cerrada", Toast.LENGTH_LONG).show();
+
+                // Accedo a los datos guardados
+                mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
+
+                // Guardo en la memoria, el username y el token
+                SharedPreferences.Editor e = mSharedPreferences.edit();
+                e.remove(MyDataArrays.USERNAME);
+                e.remove(MyDataArrays.TOKEN);
+                e.commit();
+
                 pasarAElegir();
             }
 
@@ -1348,7 +1361,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Advertencia!");
         alert.setMessage("Usted descargo la versión X y va a pisar a la ultima versión Y.\n" +
-                        "¿Esta seguro que desea sobreescribir el archivo?");
+                "¿Esta seguro que desea sobreescribir el archivo?");
 
         // El boton Sobreescribir sube el archivo igual
         alert.setPositiveButton("Sobreescribir", new DialogInterface.OnClickListener() {

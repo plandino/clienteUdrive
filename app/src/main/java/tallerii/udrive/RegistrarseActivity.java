@@ -1,6 +1,7 @@
 package tallerii.udrive;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,6 +31,8 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
     public String QUERY_URL;
 
+    SharedPreferences mSharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -53,6 +56,9 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         // Boton para registrarse
         registrarseButton = (Button) findViewById(R.id.registrarse);
         registrarseButton.setOnClickListener(this);
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
     }
 
     @Override
@@ -216,6 +222,12 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
                     Log.e("REGISTRARSE: ", e.getMessage());
                     e.printStackTrace();
                 }
+
+                // Guardo en la memoria, el username y el token
+                SharedPreferences.Editor e = mSharedPreferences.edit();
+                e.putString(MyDataArrays.USERNAME, usuario);
+                e.putString(MyDataArrays.TOKEN, token);
+                e.commit();
                 pasarAlMain(token, usuario);
             }
 

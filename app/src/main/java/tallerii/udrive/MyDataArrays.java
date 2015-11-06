@@ -22,6 +22,11 @@ public class MyDataArrays {
     static boolean RESTAURAR    = true;
     static boolean ELIMINAR     = false;
 
+    static final String SESION_DATA = "prefs";
+    static final String USERNAME    = "name";
+    static final String TOKEN       = "token";
+    static final String ARCHIVOS_DESCARGADOS = "descargados";
+
     // MI CASA
      public static String direccion = "http://192.168.0.27:8080";
 

@@ -1,6 +1,7 @@
 package tallerii.udrive;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -27,6 +28,9 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     EditText contraseniaEditText;
 
     private String QUERY_URL = MyDataArrays.direccion + "/session";
+
+    SharedPreferences mSharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -44,6 +48,9 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         // Boton para iniciar sesion
         iniciarSesionButton = (Button) findViewById(R.id.iniciar_sesion);
         iniciarSesionButton.setOnClickListener(this);
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
     }
 
     @Override
@@ -127,6 +134,10 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
                     Log.e("INICIAR_SESION: ", e.getMessage());
                     e.printStackTrace();
                 }
+                SharedPreferences.Editor e = mSharedPreferences.edit();
+                e.putString(MyDataArrays.USERNAME, usuario);
+                e.putString(MyDataArrays.TOKEN, token);
+                e.commit();
                 pasarAlMain(token, usuario);
             }
 

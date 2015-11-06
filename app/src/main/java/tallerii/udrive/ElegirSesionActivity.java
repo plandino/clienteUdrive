@@ -1,6 +1,7 @@
 package tallerii.udrive;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,7 +13,11 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
 
     Button nuevoUsuarioButton;
     Button iniciarSesionButton;
+
     private int requestCodeUno = 1;
+
+    SharedPreferences mSharedPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,17 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         // Boton para iniciar sesion con un usuario viejo
         iniciarSesionButton = (Button) findViewById(R.id.iniciar_sesion);
         iniciarSesionButton.setOnClickListener(this);
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
+
+        // Leo los datos guardados
+        String name = mSharedPreferences.getString(MyDataArrays.USERNAME, "");
+        String token = mSharedPreferences.getString(MyDataArrays.TOKEN, "");
+
+        if( (token.length() > 0 ) && (name.length() > 0 ) ){
+            pasarAlMain(token, name);
+        }
     }
 
     @Override
@@ -78,5 +94,34 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
                 finish();
             }
         }
+    }
+
+    /**
+     * Paso a la MainActivity luego de recibir el token de la sesion.
+     * Le mando los siguientes parametros a traves del Intent.
+     *
+     * @param token que recibi desde el servidor
+     * @param user username del usuario con el que inicie sesion
+     */
+    private void pasarAlMain(String token, String user){
+
+        Log.i("ELEGIR_SESION: ", "Voy a pasar a la MainActivity.");
+
+        // Creo un Intent para pasar al main
+        Intent mainIntent = new Intent(this, MainActivity.class);
+
+
+        Log.d("ELEGIR_SESION: ", "Mando al MainActivity el user: \"" + user + "\".");
+        Log.d("ELEGIR_SESION: ", "Mando al MainActivity el token: \"" + token + "\".");
+
+        // Agrego la informacion que quiero al Intent
+        mainIntent.putExtra("username", user);
+        mainIntent.putExtra("token", token);
+
+        // Inicio la actividad con el Intent
+        startActivity(mainIntent);
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
     }
 }
