@@ -23,10 +23,10 @@ public class MyDataArrays {
     static boolean ELIMINAR     = false;
 
     // MI CASA
-//     public static String direccion = "http://192.168.0.27:8080";
+     public static String direccion = "http://192.168.0.27:8080";
 
     // MI CASA COMPU SANTI
-    public static String direccion = "http://192.168.0.39:8080";
+//    public static String direccion = "http://192.168.0.39:8080";
 
 
     // CASA SANTI

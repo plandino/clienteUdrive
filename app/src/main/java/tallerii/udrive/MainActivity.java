@@ -14,12 +14,15 @@ import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,6 +72,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private static final int PICKFILE_RESULT_CODE = 1;
 
     MyLocationListener locationListener;
+
+
+    private ArrayAdapter<String> arAdapter;
+
+    private String usersYaCompartidos;
+
+    AlertDialog.Builder alertCompartidos;
+
+    ListView listaCompartidos;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -400,21 +413,28 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato JSON son: \"" + usuariosParaCompartir.toString() + "\".");
 
                     String usuarios = usuariosParaCompartir.getString("usuarios");
-                    Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato STRING son: \"" + usuariosParaCompartir.toString() + "\".");
+                    Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato STRING son: \"" + usuarios + "\".");
 
                     if (usuarios.length() > 0) {
+                        alertCompartidos.setMessage("");
                         Log.d("MAIN: ", "Agrego los usuarios a la lista.");
 
-                        textoFallido.setVisibility(View.INVISIBLE);
+//                        textoFallido.setVisibility(View.INVISIBLE);
                         String[] partes = usuarios.split(Character.toString(MyDataArrays.caracterReservado));
+                        String nuevo = usuarios.replaceAll(String.valueOf(MyDataArrays.caracterReservado), "\",\"");
+                        Log.d("MAIN: ", "El String para mostrar los usuarios para compartir es: \"" + nuevo + "\".");
+
                         for(String user : partes){
-                            arrayAdapter.add(user);
+                            if(!user.equals(username)){
+                                arAdapter.add(user);
+                            }
                         }
                         Log.d("MAIN: ", "Agregue todos los usuarios a la lista.");
 
                     } else {
+                        alertCompartidos.setMessage("No hubo ninguna coincidencia con la busqueda");
                         Log.i("MAIN: ", "Ningun usuario concuerda con la busqueda.");
-                        textoFallido.setVisibility(View.VISIBLE);
+//                        textoFallido.setVisibility(View.VISIBLE);
                     }
                 } catch (JSONException e) {
                     Log.e("MAIN: ", e.getMessage());
@@ -872,12 +892,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                if(restaurar.equals("true")){
+                if (restaurar.equals("true")) {
                     Log.i("MAIN: ", "Se ha restaurado: \"" + id + "\" exitosamente.");
-                    Toast.makeText(getApplicationContext(), "Se ha restaurado " + id , Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Se ha restaurado " + id, Toast.LENGTH_LONG).show();
                 } else {
                     Log.i("MAIN: ", "Se ha eliminado: \"" + id + "\" exitosamente.");
-                    Toast.makeText(getApplicationContext(), "Se ha eliminado " + id , Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Se ha eliminado " + id, Toast.LENGTH_LONG).show();
                 }
                 // Luego actualizo la vista
                 get(null);
@@ -887,12 +907,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
-                if(restaurar.equals("true")){
+                if (restaurar.equals("true")) {
                     Log.e("MAIN: ", "Hubo un problema al restaurar: \"" + id + "\".");
-                    Toast.makeText(getApplicationContext(), "Hubo un problema al restaurar: \"" + id + "\"." , Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al restaurar: \"" + id + "\".", Toast.LENGTH_LONG).show();
                 } else {
                     Log.e("MAIN: ", "Hubo un problema al eliminar: \"" + id + "\".");
-                    Toast.makeText(getApplicationContext(), "Hubo un problema al eliminar: \"" + id + "\"." , Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al eliminar: \"" + id + "\".", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -940,7 +960,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
                 Log.e("MAIN: ", "Hubo un problema al cerrar sesion.");
-                Toast.makeText(getApplicationContext(), "Hubo un problema al cerrar sesion" , Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Hubo un problema al cerrar sesion", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -1087,37 +1107,77 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         return URLArchivos.get(id);
     }
 
-    private void compartirArchivo(final String idArchivo){
+    private void compartirArchivo(final String id){
 
-        final AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
-        builderSingle.setIcon(R.drawable.files);
-        builderSingle.setTitle("Introducir nombre: ");
-        arrayAdapter = new ArrayAdapter<>(this,
-                android.R.layout.select_dialog_singlechoice);
+        Log.i("MAIN: ", "Voy a crear un Alert Dialog para seleccionar los usuarios con los que " +
+                "quiero compartir el archivo.");
+
+        listaCompartidos = new ListView(this);
+        arAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_multichoice);
+        listaCompartidos.setAdapter(arAdapter);
+        listaCompartidos.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+
+        alertCompartidos = new AlertDialog.Builder(this);
+
+        alertCompartidos.setTitle("Compartir");
+        alertCompartidos.setMessage("");
+        // El boton "Compartir" actualizo los metadatos con todos los usuarios tildados
+        alertCompartidos.setPositiveButton("Compartir", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en Compartir.");
+
+                int cntChoice = listaCompartidos.getCount();
+
+                String checked = "";
+                SparseBooleanArray sparseBooleanArray = listaCompartidos.getCheckedItemPositions();
+
+                for (int i = 0; i < cntChoice; i++) {
+                    if (sparseBooleanArray.get(i)) {
+                        checked += listaCompartidos.getItemAtPosition(i).toString() + MyDataArrays.caracterReservado;
+                    }
+                }
+                actualizarMetadatos(id, checked, true);
+            }
+        });
+
+
+        // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
+        alertCompartidos.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en cancelar.");
+            }
+        });
+
+
+
+        listaCompartidos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View view, int pos, long id) {
+
+                listaCompartidos.setItemChecked(pos, true);
+
+//                if(lista.isItemChecked(pos)){
+//                    lista.setItemChecked(pos, false);
+//                } else {
+//                    lista.setItemChecked(pos, true);
+//                }
+            }
+        });
+
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+        float pxTodp = 300 / getResources().getDisplayMetrics().density;
+        layout.setPadding((int)pxTodp, 0,(int) pxTodp, 0);
         final EditText usuario = new EditText(this);
-        textoFallido = new TextView(this);
+//        textoFallido = new TextView(this);
         usuario.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                arrayAdapter.clear();
-                if( s.length() > 0 ){
+                arAdapter.clear();
+                if (s.length() > 0) {
                     getUsuarios(s.toString());
-                } else {
-                    arrayAdapter.clear();
                 }
-                boolean noSaque = true;
-
-
-
-//                try{
-////                    usuarios = usuariosParaCompartir.getString("usuarios");
-//                } catch (JSONException e ){
-//
-//                }
-//                arrayAdapter.add(usuarios);
             }
 
             @Override
@@ -1128,64 +1188,23 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void afterTextChanged(Editable s) {
 
-                //if statement here I guess
-//                usuario.setText(usuario.getText() + "Hello, world");
             }
         });
-//        builderSingle.setView(usuario);
-
-
-        String textoSinCoincidenciass = "La busqueda de usuarios no dio resultados.";
-
-        textoFallido.setText(textoSinCoincidenciass);
-        textoFallido.setVisibility(View.INVISIBLE);
-        layout.addView(textoFallido);
+//        layout.addView(textoFallido);
+        layout.addView(listaCompartidos);
         layout.addView(usuario);
 
-        builderSingle.setView(layout);
-//        builderSingle.setView(texto);
+        alertCompartidos.setView(layout);
 
-        builderSingle.setNegativeButton("cancel",
-                new DialogInterface.OnClickListener() {
+        actualizarMetadatos(id, "",false );
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+        alertCompartidos.show();
 
-        builderSingle.setAdapter(arrayAdapter,
-                new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String strName = arrayAdapter.getItem(which);
-//                        arrayAdapter.getItem(which).setI
-//                        builderSingle
-                        actualizarMetadatos(idArchivo, strName);
-
-//                        AlertDialog.Builder builderInner = new AlertDialog.Builder(MainActivity.this);
-//                        builderInner.setMessage(strName);
-//                        builderInner.setTitle("Your Selected Item is");
-//                        builderInner.setPositiveButton("Ok",
-//                                new DialogInterface.OnClickListener() {
-//
-//                                    @Override
-//                                    public void onClick(
-//                                            DialogInterface dialog, int which) {
-//                                        dialog.dismiss();
-//                                    }
-//                                });
-//                        builderInner.show();
-                    }
-                });
-        builderSingle.create();
-        builderSingle.show();
     }
 
-    public void actualizarMetadatos(String idArchivo, final String busquedaUsuario){
+    public void actualizarMetadatos(String idArchivo, final String usuariosACompartir, final boolean mandar){
 
-        Log.i("MAIN: ", "Voy a buscar los usuarios que concuerdan con la busqueda: \"" + busquedaUsuario +"\".");
+        Log.i("MAIN: ", "Voy a los metadatos del archivo: \"" + idArchivo +"\".");
         QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivos(idArchivo + "." + obtenerTipoDeArchivo(idArchivo)); //idArchivo + "." + obtenerTipoDeArchivo(idArchivo);
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -1214,16 +1233,29 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                             JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
                             Log.d("MAIN: ", "Los usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
 
-                            // Obtengo la cantidad de usuarios con lo que esta compartido este archivo
-                            // y le agrego el usuario nuevo al final
-                            int cantidadUsr = usrCompartidos.length();
-                            Log.d("MAIN: ", "La cantidad de usuarios compartidos anteriormente es: \"" + cantidadUsr + "\".");
-                            usrCompartidos.put(cantidadUsr, busquedaUsuario);
-                            Log.d("MAIN: ", "Los nuevos usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
+                            String[] partes = usuariosACompartir.split(String.valueOf(MyDataArrays.caracterReservado));
+                            for(int i = 0; i < partes.length ; i++){
+                                // Obtengo la cantidad de usuarios con lo que esta compartido este archivo
+                                // y le agrego el usuario nuevo al final
+                                int cantidadUsr = usrCompartidos.length();
+                                Log.d("MAIN: ", "La cantidad de usuarios compartidos anteriormente es: \"" + cantidadUsr + "\".");
+                                usrCompartidos.put(cantidadUsr, partes[i]);
+                                Log.d("MAIN: ", "Los nuevos usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
+                            }
 
-                            // Le pongo los nuevos usuarios compartidos a los metadatos y los mando
-                            metadatos.put("usuarios", usrCompartidos);
-                            mandarMetadatos(metadatos);
+
+                            if(mandar){
+                                // Le pongo los nuevos usuarios compartidos a los metadatos y los mando
+                                metadatos.put("usuarios", usrCompartidos);
+                                mandarMetadatos(metadatos);
+                            } else {
+                                int cant = usrCompartidos.length();
+                                for(int i = 0; i < cant -1 ; i++){
+                                    arAdapter.add(usrCompartidos.getString(i));
+                                    listaCompartidos.setItemChecked(i, true);
+                                }
+                            }
+
 
                         } catch (JSONException e){
                             Log.e("MAIN: ", e.getMessage());
@@ -1308,5 +1340,34 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 }
             }
         });
+    }
+
+    public void avisarColision(){
+        Log.i("MAIN: ", "Voy a crear un Alert Dialog avisando que hay una colision entre archivos");
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Advertencia!");
+        alert.setMessage("Usted descargo la versión X y va a pisar a la ultima versión Y.\n" +
+                        "¿Esta seguro que desea sobreescribir el archivo?");
+
+        // El boton Sobreescribir sube el archivo igual
+        alert.setPositiveButton("Sobreescribir", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d("MAIN: ", "Hice click en sobreescribir.");
+
+            }
+        });
+
+        // Un boton para cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en Cancelar.");
+            }
+        });
+
+        alert.show();
+
+        Log.i("MAIN: ", "Mostre un dialogo de advertencia.");
     }
 }

@@ -304,21 +304,6 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
             Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo de la foto de perfil", Toast.LENGTH_LONG).show();
         }
 
-//        // TODO: SIEMPRE HAY QUE MANDAR LA FOTO DE PERFIL, REVISAR
-//        try{
-//            Log.d("PERFIL: ", "Trato de buscar la foto de perfil desde el path: \"" + fotoPath + "\".");
-//            File archivo = new File(fotoPath);
-//            params.put("picture", archivo);
-//            Log.i("PERFIL: ", "Pude abrir la foto de perfil a subir.");
-//
-//        } catch (FileNotFoundException e){
-//            Log.e("PERFIL: ", "No pude abrir la foto de perfil a subir.");
-//            Log.e("PERFIL: ", e.getMessage());
-//            e.printStackTrace();
-//
-//            Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo de la foto de perfil", Toast.LENGTH_LONG).show();
-//        }
-
         final int id = 1;
         mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(this);
