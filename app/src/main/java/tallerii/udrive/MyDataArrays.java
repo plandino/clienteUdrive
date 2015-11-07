@@ -22,6 +22,9 @@ public class MyDataArrays {
     static boolean RESTAURAR    = true;
     static boolean ELIMINAR     = false;
 
+    static boolean RECIBIR      = false;
+    static boolean MANDAR       = true;
+
     static final String SESION_DATA = "prefs";
     static final String USERNAME    = "name";
     static final String TOKEN       = "token";

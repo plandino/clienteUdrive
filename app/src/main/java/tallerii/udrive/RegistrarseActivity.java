@@ -31,8 +31,6 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
     public String QUERY_URL;
 
-    SharedPreferences mSharedPreferences;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -57,8 +55,6 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         registrarseButton = (Button) findViewById(R.id.registrarse);
         registrarseButton.setOnClickListener(this);
 
-        // Accedo a los datos guardados
-        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
     }
 
     @Override
@@ -142,7 +138,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         params.put("premium", premium);
         
         String perfil = "{\"nombre\" : \"" + nombre + "\",\"email\" :  \"" + mail + "\"}";
-        params.put("profile",  perfil);
+        params.put("profile", perfil);
 
         Log.d("REGISTRARSE: ", "Voy a ingresar los siguientes datos en los parametros de la request: ");
         Log.d("REGISTRARSE: ", "El usuario ingresado es: \"" + usuario + "\".");
@@ -223,11 +219,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
                     e.printStackTrace();
                 }
 
-                // Guardo en la memoria, el username y el token
-                SharedPreferences.Editor e = mSharedPreferences.edit();
-                e.putString(MyDataArrays.USERNAME, usuario);
-                e.putString(MyDataArrays.TOKEN, token);
-                e.commit();
+                guardarDatosUsuario(token, usuario);
                 pasarAlMain(token, usuario);
             }
 
@@ -253,6 +245,20 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
                 }
             }
         });
+    }
+
+    private void guardarDatosUsuario(String token, String usuario){
+
+        SharedPreferences mSharedPreferences;
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
+
+        // Guardo en la memoria, el username y el token
+        SharedPreferences.Editor e = mSharedPreferences.edit();
+        e.putString(MyDataArrays.USERNAME, usuario);
+        e.putString(MyDataArrays.TOKEN, token);
+        e.apply();
     }
 
     /**
@@ -283,5 +289,4 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         setResult(RESULT_OK, returnIntent);
         finish();
     }
-
 }

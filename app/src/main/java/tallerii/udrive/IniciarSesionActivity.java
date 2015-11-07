@@ -28,9 +28,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     EditText contraseniaEditText;
 
     private String QUERY_URL = MyDataArrays.direccion + "/session";
-
-    SharedPreferences mSharedPreferences;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -48,9 +46,6 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         // Boton para iniciar sesion
         iniciarSesionButton = (Button) findViewById(R.id.iniciar_sesion);
         iniciarSesionButton.setOnClickListener(this);
-
-        // Accedo a los datos guardados
-        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
     }
 
     @Override
@@ -134,10 +129,8 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
                     Log.e("INICIAR_SESION: ", e.getMessage());
                     e.printStackTrace();
                 }
-                SharedPreferences.Editor e = mSharedPreferences.edit();
-                e.putString(MyDataArrays.USERNAME, usuario);
-                e.putString(MyDataArrays.TOKEN, token);
-                e.commit();
+
+                guardarDatosUsuario(token, usuario);
                 pasarAlMain(token, usuario);
             }
 
@@ -164,6 +157,20 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
                 }
             }
         });
+    }
+
+    private void guardarDatosUsuario(String token, String usuario){
+
+        SharedPreferences mSharedPreferences;
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
+
+        // Guardo en la memoria, el username y el token
+        SharedPreferences.Editor e = mSharedPreferences.edit();
+        e.putString(MyDataArrays.USERNAME, usuario);
+        e.putString(MyDataArrays.TOKEN, token);
+        e.apply();
     }
 
     /**
