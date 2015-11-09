@@ -7,20 +7,20 @@
         android:icon="@android:drawable/ic_menu_search"
         android:title="@string/buscar"
         android:orderInCategory="1"
-        app:showAsAction="ifRoom"
+        app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView"/>
 
     <item android:id="@+id/subir_archivo"
         android:icon="@android:drawable/ic_menu_upload"
         android:title="@string/subir"
         android:orderInCategory="2"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="collapseActionView|ifRoom"/>
 
     <item android:id="@+id/crear_carpeta"
         android:icon="@android:drawable/ic_input_add"
         android:title="@string/crear_carpeta"
         android:orderInCategory="3"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="collapseActionView|ifRoom"/>
 
     <item android:id="@+id/ver_perfil"
         android:title="@string/ver_perfil"

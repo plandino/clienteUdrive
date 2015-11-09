@@ -21,6 +21,13 @@
     <string name="papelera">Papelera</string>
     <string name="carpetas_compartidas">Archivos compartidos</string>
 
+    <string name="buscar_nombre">Buscar por nombre</string>
+    <string name="buscar_extension">Buscar por extensión</string>
+    <string name="buscar_etiqueta">Buscar por etiquetas</string>
+    <string name="buscar_propietario">Buscar por propietario</string>
+
+
+
 
     <!-- Campos botones -->
     <string name="iniciar_sesion">Iniciar sesión</string>

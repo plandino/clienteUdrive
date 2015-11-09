@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -42,7 +43,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class MainActivity extends AppCompatActivity implements FilesFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements FilesFragment.OnFragmentInteractionListener {
 
     FragmentManager fragmentManager;
 
@@ -84,6 +85,22 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private JSONArray usuariosCompartidos;
 
+    private boolean busque = false;
+    private boolean menuActualizado = false;
+
+    private MenuItem buscarNombre;
+    private MenuItem buscarExtension;
+    private MenuItem buscarEtiquetas;
+    private MenuItem buscarPropietario;
+
+    private Menu menuMain;
+
+    private boolean buscarPorNombre;
+    private boolean buscarPorExtension;
+    private boolean buscarPorEtiquetas;
+    private boolean buscarPorPropietario;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -107,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         usuariosCompartidos = new JSONArray();
 
         fragmentManager = getFragmentManager();
+
+        busque = false;
 
         // Creo el LocationManager y le digo que se puede ubicar usando Internet o el GPS
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -142,34 +161,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
 
-//        final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                onSearchRequested();
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                // Do something
-//                onSearchRequested();
-//
-//                return true;
-//            }
-//        };
-//
+        menuMain = menu;
+        agregarBusqueda(menu);
+
+
+        menuActualizado = true;
 //        searchView.setOnQueryTextListener(queryTextListener);
 
         return true;
@@ -201,23 +202,158 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     @Override
-    public boolean onSearchRequested() {
-        Bundle appDataBundle = new Bundle();
-        appDataBundle.putString("user", username);
-        appDataBundle.putString("token", token);
-        startSearch(null, false, appDataBundle, false);
+    public boolean onPrepareOptionsMenu(Menu menu){
+
+        if( !menuActualizado ){
+            menuActualizado = true;
+            if(busque){
+
+                menu.removeItem(R.id.subir_archivo);
+                menu.removeItem(R.id.crear_carpeta);
+                menu.removeItem(R.id.papelera);
+                menu.removeItem(R.id.carpetas_compartidas);
+                menu.removeItem(R.id.ver_perfil);
+                menu.removeItem(R.id.cerrar_sesion);
+                menu.removeItem(R.id.actualizar);
+
+
+                getMenuInflater().inflate(R.menu.menu_busqueda, menu);
+
+                buscarNombre = menu.findItem(R.id.buscar_nombre);
+                buscarExtension = menu.findItem(R.id.buscar_extension);
+                buscarEtiquetas = menu.findItem(R.id.buscar_etiqueta);
+                buscarPropietario = menu.findItem(R.id.buscar_propietario);
+
+            } else {
+                if(buscarNombre != null){
+
+                }
+
+
+            }
+        }
+
         return true;
+    }
+
+    public void agregarBusqueda(final Menu menu){
+// Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        // Le agrego un Listener para detectar cuando expando la barra de busqueda y cuando la cierro
+        MenuItem menuItem = menu.findItem(R.id.buscar_archivo);
+
+        MenuItemCompat.setOnActionExpandListener(menuItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+
+                menu.removeItem(buscarNombre.getItemId());
+                menu.removeItem(buscarExtension.getItemId());
+                menu.removeItem(buscarEtiquetas.getItemId());
+                menu.removeItem(buscarPropietario.getItemId());
+
+                menu.removeItem(R.id.buscar_archivo);
+
+                getMenuInflater().inflate(R.menu.menu_main, menu);
+
+                agregarBusqueda(menu);
+
+                busque = false;
+                menuActualizado = false;
+//                getMenuInflater().inflate(R.menu.menu_main, menu);
+                get(null);
+                return true;  // Siempre devuelvo true
+            }
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+//                invalidateOptionsMenu();
+//                menu.clear();
+                menuActualizado = false;
+                busque = true;
+//                getMenuInflater().inflate(R.menu.menu_busqueda, menu);
+
+//                buscarNombre = menu.findItem(R.id.buscar_nombre);
+//                buscarExtension = menu.findItem(R.id.buscar_extension);
+//                buscarEtiquetas = menu.findItem(R.id.buscar_etiqueta);
+//                buscarPropietario = menu.findItem(R.id.buscar_propietario);
+                return true;  // Siempre devuelvo true
+            }
+        });
     }
 
     @Override
     public void startActivity(Intent intent) {
+
+
         // check if search intent
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            intent.putExtra("user", username);
-            intent.putExtra("token", token);
+            String busqueda = intent.getStringExtra(SearchManager.QUERY);
+            buscarPorMetadatos(busqueda);
+            Toast.makeText(getApplicationContext(), "TATA2", Toast.LENGTH_LONG).show();
+//            intent.putExtra("user", username);
+//            intent.putExtra("token", token);
         }
+////
+//        super.startActivity(intent);
 
-        super.startActivity(intent);
+    }
+
+    public void buscarPorMetadatos(final String busqueda){
+
+//        busque = true;
+
+        String myQuery = MyDataArrays.direccion + "/metadata/" ;
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        final RequestParams params = new RequestParams();
+        params.put("token", token);
+        params.put("user", username);
+        if(buscarPorNombre){
+            params.put("nombre", busqueda);
+        }
+        if(buscarPorExtension){
+            params.put("extension", busqueda);
+
+        }
+        if(buscarPorEtiquetas){
+            params.put("etiqueta", busqueda);
+
+        }
+        if(buscarPorPropietario){
+            params.put("propietario", busqueda);
+
+        }
+        params.put("propietario", busqueda);
+
+
+        client.get(myQuery, params, new JsonHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int status, JSONObject jsonObject) {
+                        if (jsonObject != null) {
+                            try {
+                                estructuraCarpetasJSON = jsonObject.getJSONObject("busqueda");
+                            } catch (JSONException e) {
+
+                            }
+                            crearNuevoFragmento(estructuraCarpetasJSON.toString());
+
+
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure ( int statusCode, Throwable throwable, JSONObject error){
+                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en recibir", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+        );
     }
 
     @Override
@@ -226,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         switch (item.getItemId()) {
             case R.id.buscar_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de buscar archivo.");
-                onSearchRequested();
+//                onSearchRequested();
                 return true;
             case R.id.subir_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de subir archivo.");
@@ -252,6 +388,28 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.i("MAIN: ", "Hice click en el boton para cerrar sesión.");
                 cerrarSesion();
                 return true;
+
+            case R.id.buscar_nombre:
+                buscarNombre.setChecked(!buscarNombre.isChecked());
+                Log.i("MAIN: ", "Cambie el estado de la busqueda por nombres de archivos.");
+                buscarPorNombre = buscarNombre.isChecked();
+                return true;
+            case R.id.buscar_extension:
+                buscarExtension.setChecked(!buscarExtension.isChecked());
+                Log.i("MAIN: ", "Cambie el estado de la busqueda por extensiones de archivos.");
+                buscarPorExtension = buscarExtension.isChecked();
+                return true;
+            case R.id.buscar_etiqueta:
+                buscarEtiquetas.setChecked(!buscarEtiquetas.isChecked());
+                Log.i("MAIN: ", "Cambie el estado de la busqueda por etiquetas de archivos.");
+                buscarPorEtiquetas = buscarEtiquetas.isChecked();
+                return true;
+            case R.id.buscar_propietario:
+                buscarPropietario.setChecked(!buscarPropietario.isChecked());
+                Log.i("MAIN: ", "Cambie el estado de la busqueda por propietarios de archivos.");
+                buscarPorPropietario = buscarPropietario.isChecked();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -957,6 +1115,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.i("MAIN: ", "Voy a cerrar sesion.");
 
+        borrarDatosUsuario();
+
         QUERY_URL = MyDataArrays.direccion + "/session/" + token;
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -989,7 +1149,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                 Toast.makeText(getApplicationContext(), "Sesión cerrada", Toast.LENGTH_LONG).show();
 
-                borrarDatosUsuario();
                 pasarAElegir();
             }
 
@@ -1004,6 +1163,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private void borrarDatosUsuario(){
 
+        Log.i("MAIN: ", "Voy a borrar los datos de usuario.");
+
         SharedPreferences mSharedPreferences;
 
         // Accedo a los datos guardados
@@ -1014,6 +1175,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         e.remove(MyDataArrays.USERNAME);
         e.remove(MyDataArrays.TOKEN);
         e.apply();
+
+        Log.i("MAIN: ", "Pude borrar los datos de usuario.");
+
     }
 
     private void obtenerMetadatos(String id){
@@ -1067,7 +1231,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         PATH_ACTUAL = PATH_ACTUAL + "/";
 
 
-        if(volver)  get(null);
+        if(volver) get(null);
+
     }
 
     // Este metodo sirve para ir a la activity de iniciar sesion o registrarse

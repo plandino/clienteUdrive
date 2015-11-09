@@ -55,6 +55,9 @@ public class SearchableActivity extends AppCompatActivity implements FilesFragme
             token = intent.getStringExtra("token");
             actualizarMetadatos(busqueda, 0);
         }
+
+        Toast.makeText(getApplicationContext(), "Inicie la search", Toast.LENGTH_LONG).show();
+
     }
 
 
