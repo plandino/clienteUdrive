@@ -50,23 +50,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private String token = "";
     private String username = "";
 
-    private String QUERY_URL = MyDataArrays.direccion + "/profile";
+    private String QUERY_CARPETAS = MyDataArrays.direccion + "/folder/";
 
-    private String QUERY_URL_CARPETAS = MyDataArrays.direccion + "/folder/";
     private String QUERY_URL_METADATOS;
-
-    private String PATH_ACTUAL = "/";
 
     private String estructuraCarpetas;
     private JSONObject estructuraCarpetasJSON;
     private JSONObject usuariosParaCompartir;
 
-    HashMap<String, String> hashTipoArchivos;
     HashMap<String, String> URLArchivos;
+    HashMap<String, String> extensionesArchivos;
 
-    private ArrayAdapter<String> arrayAdapter;
     private TextView textoFallido;
-
 
     private static final int METADATOS = 2;
 
@@ -75,17 +70,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     MyLocationListener locationListener;
 
 
-    private ArrayAdapter<String> arAdapter;
-
-    private String usersYaCompartidos;
+    private ArrayAdapter<String> usuariosAdapter;
 
     AlertDialog.Builder alertCompartidos;
+
+    SharedPreferences mSharedPreferences;
 
     ListView listaCompartidos;
 
     private JSONArray usuariosCompartidos;
 
-    private boolean busque = false;
     private boolean menuActualizado = false;
 
     private MenuItem buscarNombre;
@@ -93,12 +87,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private MenuItem buscarEtiquetas;
     private MenuItem buscarPropietario;
 
-    private Menu menuMain;
-
     private boolean buscarPorNombre;
     private boolean buscarPorExtension;
     private boolean buscarPorEtiquetas;
     private boolean buscarPorPropietario;
+
+    private String PATH_CARPETAS = "/";
 
 
     @Override
@@ -117,15 +111,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.d("MAIN: ", "Saque del Intent el token: \"" + token + "\".");
         Log.d("MAIN: ", "Saque del Intent el username: \"" + username + "\".");
 
-        QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + username + "/";
+        QUERY_CARPETAS += username + "/";
 
-        Log.d("MAIN: ", "Forme el URL_CARPETAS: \"" + QUERY_URL_CARPETAS + "\".");
+        Log.d("MAIN: ", "Forme el URL_CARPETAS: \"" + QUERY_CARPETAS + "\".");
+
+        // Accedo a los datos guardados
+        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
 
         usuariosCompartidos = new JSONArray();
 
         fragmentManager = getFragmentManager();
-
-        busque = false;
 
         // Creo el LocationManager y le digo que se puede ubicar usando Internet o el GPS
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -152,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             Toast.makeText(getApplicationContext(), "No se pudo inicializar el GPS.", Toast.LENGTH_LONG).show();
         }
 
+        Log.i("MAIN: ", "Se creo la MainActivity.");
+
         get(null);
     }
 
@@ -162,51 +159,63 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
 
-
-        menuMain = menu;
-        agregarBusqueda(menu);
-
-
+        // Este booleano se usa para avisar que modifique el menu cuando entro en la interfaz de busqueda de archivos.
+        // Al inicio se carga el menu por defecto, asi que se encuentra actualizado.
         menuActualizado = true;
-//        searchView.setOnQueryTextListener(queryTextListener);
+
+        agregarMenu(menu);
 
         return true;
 
-//        // Get the SearchView and set the searchable configuration
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
-//        // Assumes current activity is the searchable activity
-//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-//        searchView.setIconifiedByDefault(true); // Do not iconify the widget; expand it by default
-//        final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                onSearchRequested();
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                // Do something
-//                onSearchRequested();
-//
-//                return true;
-//            }
-//        };
-//
-//        searchView.setOnQueryTextListener(queryTextListener);
-//        return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu){
+    /**
+     * Agrega el menu principal a la aplicacion.
+     * @param menu Menu principal de la aplicacion el cual es configurado.
+     */
+    public void agregarMenu(final Menu menu){
 
-        if( !menuActualizado ){
-            menuActualizado = true;
-            if(busque){
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Agrega al menu la barra de busqueda
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        // Le agrego un Listener para detectar cuando expando la barra de busqueda y cuando la cierro
+        MenuItem menuItem = menu.findItem(R.id.buscar_archivo);
+
+        MenuItemCompat.setOnActionExpandListener(menuItem, new MenuItemCompat.OnActionExpandListener() {
+
+            /**
+             * Se encarga de modificar el menu cuando detecta que se colapso la barra de busqueda
+             * @param item item colapsado
+             * @return siempre tiene que devolver un booleano igual a true
+             */
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+
+                menu.removeItem(R.id.buscar_nombre);
+                menu.removeItem(R.id.buscar_extension);
+                menu.removeItem(R.id.buscar_etiqueta);
+                menu.removeItem(R.id.buscar_propietario);
+
+                menu.removeItem(R.id.buscar_archivo);
+
+                // Se menuActualizado == false, es porque antes busque un archivo y se cambio el menu
+                // Entonces el menu esta desactualizado y hay que cambiarlo.
+                if( !menuActualizado){
+                    menuActualizado = true;
+                    agregarMenu(menu);
+                }
+
+                get(null);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
 
                 menu.removeItem(R.id.subir_archivo);
                 menu.removeItem(R.id.crear_carpeta);
@@ -216,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 menu.removeItem(R.id.cerrar_sesion);
                 menu.removeItem(R.id.actualizar);
 
-
                 getMenuInflater().inflate(R.menu.menu_busqueda, menu);
 
                 buscarNombre = menu.findItem(R.id.buscar_nombre);
@@ -224,61 +232,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 buscarEtiquetas = menu.findItem(R.id.buscar_etiqueta);
                 buscarPropietario = menu.findItem(R.id.buscar_propietario);
 
-            } else {
-                if(buscarNombre != null){
-
-                }
-
-
-            }
-        }
-
-        return true;
-    }
-
-    public void agregarBusqueda(final Menu menu){
-// Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-
-        // Le agrego un Listener para detectar cuando expando la barra de busqueda y cuando la cierro
-        MenuItem menuItem = menu.findItem(R.id.buscar_archivo);
-
-        MenuItemCompat.setOnActionExpandListener(menuItem, new MenuItemCompat.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-
-                menu.removeItem(buscarNombre.getItemId());
-                menu.removeItem(buscarExtension.getItemId());
-                menu.removeItem(buscarEtiquetas.getItemId());
-                menu.removeItem(buscarPropietario.getItemId());
-
-                menu.removeItem(R.id.buscar_archivo);
-
-                getMenuInflater().inflate(R.menu.menu_main, menu);
-
-                agregarBusqueda(menu);
-
-                busque = false;
+                // Cambie al menu de busquedas, por lo que el menu esta desactualizado y cuando cierre
+                // la interfaz de busquedas, tengo que volver a agregar el menu por defecto.
                 menuActualizado = false;
-//                getMenuInflater().inflate(R.menu.menu_main, menu);
-                get(null);
-                return true;  // Siempre devuelvo true
-            }
 
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-//                invalidateOptionsMenu();
-//                menu.clear();
-                menuActualizado = false;
-                busque = true;
-//                getMenuInflater().inflate(R.menu.menu_busqueda, menu);
-
-//                buscarNombre = menu.findItem(R.id.buscar_nombre);
-//                buscarExtension = menu.findItem(R.id.buscar_extension);
-//                buscarEtiquetas = menu.findItem(R.id.buscar_etiqueta);
-//                buscarPropietario = menu.findItem(R.id.buscar_propietario);
                 return true;  // Siempre devuelvo true
             }
         });
@@ -287,20 +244,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     public void startActivity(Intent intent) {
 
-
-        // check if search intent
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String busqueda = intent.getStringExtra(SearchManager.QUERY);
             buscarPorMetadatos(busqueda);
-            Toast.makeText(getApplicationContext(), "TATA2", Toast.LENGTH_LONG).show();
-//            intent.putExtra("user", username);
-//            intent.putExtra("token", token);
+        } else {
+            super.startActivity(intent);
         }
-////
-//        super.startActivity(intent);
-
     }
 
+    /**
+     * Busca los archivos que concuerdan con la busqueda, en alguno de sus metadatos.
+     * @param busqueda Busqueda a realizar.
+     */
     public void buscarPorMetadatos(final String busqueda){
 
 //        busque = true;
@@ -338,7 +293,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                             try {
                                 estructuraCarpetasJSON = jsonObject.getJSONObject("busqueda");
                             } catch (JSONException e) {
-
+                                Log.e("MAIN: ", e.getMessage());
+                                Log.e("MAIN: ", "No pude obtener los datos del JSON de la busqueda de archivos.");
+                                e.printStackTrace();
                             }
                             crearNuevoFragmento(estructuraCarpetasJSON.toString());
 
@@ -356,10 +313,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         );
     }
 
+    /**
+     * Detecta que opcion del menu de "hamburguesa" se clickeo.
+     * @param item item del menu de "hamburguesa" clickeado.
+     * @return Siempre tiene que devolver true
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+
+            // Menu para el movimiento normal por carpetas y archivos
             case R.id.buscar_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de buscar archivo.");
 //                onSearchRequested();
@@ -389,6 +353,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 cerrarSesion();
                 return true;
 
+            // Menu para las busquedas de archivos
             case R.id.buscar_nombre:
                 buscarNombre.setChecked(!buscarNombre.isChecked());
                 Log.i("MAIN: ", "Cambie el estado de la busqueda por nombres de archivos.");
@@ -417,6 +382,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
 
+    /**
+     * Atrapa el resultado de una Activity que fue llamada, de la cual se esperaba un resultado.
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -459,25 +430,28 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     /**
-     * Hace un GET al archivo o carpeta segun corresponda
-     * @param id nombre del archivo o carpeta de la cual se quiere obtener informacion
+     * Obtiene la estructura interna de la carpeta pasada por parametro, o de la cual se encuentra actualmente
+     * parado en caso de que se le pase un null.
+     * @param id nombre de la carpeta, de la cual se quiere obtener la estructura interna.
+     *           Si es un null, se obtiene la estructura interna de la carpeta en la cual se encuentra
+     *           actualmente parado el usuario.
      */
     private void get(String id) {
         Log.d("MAIN: ", "Voy a obtener la estrcutra interna de la carpeta: \"" + id + "\".");
 
         if(id != null){
             if(id.equals(MyDataArrays.caracterReservado + "permisos")){
-                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/"  + id + "/" + username ;
-                Toast.makeText(getApplicationContext(), QUERY_URL_CARPETAS, Toast.LENGTH_LONG).show();
-                PATH_ACTUAL = "/" + id + "/";
-
+                PATH_CARPETAS = "/" + id + "/";
+                QUERY_CARPETAS =  MyDataArrays.direccion + "/folder"  + PATH_CARPETAS +  username ;
             } else if(id.equals(MyDataArrays.caracterReservado + "trash")){
-                QUERY_URL_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + "/" + id + "/";
-                PATH_ACTUAL = "/" + id + "/";
+                PATH_CARPETAS = "/" + id + "/";
+                QUERY_CARPETAS =  MyDataArrays.direccion + "/folder/" + username + PATH_CARPETAS;
             } else {
-                QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + id + "/";
-                PATH_ACTUAL = PATH_ACTUAL + id + "/";
+                PATH_CARPETAS += id + "/";
+                QUERY_CARPETAS += id + "/";
             }
+        } else {
+            QUERY_CARPETAS = MyDataArrays.direccion + "/folder/" + username + PATH_CARPETAS;
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -486,9 +460,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
 
-        Log.d("MAIN: ", "El URL al que le pego es: \"" + QUERY_URL_CARPETAS + "\".");
+        Log.d("MAIN: ", "El URL al que le pego es: \"" + QUERY_CARPETAS + "\".");
 
-        client.get(QUERY_URL_CARPETAS, params, new JsonHttpResponseHandler() {
+
+        client.get(QUERY_CARPETAS, params, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
@@ -501,8 +476,22 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
                     Log.d("MAIN: ", "La estructura de la carpeta en formato JSON: \"" + estructuraCarpetasJSON + "\".");
 
-                    guardarMapaArchivos(estructuraCarpetasJSON);
                     guardarURLArchivos(estructuraCarpetasJSON);
+                    guardarExtensionesArchivos(estructuraCarpetasJSON);
+
+//                    Log.d("MAIN: ", "Extension UNO: \"" + obtenerExtensionArchivo("cuadrocomparativo") + "\".");
+//                    Log.d("MAIN: ", "Extension DOS: \"" + obtenerExtensionArchivo("Derechos_industriales") + "\".");
+//                    Log.d("MAIN: ", "Extension TRES: \"" + obtenerExtensionArchivo("texto") + "\".");
+//                    Log.d("MAIN: ", "Extension CUATRO: \"" + obtenerExtensionArchivo("app-debug") + "\".");
+//                    Log.d("MAIN: ", "Extension CINCO: \"" + obtenerExtensionArchivo("ejteo_clase5") + "\".");
+//                    Log.d("MAIN: ", "Extension SEIS: \"" + obtenerExtensionArchivo("FileDialog") + "\".");
+//
+//                    Log.d("MAIN: ", "URL UNO: \"" + obtenerURLArchivo("cuadrocomparativo") + "\".");
+//                    Log.d("MAIN: ", "URL DOS: \"" + obtenerURLArchivo("Derechos_industriales") + "\".");
+//                    Log.d("MAIN: ", "URL TRES: \"" + obtenerURLArchivo("texto") + "\".");
+//                    Log.d("MAIN: ", "URL CUATRO: \"" + obtenerURLArchivo("app-debug") + "\".");
+//                    Log.d("MAIN: ", "URL CINCO: \"" + obtenerURLArchivo("ejteo_clase5") + "\".");
+//                    Log.d("MAIN: ", "URL SEIS: \"" + obtenerURLArchivo("FileDialog") + "\".");
 
 
                 } catch (JSONException e) {
@@ -590,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                         for (String user : partes) {
 
                             if (!user.equals(username)) {
-                                arAdapter.add(user);
+                                usuariosAdapter.add(user);
                                 listaCompartidos.setItemChecked(j, false);
 
 
@@ -600,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 Log.d("MAIN: ", "cant: \"" + cant + "\".");
 
                                 for (int i = 0; i < cant; i++) {
-                                    try{
+                                    try {
 
                                         String usuario = usuariosCompartidos.getString(i);
                                         Log.d("MAIN: ", "El usuario revisado es: \"" + usuario + "\".");
@@ -612,7 +601,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                             Log.d("MAIN: ", "Puse en true el tilde.");
 
                                         }
-                                    } catch (JSONException e){
+                                    } catch (JSONException e) {
                                         Log.e("MAIN: ", e.getMessage());
                                         Log.e("MAIN: ", "Error al sacar al marcar los ticks en los usuarios ya compartidos.");
                                         e.printStackTrace();
@@ -662,23 +651,23 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      * Maneja los clicks hechos sobre un padre en la ExpandableList.
      * Cuando es una carpeta, accede a ella y obtiene la estructura interna.
      * Cuando es un archivo, busca los metadatos del archivo.
-     * @param id nombre del item padre(carpeta o archivo) del cual se hizo click.
+     * @param idClick nombre del item padre(carpeta o archivo) del cual se hizo click.
      */
     @Override
-    public void onGroupClick(String id) {
+    public void onGroupClick(String idClick) {
 
-        Log.d("MAIN: ", "Hice click sobre: \"" + id + "\".");;
+        Log.d("MAIN: ", "Hice click sobre: \"" + idClick + "\".");
 
-        String tipoDeArchivo = obtenerTipoDeArchivo(id);
+        String tipoDeArchivo = obtenerExtensionArchivo(idClick);
 
-        Log.d("MAIN: ", "El tipo de archivo es: \"" + tipoDeArchivo + "\".");;
+        Log.d("MAIN: ", "El tipo de archivo es: \"" + tipoDeArchivo + "\".");
 
         if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")) {
-            Log.i("MAIN: ", "Accedo y obtengo la estructura interna de la carpeta.");;
-            get(id);
+            Log.i("MAIN: ", "Accedo y obtengo la estructura interna de la carpeta.");
+            get(idClick);
         } else {
-            Log.i("MAIN: ", "Obtengo los metadatos del archivo.");;
-            obtenerMetadatos(id);
+            Log.i("MAIN: ", "Obtengo los metadatos del archivo.");
+            obtenerMetadatos(idClick);
         }
     }
 
@@ -694,9 +683,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
 
+    /**
+     * Crea un nuevo fragmento para mostrar la estructura de la carpeta seleccionada.
+     * @param estructuraCarpetas estructura interna de la carpeta que se desea mostrar.
+     */
     public void crearNuevoFragmento(String estructuraCarpetas){
-        Log.i("MAIN: ", "Voy a crear un nuevo fragmento.");;
-        Log.d("MAIN: ", "La estructura a usar es: \"" + estructuraCarpetas + "\".");;
+        Log.i("MAIN: ", "Voy a crear un nuevo fragmento.");
+        Log.d("MAIN: ", "La estructura a usar es: \"" + estructuraCarpetas + "\".");
 
 
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
@@ -721,37 +714,50 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 //        transaction2.commit();
     }
 
+    /**
+     * Detecta que opcion se clickeo dentro del menu desplegable de la ExpandableList.
+     * @param idPadre nombre del padre de la opción clickeada.
+     * @param opcion nombre de la opción clickeada.
+     */
     @Override
-    public void onOptionClick(String id, String opcion) {
+    public void onOptionClick(String idPadre, String opcion) {
 
         if(opcion.equals("Descargar")){
-            Log.i("MAIN: ", "Hice click en la opcion DESCARGAR.");;
-            descargarArchivo(id);
+            Log.i("MAIN: ", "Hice click en la opcion DESCARGAR.");
+            descargarArchivo(idPadre);
         }
 
         if(opcion.equals("Compartir")){
-            Log.i("MAIN: ", "Hice click en la opcion COMPARTIR.");;
-            compartirArchivo(id);
+            Log.i("MAIN: ", "Hice click en la opcion COMPARTIR.");
+            compartirArchivo(idPadre);
         }
 
         if(opcion.equals("Eliminar")){
-            Log.i("MAIN: ", "Hice click en la opcion ELIMINAR.");;
-            confirmarEliminarORestaurar(id, MyDataArrays.ELIMINAR);
+            Log.i("MAIN: ", "Hice click en la opcion ELIMINAR.");
+            confirmarEliminarORestaurar(idPadre, MyDataArrays.ELIMINAR);
         }
 
         if(opcion.equals("Restaurar")){
-            Log.i("MAIN: ", "Hice click en la opcion RESTAURAR.");;
-            confirmarEliminarORestaurar(id, MyDataArrays.RESTAURAR);
+            Log.i("MAIN: ", "Hice click en la opcion RESTAURAR.");
+            confirmarEliminarORestaurar(idPadre, MyDataArrays.RESTAURAR);
         }
     }
 
+    /**
+     * Sube un archivo al servidor.
+     * @param path path interno del telefono, al archivo a subir.
+     */
     private void subir(String path){
 
-        Log.i("MAIN: ", "Voy a subir un archivo.");;
+        Log.i("MAIN: ", "Voy a subir un archivo.");
 
         int index = path.lastIndexOf("/");
         String filename = path.substring(index + 1);
-        QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username +  PATH_ACTUAL + filename;
+
+        int numeroVersion = obtenerUltimoNumeroDeVersion(filename) + 1;
+        String QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username +  PATH_CARPETAS + filename + MyDataArrays.caracterReservado + numeroVersion;
+
+        guardarVersionArchivo(filename, numeroVersion);
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -778,8 +784,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo", Toast.LENGTH_LONG).show();
         }
-
-
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
@@ -818,6 +822,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
+    /**
+     * Crea un menu para seleccionar que archivo subir.
+     */
     private void seleccionarArchivo(){
 
         Log.i("MAIN: ", "Voy a seleccionar un archivo para subir.");
@@ -827,11 +834,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         startActivityForResult(intent, PICKFILE_RESULT_CODE);
     }
 
-    private void descargarArchivo(final String id){
+    /**
+     *
+     * @param nombreArchivo
+     */
+    private void descargarArchivo(final String nombreArchivo){
 
         Log.i("MAIN: ", "Voy a descargar un archivo.");
 
-        QUERY_URL = MyDataArrays.direccion + "/file/" +  obtenerURLArchivos(id + "." + obtenerTipoDeArchivo(id)) ;
+        String QUERY_URL = MyDataArrays.direccion + "/file/" +  obtenerURLArchivo(nombreArchivo) ;
+
         AsyncHttpClient client = new AsyncHttpClient();
 
         RequestParams params = new RequestParams();
@@ -842,7 +854,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
         Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
 
-        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + id; // "/data/data/tallerii.udrive/files/" + nombreArchivo;
+        final String savedFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + nombreArchivo;
 
         Log.d("MAIN: ", "Guardo el archivo en el path: \"" + savedFilePath + "\".");
 
@@ -861,7 +873,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                         Log.i("MAIN: ", "Exito al descarga el archivo.");
 
-                        String extension = obtenerTipoDeArchivo(id);
+                        String extension = obtenerExtensionArchivo(nombreArchivo);
                         Log.d("MAIN: ", "La extension del archivo es: \"" + extension + "\".");
 
                         if (extension.equals("txt") || extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
@@ -874,11 +886,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                             intentDisplay.putExtra("extensionArchivo", extension);
                             intentDisplay.putExtra("filePath", savedFilePath);
-                            intentDisplay.putExtra("nombreArchivo", id);
+                            intentDisplay.putExtra("nombreArchivo", nombreArchivo);
 
                             Log.d("MAIN: ", "Le agrego al Intent la extension: \"" + extension + "\".");
                             Log.d("MAIN: ", "Le agrego al Intent el path al archivo guardado: \"" + savedFilePath + "\".");
-                            Log.d("MAIN: ", "Le agrego al Intent el nombre: \"" + id + "\".");
+                            Log.d("MAIN: ", "Le agrego al Intent el nombre: \"" + nombreArchivo + "\".");
 
                             startActivity(intentDisplay);
                         }
@@ -895,6 +907,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         );
     }
 
+    /**
+     * Muestra un AlertDialog para que el usuario ingrese el nombre de la nueva carpeta a crear.
+     * Al hacer click en Cancelar, se cierra la ventana y no se hace nada.
+     * Al hacer click en Crear, se manda a crear la nueva carpeta al servidor.
+     */
     private void crearCarpeta(){
 
         Log.i("MAIN: ", "Voy a crear una carpeta.");
@@ -903,8 +920,18 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Crear carpeta");
         alert.setMessage("Introduzca el nombre de la nueva carpeta");
+
         final EditText nombreCarpeta = new EditText(this);
-        alert.setView(nombreCarpeta);
+
+        // Luego creo un LinearLayout y los configuro para ordenar todos los items anteriores y
+        // mostrarlos bien en el AlertDialog TODO: unificar esto
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        float pxTodp = 300 / getResources().getDisplayMetrics().density;
+        layout.setPadding((int) pxTodp, 0, (int) pxTodp, 0);
+
+        layout.addView(nombreCarpeta);
+        alert.setView(layout);
 
         // El boton "Crear" crea la carpeta
         alert.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
@@ -929,11 +956,15 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     }
 
+    /**
+     * Manda a crear al servidor, la nueva carpeta, con el nombre: nombreCarpeta.
+     * @param nombreCarpeta nombre usado para crear la nueva carpeta en el servidor.
+     */
     private void agregarCarpeta(String nombreCarpeta){
 
         Log.i("MAIN: ", "Voy a mandar la carpeta creada al servidor.");
 
-        QUERY_URL = MyDataArrays.direccion + "/folder/" + username + PATH_ACTUAL + nombreCarpeta;
+        String QUERY_URL = MyDataArrays.direccion + "/folder/" + username + PATH_CARPETAS + nombreCarpeta;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -981,6 +1012,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
+    /**
+     *
+     * @param id
+     * @param restaurar
+     */
     private void confirmarEliminarORestaurar(final String id, final boolean restaurar){
 
         if(restaurar){
@@ -1028,31 +1064,33 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.i("MAIN: ", "Mostre un Alert Dialog para confirmar que quiero eliminar o restaurar un archivo.");
     }
 
-    private void eliminarORestaurar(final String id, boolean restore){
+    /**
+     * Manda un DELETE al servidor, para eliminar (permanentemente o no) o restaurar (desde la papelera) un archivo.
+     * @param nombreArchivo el nombre del archivo el cual se quiere eliminar o restaurar
+     * @param restore es un booleano que en caso de ser true, indica que quiere restaurar un archivo desde la papelera.
+     *                Si es un false, indica que se quiere borrar un archivo.
+     */
+    private void eliminarORestaurar(final String nombreArchivo, boolean restore){
 
         if(restore){
             Log.i("MAIN: ", "Voy a mandar restaurar un archivo de la papelera en el servidor.");
         } else {
             Log.i("MAIN: ", "Voy a eliminar un archivo.");
-
         }
-
-        String tipoDeArchivo = obtenerTipoDeArchivo(id);
-
-        if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")){
-            QUERY_URL = MyDataArrays.direccion + "/folder/";
-        } else {
-            QUERY_URL = MyDataArrays.direccion + "/file/";
-        }
-
-        String extension = "";
-        if( obtenerTipoDeArchivo(id) != null)
-            extension = "." + obtenerTipoDeArchivo(id);
-//        QUERY_URL = QUERY_URL + username + PATH_ACTUAL + id + extension;
-        QUERY_URL = QUERY_URL +  obtenerURLArchivos(id + extension);
 
         AsyncHttpClient client = new AsyncHttpClient();
 
+        // El delete pide que le pase Headers, le pongo basura
+        Header[] header = {
+                new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Content-type", "application/x-www-form-urlencoded")
+                ,new BasicHeader("Accep", "text/html,text/xml,application/xml")
+                ,new BasicHeader("Connection", "keep-alive")
+                ,new BasicHeader("keep-alive", "115")
+                ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
+        };
+
+        // Agrego los parametros
         final String restaurar;
         RequestParams params = new RequestParams();
         params.put("token", token);
@@ -1065,20 +1103,21 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             params.put("restore", restaurar);
         }
 
-        // El delete pide que le pase Headers, le pongo basura
-        Header[] header = {
-                new BasicHeader("Content-type", "application/x-www-form-urlencoded")
-                ,new BasicHeader("Content-type", "application/x-www-form-urlencoded")
-                ,new BasicHeader("Accep", "text/html,text/xml,application/xml")
-                ,new BasicHeader("Connection", "keep-alive")
-                ,new BasicHeader("keep-alive", "115")
-                ,new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-        };
-
         Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del DELETE: ");
         Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
         Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
         Log.d("MAIN: ", "Quiero restaurar: \"" + restaurar + "\".");
+
+        String QUERY_URL;
+        String extension = obtenerExtensionArchivo(nombreArchivo);
+
+        if(extension.equals(MyDataArrays.caracterReservado + "folder")){
+            QUERY_URL = MyDataArrays.direccion + "/folder/";
+        } else {
+            QUERY_URL = MyDataArrays.direccion + "/file/";
+        }
+
+        QUERY_URL += obtenerURLArchivo(nombreArchivo);
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
@@ -1086,43 +1125,43 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 if (restaurar.equals("true")) {
-                    Log.i("MAIN: ", "Se ha restaurado: \"" + id + "\" exitosamente.");
-                    Toast.makeText(getApplicationContext(), "Se ha restaurado " + id, Toast.LENGTH_LONG).show();
+                    Log.i("MAIN: ", "Se ha restaurado: \"" + nombreArchivo + "\" exitosamente.");
+                    Toast.makeText(getApplicationContext(), "Se ha restaurado " + nombreArchivo, Toast.LENGTH_LONG).show();
                 } else {
-                    Log.i("MAIN: ", "Se ha eliminado: \"" + id + "\" exitosamente.");
-                    Toast.makeText(getApplicationContext(), "Se ha eliminado " + id, Toast.LENGTH_LONG).show();
+                    Log.i("MAIN: ", "Se ha eliminado: \"" + nombreArchivo + "\" exitosamente.");
+                    Toast.makeText(getApplicationContext(), "Se ha eliminado " + nombreArchivo, Toast.LENGTH_LONG).show();
                 }
                 // Luego actualizo la vista
                 get(null);
             }
 
-
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
                 if (restaurar.equals("true")) {
-                    Log.e("MAIN: ", "Hubo un problema al restaurar: \"" + id + "\".");
-                    Toast.makeText(getApplicationContext(), "Hubo un problema al restaurar: \"" + id + "\".", Toast.LENGTH_LONG).show();
+                    Log.e("MAIN: ", "Hubo un problema al restaurar: \"" + nombreArchivo + "\".");
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al restaurar: \"" + nombreArchivo + "\".", Toast.LENGTH_LONG).show();
                 } else {
-                    Log.e("MAIN: ", "Hubo un problema al eliminar: \"" + id + "\".");
-                    Toast.makeText(getApplicationContext(), "Hubo un problema al eliminar: \"" + id + "\".", Toast.LENGTH_LONG).show();
+                    Log.e("MAIN: ", "Hubo un problema al eliminar: \"" + nombreArchivo + "\".");
+                    Toast.makeText(getApplicationContext(), "Hubo un problema al eliminar: \"" + nombreArchivo + "\".", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
+    /**
+     * Borra de los datos privados de la aplicacion, los datos de la sesion guardada.
+     * Luego se comunica con el servidor para indicarle que se cierra esta sesion. Al recibir confirmacion
+     * del servidor, se pasa a la ElegirSesionActivity para poder conectarse con otro usuario.
+     */
     private void cerrarSesion(){
 
         Log.i("MAIN: ", "Voy a cerrar sesion.");
 
+        // Borro de los datos privados de la aplicacion, los datos de sesion del usuario
         borrarDatosUsuario();
 
-        QUERY_URL = MyDataArrays.direccion + "/session/" + token;
-
         AsyncHttpClient client = new AsyncHttpClient();
-
-        RequestParams params = new RequestParams();
-        params.put("user", username);
 
         // El delete pide que le pase Headers, le pongo basura
         Header[] header = {
@@ -1134,8 +1173,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 , new BasicHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
         };
 
+        RequestParams params = new RequestParams();
+        params.put("user", username);
+
         Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del DELETE: ");
         Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+
+        String QUERY_URL = MyDataArrays.direccion + "/session/" + token;
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
@@ -1161,14 +1205,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
+    /**
+     *
+     */
     private void borrarDatosUsuario(){
 
         Log.i("MAIN: ", "Voy a borrar los datos de usuario.");
-
-        SharedPreferences mSharedPreferences;
-
-        // Accedo a los datos guardados
-        mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
 
         // Guardo en la memoria, el username y el token
         SharedPreferences.Editor e = mSharedPreferences.edit();
@@ -1180,11 +1222,15 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     }
 
-    private void obtenerMetadatos(String id){
+    /**
+     *
+     * @param nombreArchivo
+     */
+    private void obtenerMetadatos(String nombreArchivo){
 
-        String extension = "";
-        if( obtenerTipoDeArchivo(id) != null)
-            extension = "." + obtenerTipoDeArchivo(id);
+        String extension = obtenerExtensionArchivo(nombreArchivo);
+        if( ! extension.equals("") )
+            extension = "." + extension;
 
         // Creo un Intent para pasar a la activity de mostrar metadatos
         Intent metadatosIntent = new Intent(this, MetadatosActivity.class);
@@ -1192,7 +1238,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Agrego la informacion que quiero al Intent
         metadatosIntent.putExtra("token", token);
         metadatosIntent.putExtra("username", username);
-        metadatosIntent.putExtra("pathArchivo", PATH_ACTUAL + id + extension);
+        metadatosIntent.putExtra("pathArchivo", PATH_CARPETAS + nombreArchivo + extension);
 
         // Inicio la actividad con el Intent
         startActivityForResult(metadatosIntent, METADATOS);
@@ -1203,39 +1249,39 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     public void onBackPressed() {
 
-        // Este boolean sirve para saber si quiero volver a la carpeta superior
-        boolean volver = true;
-        int index , indice ;
-        if(PATH_ACTUAL.equals("/")){
-            getFragmentManager().popBackStack();
+        Log.i("MAIN: ", "Hice click en el boton para atras.");
+        Log.d("MAIN: ", "Mi PATH_CARPETAS actual es: \"" + PATH_CARPETAS + "\".");
+
+        if(PATH_CARPETAS.equals("/")){
+            Log.i("MAIN: ", "No queda volver mas para atras asi que cierro la aplicacion.");
             getFragmentManager().popBackStack();
             this.finish();
-            volver = false; // Ya llegue a la raiz, no quiero volver mas
+        } else {
+            /**
+             * Como el path de las carpetas es de la siguiente forma:
+             * Ej: /carpetaUno/carpetaDos/carpetaTres/
+             *
+             * Yo tengo que borrar dos veces para borrar la ultima barra y lo que queda despues de la anteultima.
+             * Al volver para atras quiero que el path quede asi:
+             * Ej: /carpetaUno/carpetaDos/
+             *
+             * Por eso en el segundo substring, se agarra hasta index + 1, para agarrar la ultima barra "/".
+             * */
+            int index = PATH_CARPETAS.lastIndexOf("/");
+            PATH_CARPETAS = PATH_CARPETAS.substring(0, index);
+
+            index = PATH_CARPETAS.lastIndexOf("/");
+            PATH_CARPETAS = PATH_CARPETAS.substring(0, index + 1);
+            Log.d("MAIN: ", "Mi PATH_CARPETAS actual es: \"" + PATH_CARPETAS + "\".");
+
+            // Luego de actualizar el path, actualizo
+            get(null);
         }
-
-        if(PATH_ACTUAL.contains("permisos")){
-            PATH_ACTUAL = "//";
-            QUERY_URL_CARPETAS = MyDataArrays.direccion + "/folder/" + username + "//";
-        }
-
-        for( int i = 0; volver && i < 2; i++){
-
-             index = QUERY_URL_CARPETAS.lastIndexOf("/");
-            QUERY_URL_CARPETAS = QUERY_URL_CARPETAS.substring(0, index);
-
-            indice = PATH_ACTUAL.lastIndexOf("/");
-            PATH_ACTUAL = PATH_ACTUAL.substring(0, indice);
-
-        }
-        QUERY_URL_CARPETAS = QUERY_URL_CARPETAS + "/";
-        PATH_ACTUAL = PATH_ACTUAL + "/";
-
-
-        if(volver) get(null);
-
     }
 
-    // Este metodo sirve para ir a la activity de iniciar sesion o registrarse
+    /**
+     * Este metodo sirve para ir a la activity de iniciar sesion o registrarse
+     */
     private void pasarAElegir(){
 
         // Creo un Intent para pasar a la activity de elegir para iniciar sesion o registrarse
@@ -1248,8 +1294,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         finish();
     }
 
-    // Este metodo sirve para ir a la activity de ver y actualizar perfil
+    /**
+     * Cambia a la PerfilActivity.
+     */
     private void pasarAVerPerfil(){
+
+        Log.i("MAIN: ", "Creo un Intent para cambiar a la PerfilActivity.");
+
         // Creo un Intent para pasar a la activity de ver y actualizar perfil
         Intent perfilIntent = new Intent(this, PerfilActivity.class);
 
@@ -1257,72 +1308,161 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         perfilIntent.putExtra("token", token);
         perfilIntent.putExtra("username", username);
 
+        Log.d("MAIN: ", "Mando a la PerfilActivity el user: \"" + username + "\".");
+        Log.d("MAIN: ", "Mando a la PerfilActivity el token: \"" + token + "\".");
+
         // Inicio la actividad con el Intent
         startActivity(perfilIntent);
+
+        Log.i("MAIN: ", "Inicie la PerfilActivity.");
     }
 
-    private String obtenerTipoDeArchivo(String id){
-        return hashTipoArchivos.get(id);
-    }
-
-    private void guardarMapaArchivos(JSONObject estructuraCarpetasJSON){
-        hashTipoArchivos = new HashMap<>();
-
-        Iterator<?> keys = estructuraCarpetasJSON.keys();
-
-        while( keys.hasNext() ) {
-            String key = (String)keys.next();
-            String value = "";
-            try{
-                value = estructuraCarpetasJSON.getString(key);
-            } catch (JSONException e){
-
-            }
-            int index = value.lastIndexOf(".");
-            String nombre;
-            String extension = "";
-            if(index >= 0){
-                nombre = value.substring(0, index);
-                extension = value.substring(index+1);
-            } else {
-                nombre = value;
-            }
-            hashTipoArchivos.put(nombre, extension);
-
-        }
-    }
-
+    /**
+     * Guarda las URL a las que hay que pegar, para interacturar con los archivos o carpetas.
+     * @param estructuraCarpetasJSON la estructura interna de la carpeta actual en la que se encuentra
+     *                               parado el usuario.
+     */
     private void guardarURLArchivos(JSONObject estructuraCarpetasJSON){
+
+        Log.i("MAIN: ", "Voy a guardar un mapa con las URL de los archivos de la carpeta en la que estoy parado.");
+
         URLArchivos = new HashMap<>();
 
         Iterator<?> keys = estructuraCarpetasJSON.keys();
 
         while( keys.hasNext() ) {
-            String key = (String)keys.next();
-            String value = "";
+            int indexPunto;
+            int indexCaracterReservado;
+            int indexAcortar = 1;
+
+            String URL = (String)keys.next();
+            String value;
+            String nombreArchivo = "";
+
+            Log.d("MAIN: ", "Saque el path de la estructura: \"" + URL + "\".");
+
             try{
-                value = estructuraCarpetasJSON.getString(key);
+                value = estructuraCarpetasJSON.getString(URL);
+
+                Log.d("MAIN: ", "Saque el nombre del archivo de la estructura: \"" + value + "\".");
+
+                indexPunto = value.lastIndexOf(".");
+                indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+
+                Log.d("MAIN: ", "La ubicacion del punto es: \"" + indexPunto + "\".");
+                Log.d("MAIN: ", "La ubicacion del caracter reservado es: \"" + indexCaracterReservado + "\".");
+
+                if( (indexPunto > 0) || (indexCaracterReservado > 0) ){
+                    if(indexPunto < 0){
+                        indexAcortar = indexCaracterReservado;
+                    } else if( indexCaracterReservado < 0 ){
+                        indexAcortar = indexPunto;
+                    } else {
+                        indexAcortar = indexPunto < indexCaracterReservado ? indexPunto:indexCaracterReservado;
+                    }
+                }
+
+                nombreArchivo   = value.substring(0, indexAcortar);
+
             } catch (JSONException e){
-
+                Log.e("MAIN: ", e.getMessage());
+                Log.e("MAIN: ", "Error al sacar al usuario del JSONArray de los usuarios compartidos.");
+                e.printStackTrace();
             }
-//            int index = value.lastIndexOf(".");
-//            String nombre = "";
-//            String extension = "";
-//            if(index >= 0){
-//                nombre = value.substring(0, index);
-//                extension = value.substring(index+1);
-//            } else {
-//                nombre = value;
-//            }
-            URLArchivos.put(value, key);
 
+            Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con la URL: \"" + URL + "\".");
+            URLArchivos.put(nombreArchivo, URL);
         }
     }
 
-    private String obtenerURLArchivos(String id){
-        return URLArchivos.get(id);
+    /**
+     * Devuelve la URL que sirve de direccion, para interactuar con el archivo o carpeta.
+     * @param nombre nombre del archivo o carpeta de la cual se quiere conocer la URL.
+     * @return La URL que sirve de direccion del archivo o carpeta.
+     */
+    private String obtenerURLArchivo(String nombre){
+        String URL = URLArchivos.get(nombre);
+        Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la URL: \"" + URL + "\".");
+        return URL;
     }
 
+    /**
+     * Guarda las extensiones de los archivos.
+     * @param estructuraCarpetasJSON la estructura interna de la carpeta actual en la que se encuentra
+     *                               parado el usuario.
+     */
+    private void guardarExtensionesArchivos(JSONObject estructuraCarpetasJSON){
+
+        Log.i("MAIN: ", "Voy a guardar un mapa con las extensiones de los archivos de la carpeta en la que estoy parado.");
+
+        extensionesArchivos = new HashMap<>();
+
+        Iterator<?> keys = estructuraCarpetasJSON.keys();
+
+        while( keys.hasNext() ) {
+
+            int indexPunto;
+            int indexCaracterReservado;
+
+            String key = (String)keys.next();
+            String nombreArchivo    = "";
+            String extension        = "";
+            String value;
+
+            Log.d("MAIN: ", "Saque el path de la estructura: \"" + key + "\".");
+
+            try{
+                value = estructuraCarpetasJSON.getString(key);
+
+                Log.d("MAIN: ", "Saque el nombre del archivo de la estructura: \"" + value + "\".");
+
+                indexPunto = value.lastIndexOf(".");
+                indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+
+                Log.d("MAIN: ", "La ubicacion del punto es: \"" + indexPunto + "\".");
+                Log.d("MAIN: ", "La ubicacion del caracter reservado es: \"" + indexCaracterReservado + "\".");
+
+                /*
+                 * Si es el archivo tiene un punto y un caracter reservado juntos, es porque tiene un punto
+                 * al final del nombre del archivo, sin tener una extension, menos en el caso de que sea una carpeta.
+                 */
+                if( indexCaracterReservado == indexPunto + 1){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension = value.substring(indexPunto + 1);
+                    if( ! extension.equals(MyDataArrays.caracterReservado + "folder")){
+                        extension = "";
+                    }
+                } else if( (indexPunto > 0) && (indexCaracterReservado > 0) ){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension       = value.substring(indexPunto + 1, indexCaracterReservado);
+                } else if(indexCaracterReservado > 0) {
+                    nombreArchivo   = value.substring(0, indexCaracterReservado);
+                }
+            } catch (JSONException e){
+                Log.e("MAIN: ", e.getMessage());
+                Log.e("MAIN: ", "Error al sacar al usuario del JSONArray de los usuarios compartidos.");
+                e.printStackTrace();
+            }
+            Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con la extension: \"" + extension + "\".");
+            extensionesArchivos.put(nombreArchivo, extension);
+        }
+    }
+
+    /**
+     * Devuelve la extensión del archivo.
+     * @param nombre nombre del archivo de la cual se quiere conocer la extensión.
+     * @return La extensión del archivo.
+     */
+    private String obtenerExtensionArchivo(String nombre){
+        String extension = extensionesArchivos.get(nombre);
+        Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la extension: \"" + extension + "\".");
+        return extension;
+    }
+
+    /**
+     *
+     * @param nombreArchivo
+     */
     private void compartirArchivo(final String nombreArchivo){
 
         Log.i("MAIN: ", "Voy a crear un Alert Dialog para seleccionar los usuarios con los que " +
@@ -1337,10 +1477,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Luego creo la lista que va a mostrar los resultados de la busqueda y los usuarios ya compartidos
         // Para la lista necesito crear un adapter
-        arAdapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_multichoice);
+        usuariosAdapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_multichoice);
 
         listaCompartidos = new ListView(this);
-        listaCompartidos.setAdapter(arAdapter);
+        listaCompartidos.setAdapter(usuariosAdapter);
         listaCompartidos.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         // Creo un ClickListener que cuando tildeo un usuario, lo agrega a una JSONArray para luego compartirlo
@@ -1372,7 +1512,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                             if (usuario.equals(usuarioClickeado)) {
                                 Log.d("MAIN: ", "Saco al usuario de la lista de usuarios compartidos: \"" + usuarioClickeado + "\".");
                                 usuariosCompartidos.remove(i);
-                                arAdapter.remove(usuarioClickeado);
+                                usuariosAdapter.remove(usuarioClickeado);
                             }
                         } catch (JSONException e){
                             Log.e("MAIN: ", e.getMessage());
@@ -1392,7 +1532,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         usuario.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                arAdapter.clear();
+                usuariosAdapter.clear();
                 if (s.length() > 0) {
                     getUsuarios(s.toString());
                 } else {
@@ -1412,7 +1552,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
 
         // Luego creo un LinearLayout y los configuro para ordenar todos los items anteriores y
-        // mostrarlos bien en el AlertDialog
+        // mostrarlos bien en el AlertDialog TODO: UNIDICAR ESTO
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         float pxTodp = 300 / getResources().getDisplayMetrics().density;
@@ -1456,10 +1596,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     }
 
-    public void recibirOActualizarMetadatos(String idArchivo, final boolean actualizar){
+    /**
+     * Recibe los metadatos del archivo. Si además se quiere volver a mandarlos, con los nuevos datos actualizados,
+     * se tiene que poner un true en el parametro actualizar.
+     * @param nombreArchivo nombre del archivo del cual se mantienen los metadatos
+     * @param actualizar
+     */
+    // TODO: SEPARAR EN DOS ESTE METODO
+    public void recibirOActualizarMetadatos(String nombreArchivo, final boolean actualizar){
 
-        Log.i("MAIN: ", "Voy a los metadatos del archivo: \"" + idArchivo +"\".");
-        QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivos(idArchivo + "." + obtenerTipoDeArchivo(idArchivo)); //idArchivo + "." + obtenerTipoDeArchivo(idArchivo);
+        Log.i("MAIN: ", "Voy a los metadatos del archivo: \"" + nombreArchivo +"\".");
+        QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivo(nombreArchivo);
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -1487,26 +1634,26 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                             JSONArray usrCompartidos = metadatos.getJSONArray("usuarios");
                             Log.d("MAIN: ", "Los usuarios compartidos en formato JSONArray son: \"" + usrCompartidos.toString() + "\".");
 
-                            if(actualizar){
+                            if (actualizar) {
                                 // Le pongo los nuevos usuarios compartidos a los metadatos y los mando
                                 metadatos.put("usuarios", usuariosCompartidos);
                                 mandarMetadatos(metadatos);
 
                                 // Si solo quiero recibir, los voy a agregar a la lista
                                 // Si la lista esta vacia, es porque es la carga inicial de la lista
-                            } else if(usuariosCompartidos.length() == 0){
+                            } else if (usuariosCompartidos.length() == 0) {
 
                                 int cant = usrCompartidos.length();
-                                for(int i = 0; i < cant ; i++){
+                                for (int i = 0; i < cant; i++) {
 
                                     Log.d("MAIN: ", "Agrego al JSONArray de compartidos a: \"" + usrCompartidos.getString(i) + "\".");
                                     usuariosCompartidos.put(i, usrCompartidos.getString(i));
 
                                     // Si el usuario compartido, es distinto de el usuario actual que esta usando la aplicacion
                                     // lo agrego a la lista de usuarios compartidos que se muestra para tildar y destildar
-                                    if( !username.equals(usuariosCompartidos.getString(i)) ) {
+                                    if (!username.equals(usuariosCompartidos.getString(i))) {
                                         Log.d("MAIN: ", "Agrego al adapter de la lista de compartidos a: \"" + usrCompartidos.getString(i) + "\".");
-                                        arAdapter.add(usrCompartidos.getString(i));
+                                        usuariosAdapter.add(usrCompartidos.getString(i));
                                     }
 
                                     // Tildeo al usuario compartido en la lista que se muestra
@@ -1515,12 +1662,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 Log.d("MAIN: ", "La lista inicial de usuarios compartidos es: \"" + usuariosCompartidos.toString() + "\".");
 
                             } else {
-                                for(int i = 0; i < usuariosCompartidos.length(); i++){
+                                for (int i = 0; i < usuariosCompartidos.length(); i++) {
 
                                     // Si el usuario compartido, es distinto de el usuario actual que esta usando la aplicacion
                                     // lo agrego a la lista de usuarios compartidos que se muestra para tildar y destildar
-                                    if( !username.equals(usuariosCompartidos.getString(i)) ){
-                                        arAdapter.add(usuariosCompartidos.getString(i));
+                                    if (!username.equals(usuariosCompartidos.getString(i))) {
+                                        usuariosAdapter.add(usuariosCompartidos.getString(i));
                                     }
 
                                     // Tildeo al usuario compartido en la lista que se muestra
@@ -1528,7 +1675,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 }
                             }
 
-                        } catch (JSONException e){
+                        } catch (JSONException e) {
                             Log.e("MAIN: ", e.getMessage());
                             Log.e("MAIN: ", "No se pudo obtener o reempazar los metadatos-usuariosCompartidos del JSON.");
                             e.printStackTrace();
@@ -1536,7 +1683,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     }
 
                     @Override
-                    public void onFailure ( int statusCode, Throwable throwable, JSONObject error){
+                    public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
                         Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
                         if (error == null) {
@@ -1561,6 +1708,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         );
     }
 
+    /**
+     * Manda los metadatos actualizados de un archivo.
+     * @param metadatos nuevos metadatos a mandar.
+     */
     public void mandarMetadatos(JSONObject metadatos){
 
         Log.i("MAIN: ", "Voy a mandar los metadatos con los nuevos usuarios compartidos.");
@@ -1613,6 +1764,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
+    /**
+     * Muestra un AlertDialog avisando al usuario, sobre una colisión entre
+     * distintas versiones de un mismo archivo.
+     */
     private void avisarColision(){
         Log.i("MAIN: ", "Voy a crear un Alert Dialog avisando que hay una colision entre archivos");
 
@@ -1642,7 +1797,70 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.i("MAIN: ", "Mostre un dialogo de advertencia.");
     }
 
-    private void guardarVersionDescargada(String version){
+    /**
+     * Guarda en los datos privados de la aplicacion, el numero de la version de la ultima vez que
+     * descargue o subi el archivo.
+     * @param pathArchivo el path completo en el servidor, del archivo
+     * @param numeroVersion el numero de la version descargada o subida
+     */
+    private void guardarVersionArchivo(String pathArchivo, int numeroVersion){
 
+        Log.d("MAIN: ", "Voy a guardar(en los datos guardados de la aplicacion) el numero" +
+                " de la ultima version que descargue del archivo: \"" + pathArchivo + "\".");
+
+        SharedPreferences.Editor e = mSharedPreferences.edit();
+        String archivosDescargados = mSharedPreferences.getString(MyDataArrays.ARCHIVOS_DESCARGADOS, "{}");
+
+        try{
+            JSONObject archivosDescargadosJSON = new JSONObject(archivosDescargados);
+            if(archivosDescargadosJSON.has(pathArchivo)){
+                Log.i("MAIN: ", "Ya habia descargado un archivo con ese path, por lo que lo saco.");
+                archivosDescargadosJSON.remove(pathArchivo);
+            }
+            Log.d("MAIN: ", "Guardo el nuevo numero de version: \"" + numeroVersion + "\".");
+            archivosDescargadosJSON.put(pathArchivo, numeroVersion);
+
+            // Guardo en la memoria, el username y el token
+            e.putString(MyDataArrays.ARCHIVOS_DESCARGADOS, archivosDescargadosJSON.toString());
+            e.apply();
+
+            Log.i("MAIN: ", "Agregue los cambios de numero de version descargada a los datos guardados de la aplicacion.");
+
+        } catch (JSONException error ){
+            Log.e("MAIN: ", error.getMessage());
+            Log.e("MAIN: ", "AL GUARDAR UN NUEVO NRO DE VERSION: Error al usar un JSON para modificar los datos guardados que contienen los numeros de version descargada de los archivos descargados.");
+            error.printStackTrace();
+        }
+    }
+
+    /**
+     * Obtiene, desde los datos privados de la aplicacion, el numero de la ultima version descargada o subida del archivo.
+     * @param pathArchivo ubicacion en el servidor, del archivo sobre el cual estoy obteniendo el numero de version
+     * @return un int, con el ultimo numero de version de la ultima vez que descargue o subi el archivo
+     */
+    private int obtenerUltimoNumeroDeVersion(String pathArchivo){
+
+        Log.d("MAIN: ", "Voy a obtener(desde los datos guardados de la aplicacion) el numero " +
+                "de la ultima version que descargue del archivo: \"" + pathArchivo + "\".");
+
+        int numeroVersion = 0;
+        String archivosDescargados = mSharedPreferences.getString(MyDataArrays.ARCHIVOS_DESCARGADOS, "{}");
+
+        try{
+            JSONObject archivosDescargadosJSON = new JSONObject(archivosDescargados);
+            if(archivosDescargadosJSON.has(pathArchivo)){
+                Log.i("MAIN: ", "Ya habia descargado un archivo con ese path.");
+                numeroVersion = archivosDescargadosJSON.getInt(pathArchivo);
+            } else {
+                Log.i("MAIN: ", "Nunca descargue un archivo con ese path.");
+            }
+        } catch (JSONException error ){
+            Log.e("MAIN: ", error.getMessage());
+            Log.e("MAIN: ", "AL OBTENER UN NUEVO NRO DE VERSION: Error al obtener un numero de version de los archivos descargados.");
+            error.printStackTrace();
+        }
+
+        Log.d("MAIN: ", "El numero de version obtenido es: \"" + numeroVersion + "\".");
+        return numeroVersion;
     }
 }

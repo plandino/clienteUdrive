@@ -78,7 +78,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         mail = "pancheitor@gmail.com";
 //        nombre = "pancheitor";
 //        usuario = "p";
-//        contrasenia = "pppppppp";
+        contrasenia = "pppppppp";
 
         Log.d("REGISTRARSE: ", "El nombre ingresado es: \"" + nombre + "\".");
         Log.d("REGISTRARSE: ", "El usuario ingresado es: \"" + usuario + "\".");
@@ -274,7 +274,6 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
 
         // Creo un Intent para pasar al main
         Intent mainIntent = new Intent(this, MainActivity.class);
-
 
         Log.d("REGISTRARSE: ", "Mando al MainActivity el user: \"" + user + "\".");
         Log.d("REGISTRARSE: ", "Mando al MainActivity el token: \"" + token + "\".");

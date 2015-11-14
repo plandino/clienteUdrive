@@ -14,6 +14,7 @@ public class MyDataArrays {
     static int UNAUTHORIZED = 401;
     static int NOT_FOUND    = 404;
     static int UNSOPORTED_METHOD = 405;
+    static int CONFLICT     = 409;
 
 
     static int SUCCESS          = 200;
