@@ -130,8 +130,14 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
 
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.d("ELEGIR_SESION: ", "Hice click en Listo!. La IP introducida es: \"" + ip.getText().toString() + "\".");
+
                 MyDataArrays.setIP(ip.getText().toString());
-//                agregarCarpeta(ip.getText().toString());
+
+                // Guardo en la memoria, la IP usada
+                SharedPreferences.Editor e = mSharedPreferences.edit();
+                e.remove(MyDataArrays.IP);
+                e.putString(MyDataArrays.IP, MyDataArrays.direccion);
+                e.apply();
             }
         });
 

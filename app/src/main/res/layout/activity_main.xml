@@ -21,7 +21,6 @@
         android:id="@+id/contenedor"
         android:paddingBottom="20dp">
 
-
     </LinearLayout>
 
 

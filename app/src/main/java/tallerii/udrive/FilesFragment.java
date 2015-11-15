@@ -3,6 +3,7 @@ package tallerii.udrive;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.software.shell.fab.ActionButton;
@@ -32,15 +34,6 @@ import java.util.List;
  */
 public class FilesFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private OnFragmentInteractionListener mListener;
 
     HashMap<String, List<String>> miHashMap;
@@ -51,16 +44,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     ActionButton actionButton;
 
-    // TODO: Rename and change types of parameters. LO DEJO POR LAS DUDAS PARA MAS ADELANTE
-    public static FilesFragment newInstance(String param1, String param2) {
-        FilesFragment fragment = new FilesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     // CONSTRUCTOR VACIO
     public FilesFragment() {
     }
@@ -68,13 +51,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // TODO: LO DEJO PARA MAS ADELANTE POR LAS DUDAS
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
     }
 
 
@@ -82,6 +58,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_files, container, false);
+
+        TextView vistaVaciaTextView = (TextView) view.findViewById(R.id.vistaVacia);
 
         actionButton = (ActionButton) view.findViewById(R.id.action_button);
         actionButton.setButtonColor(getResources().getColor(R.color.violeta));
@@ -95,18 +73,39 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         });
 
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
-        JSONObject jsonEstructuraCarpetas = new JSONObject();
+        JSONObject estructuraCarpetasJSON = new JSONObject();
         try{
-            if( getArguments().getString("estructura") != null ){
-                jsonEstructuraCarpetas = new JSONObject(getArguments().getString("estructura"));
+            String estructuraCarpetas   = getArguments().getString("estructura");
+            String tipo                 = getArguments().getString("tipo");
+            if(tipo == null) tipo = MyDataArrays.CARPETA;
+            if( estructuraCarpetas != null ){
+
+                String texto;
+                if(tipo.equals(MyDataArrays.BUSQUEDA)){
+                    texto = "La busqueda no devolvio ningun resultado.";
+                    actionButton.hide();
+                } else {
+                    texto = "Carpeta vacia. Sube algun archivo!";
+                }
+
+                if (estructuraCarpetas.equals("{}")) {
+                    vistaVaciaTextView.setText(texto);
+                    vistaVaciaTextView.setVisibility(View.VISIBLE);
+                } else {
+                    vistaVaciaTextView.setVisibility(View.INVISIBLE);
+                }
+
+                estructuraCarpetasJSON = new JSONObject(estructuraCarpetas);
             }
         }catch (JSONException e ){
-
+            Log.e("FILES_FRAGMENT: ", e.getMessage());
+            Log.e("FILES_FRAGMENT: ", "No se pudo obtener crear el JSON con la estructura de las carpetas.");
+            e.printStackTrace();
         }
-        miHashMap = MyDataProvider.getDataHashMap(jsonEstructuraCarpetas);
-        hashTipoArchivos = MyDataProvider.getTypeHashMap(jsonEstructuraCarpetas);
+        miHashMap = MyDataProvider.getDataHashMap(estructuraCarpetasJSON);
+        hashTipoArchivos = MyDataProvider.getTypeHashMap(estructuraCarpetasJSON);
 
-        hasMapKeys = new ArrayList<String>(miHashMap.keySet());
+        hasMapKeys = new ArrayList<>(miHashMap.keySet());
 
         adapter = new MyCustomAdapter(getActivity(), miHashMap, hasMapKeys, hashTipoArchivos);
         expandableListView.setAdapter(adapter);

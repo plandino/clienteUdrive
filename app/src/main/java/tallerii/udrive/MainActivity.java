@@ -89,12 +89,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private MenuItem buscarEtiquetas;
     private MenuItem buscarPropietario;
 
-    private boolean buscarPorNombre;
-    private boolean buscarPorExtension;
-    private boolean buscarPorEtiquetas;
-    private boolean buscarPorPropietario;
-
     private String PATH_CARPETAS = "/";
+
+    private TextView vistaVaciaTextView;
 
 
     @Override
@@ -119,6 +116,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Accedo a los datos guardados
         mSharedPreferences = getSharedPreferences(MyDataArrays.SESION_DATA, MODE_PRIVATE);
+
+
+        // Con esto seteo la IP, con la que guarde al setearla, por si se rompe la aplicacion y se reinicia
+        String ip = mSharedPreferences.getString(MyDataArrays.IP, MyDataArrays.direccion);
+        MyDataArrays.setIP(ip);
+
+//        vistaVaciaTextView = (TextView) findViewById(R.id.vistaVacia);
 
         usuariosCompartidos = new JSONArray();
 
@@ -320,7 +324,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 Log.e("MAIN: ", "No pude obtener los datos del JSON de la busqueda de archivos.");
                                 e.printStackTrace();
                             }
-                            crearNuevoFragmento(estructuraCarpetasJSON.toString());
+                            crearNuevoFragmento(estructuraCarpetasJSON.toString(), MyDataArrays.BUSQUEDA);
+//                            FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
+//                            filesFragment.ocultarFloatingButton();
                         }
                     }
 
@@ -396,7 +402,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 buscarEtiquetas.setChecked(false);
                 buscarPropietario.setChecked(false);
                 Log.i("MAIN: ", "Cambie el estado de la busqueda por nombres de archivos.");
-                buscarPorNombre = buscarNombre.isChecked();
                 return true;
             case R.id.buscar_extension:
                 buscarNombre.setChecked(false);
@@ -404,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 buscarEtiquetas.setChecked(false);
                 buscarPropietario.setChecked(false);
                 Log.i("MAIN: ", "Cambie el estado de la busqueda por extensiones de archivos.");
-                buscarPorExtension = buscarExtension.isChecked();
                 return true;
             case R.id.buscar_etiqueta:
                 buscarNombre.setChecked(false);
@@ -412,7 +416,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 buscarEtiquetas.setChecked(true);
                 buscarPropietario.setChecked(false);
                 Log.i("MAIN: ", "Cambie el estado de la busqueda por etiquetas de archivos.");
-                buscarPorEtiquetas = buscarEtiquetas.isChecked();
                 return true;
             case R.id.buscar_propietario:
                 buscarNombre.setChecked(false);
@@ -420,7 +423,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 buscarEtiquetas.setChecked(false);
                 buscarPropietario.setChecked(true);
                 Log.i("MAIN: ", "Cambie el estado de la busqueda por propietarios de archivos.");
-                buscarPorPropietario = buscarPropietario.isChecked();
                 return true;
 
             default:
@@ -553,7 +555,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     Log.e("MAIN: ", "No pude obtener los datos del JSON.");
                     e.printStackTrace();
                 }
-                crearNuevoFragmento(estructuraCarpetas);
+
+                crearNuevoFragmento(estructuraCarpetasJSON.toString(), MyDataArrays.CARPETA);
             }
 
             @Override
@@ -743,7 +746,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      * Crea un nuevo fragmento para mostrar la estructura de la carpeta seleccionada.
      * @param estructuraCarpetas estructura interna de la carpeta que se desea mostrar.
      */
-    public void crearNuevoFragmento(String estructuraCarpetas){
+    public void crearNuevoFragmento(String estructuraCarpetas, String tipo){
         Log.i("MAIN: ", "Voy a crear un nuevo fragmento.");
         Log.d("MAIN: ", "La estructura a usar es: \"" + estructuraCarpetas + "\".");
 
@@ -758,6 +761,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Creo un Bundle y le agrego informacion del tipo <Key, Value>
         Bundle bundle = new Bundle();
         bundle.putString("estructura", estructuraCarpetas);
+        bundle.putString("tipo", tipo);
 
         // Le agrego el Bundle al fragmento
         fragment.setArguments(bundle);
@@ -810,10 +814,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private void subir(final String path, boolean forzar){
 
+//        String pathSinEspacios = path.replace(" ", String.valueOf(MyDataArrays.caracterReservado));
+        String pathSinEspacios = path.replace(" ", "~");
+
+
         Log.i("MAIN: ", "Voy a subir un archivo.");
 
-        int index = path.lastIndexOf("/");
-        final String filename = path.substring(index + 1);
+        int index = pathSinEspacios.lastIndexOf("/");
+        final String filename = pathSinEspacios.substring(index + 1);
 
         index = filename.lastIndexOf(".");
         String nombreArchivo = filename.substring(0, index);
@@ -1296,6 +1304,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
                 Log.e("MAIN: ", "Hubo un problema al cerrar sesion.");
                 Toast.makeText(getApplicationContext(), "Hubo un problema al cerrar sesion", Toast.LENGTH_LONG).show();
+
+                pasarAElegir();
             }
         });
     }

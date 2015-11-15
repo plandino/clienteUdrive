@@ -33,6 +33,10 @@ public class MyDataArrays {
     static final String USERNAME    = "name";
     static final String TOKEN       = "token";
     static final String ARCHIVOS_DESCARGADOS = "descargados";
+    static final String IP          = "IP";
+
+    static final String BUSQUEDA = "BUSQUEDA";
+    static final String CARPETA  = "CARPETA";
 
     // MI CASA
     public static String direccion = "http://192.168.0.27:8080";

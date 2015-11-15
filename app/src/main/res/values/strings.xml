@@ -3,8 +3,8 @@
 
     <!-- Nombre de los activities en el Action Bar -->
     <string name="activity_loading">Loading</string>
-    <string name="activity_iniciar_sesion">Iniciar Sesion</string>
-    <string name="activity_elegir_sesion">Elegir Sesion</string>
+    <string name="activity_iniciar_sesion">Iniciar Sesión</string>
+    <string name="activity_elegir_sesion">Elegir Sesión</string>
     <string name="activity_registrarse">Registrarse</string>
     <string name="activity_display">Display</string>
     <string name="activity_perfil">Perfil</string>
