@@ -67,7 +67,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         Log.d("INICIAR_SESION: ", "La contraseña ingresada es: \"" + contrasenia + "\".");
 
 //        usuario = "p";
-        contrasenia = "pppppppp";
+//        contrasenia = "pppppppp";
         if(usuario.isEmpty()) {
             Log.d("INICIAR_SESION: ", "Se ingreso un nombre de usuario vacio.");
 

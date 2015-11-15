@@ -75,10 +75,10 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         String nombre       = nombreEditText.getText().toString();
 
         // TODO: SACAR ESTE HARDOCDEO
-        mail = "pancheitor@gmail.com";
+//        mail = "pancheitor@gmail.com";
 //        nombre = "pancheitor";
 //        usuario = "p";
-        contrasenia = "pppppppp";
+//        contrasenia = "pppppppp";
 
         Log.d("REGISTRARSE: ", "El nombre ingresado es: \"" + nombre + "\".");
         Log.d("REGISTRARSE: ", "El usuario ingresado es: \"" + usuario + "\".");
