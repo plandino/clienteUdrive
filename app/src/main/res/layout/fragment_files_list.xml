@@ -9,7 +9,7 @@
     android:id="@+id/expandableList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:divider="@color/green"
+    android:divider="@color/grey"
     android:dividerHeight="10dp"/>
 
     <com.software.shell.fab.ActionButton

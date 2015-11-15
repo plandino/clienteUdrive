@@ -41,40 +41,83 @@ public class MyDataProvider {
         Iterator<?> keys = json.keys();
 
         while( keys.hasNext() ) {
-            String key = (String)keys.next();
-            String value = "";
-            try{
-                value = json.getString(key);
+
+            int indexPunto;
+            int indexCaracterReservado;
+
+            String URL = (String)keys.next();
+            String nombreArchivo    = "";
+            String extension        = "";
+            String value            = "";
+
+            boolean estamosEnPapelera = estamosEnPapelera(URL);
+
+            Log.d("MY_DATA_PROVIDER: ", "Saque el path de la estructura: \"" + URL + "\".");
+
+            try {
+
+                value = json.getString(URL);
+
+                Log.d("MY_DATA_PROVIDER: ", "Saque el nombre del archivo de la estructura: \"" + value + "\".");
+
+                indexPunto = value.lastIndexOf(".");
+                indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+
+                /*
+                 * Si es el archivo tiene un punto y un caracter reservado juntos, es porque tiene un punto
+                 * al final del nombre del archivo, sin tener una extension, menos en el caso de que sea una carpeta.
+                 */
+                if( indexCaracterReservado == indexPunto + 1){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension = value.substring(indexPunto + 1);
+                    if( ! extension.equals(MyDataArrays.caracterReservado + "folder")){
+                        extension = "";
+                    }
+                } else if( (indexPunto > 0) && (indexCaracterReservado > 0) ){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension       = value.substring(indexPunto + 1, indexCaracterReservado);
+                } else if(indexCaracterReservado > 0) {
+                    nombreArchivo   = value.substring(0, indexCaracterReservado);
+                }
+
+
+                Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + nombreArchivo + "\".");
+                Log.d("MY_DATA_PROVIDER: ", "Con la extension: \"" + extension + "\".");
+
             } catch (JSONException e){
-                Log.e("MY_DATA_PROVIDER: ", "Hubo un error al obtener algun valor de la estructura de carpetas.");
-                Log.e("MY_DATA_PROVIDER: ", e.getMessage());
+                Log.e("MAIN: ", e.getMessage());
+                Log.e("MAIN: ", "Error al sacar al usuario del JSONArray de los usuarios compartidos.");
                 e.printStackTrace();
             }
 
-            int estamosEnPapelera = key.lastIndexOf(MyDataArrays.caracterReservado);
-            int index = value.lastIndexOf(".");
-            String nombre;
-            String extension = "";
-            if(index >= 0){
-                nombre = value.substring(0, index);
-                extension = value.substring(index);
-            } else {
-                nombre = value;
-            }
 
-            if( ( ! nombre.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombre.equals(MyDataArrays.caracterReservado + "compartidos")) ){
-                if(estamosEnPapelera > 0){
-                    miHashMap.put(nombre, opcionesPapelera);
-                } else if((extension.equals("." + MyDataArrays.caracterReservado + "folder"))   ){
-                    miHashMap.put(nombre, opcionesCarpetasList);
+            if( ( ! nombreArchivo.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombreArchivo.equals(MyDataArrays.caracterReservado + "compartidos")) ){
+                if(estamosEnPapelera){
+                    Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de la papelera.");
+                    miHashMap.put(nombreArchivo, opcionesPapelera);
+                } else if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
+                    Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de las carpetas.");
+                    miHashMap.put(nombreArchivo, opcionesCarpetasList);
                 } else {
-                    miHashMap.put(nombre, opcionesArchivosList);
+                    Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de los archivos.");
+                    miHashMap.put(nombreArchivo, opcionesArchivosList);
                 }
             }
         }
         return miHashMap;
 
     }
+
+
+    public static boolean estamosEnPapelera(String URL){
+        String[] partes = URL.split("/");
+        boolean estamosEnPapelera = false;
+        for (String carpeta: partes ) {
+            if(carpeta.equals( MyDataArrays.caracterReservado + "trash")) estamosEnPapelera = true;
+        }
+        return estamosEnPapelera;
+    }
+
 
     public static HashMap<String, String> getTypeHashMap(JSONObject json) {
 
@@ -86,24 +129,49 @@ public class MyDataProvider {
 
         while( keys.hasNext() ) {
             String key = (String)keys.next();
-            String value = "";
+
+            int indexPunto;
+            int indexCaracterReservado;
+
+            String nombreArchivo    = "";
+            String extension        = "";
+            String value            = "";
+
             try{
+
+
+
                 value = json.getString(key);
+
+                indexPunto = value.lastIndexOf(".");
+                indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+
+                /*
+                 * Si es el archivo tiene un punto y un caracter reservado juntos, es porque tiene un punto
+                 * al final del nombre del archivo, sin tener una extension, menos en el caso de que sea una carpeta.
+                 */
+                if( indexCaracterReservado == indexPunto + 1){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension = value.substring(indexPunto + 1);
+                    if( ! extension.equals(MyDataArrays.caracterReservado + "folder")){
+                        extension = "";
+                    }
+                } else if( (indexPunto > 0) && (indexCaracterReservado > 0) ){
+                    nombreArchivo   = value.substring(0, indexPunto);
+                    extension       = value.substring(indexPunto + 1, indexCaracterReservado);
+                } else if(indexCaracterReservado > 0) {
+                    nombreArchivo   = value.substring(0, indexCaracterReservado);
+                }
+
+                Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + nombreArchivo + "\".");
+                Log.d("MY_DATA_PROVIDER: ", "Con la extension: \"" + extension + "\".");
             } catch (JSONException e){
                 Log.e("MY_DATA_PROVIDER: ", "Hubo un error al obtener algun valor de la estructura de carpetas.");
                 Log.e("MY_DATA_PROVIDER: ", e.getMessage());
                 e.printStackTrace();
             }
-            int index = value.lastIndexOf(".");
-            String nombre;
-            String extension = "";
-            if(index >= 0){
-                nombre = value.substring(0, index);
-                extension = value.substring(index+1);
-            } else {
-                nombre = value;
-            }
-            hashTipoArchivos.put(nombre, extension);
+
+            hashTipoArchivos.put(nombreArchivo, extension);
         }
 
         return hashTipoArchivos;

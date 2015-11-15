@@ -1,13 +1,18 @@
 package tallerii.udrive;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 public class ElegirSesionActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -50,7 +55,7 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_all, menu);
+        getMenuInflater().inflate(R.menu.menu_ip, menu);
         return true;
     }
 
@@ -83,6 +88,63 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
                 throw new RuntimeException("Unknow button ID");
         }
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            // Menu para el movimiento normal por carpetas y archivos
+            case R.id.ingresar_ip:
+                Log.i("ELEGIR_SESION: ", "Hice click en el boton para ingresar ip.");
+                ingresarIP();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    public void ingresarIP(){
+        Log.i("ELEGIR_SESION: ", "Voy a crear un alert dialog para que ingrese su IP.");
+
+        // Muestro una ventana emergente para que introduzca el nombre de la carpeta a crear
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Configurar IP");
+        alert.setMessage("Introduzca su IP por favor");
+
+        final EditText ip = new EditText(this);
+
+        // Luego creo un LinearLayout y los configuro para ordenar todos los items anteriores y
+        // mostrarlos bien en el AlertDialog TODO: unificar esto
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        float pxTodp = 300 / getResources().getDisplayMetrics().density;
+        layout.setPadding((int) pxTodp, 0, (int) pxTodp, 0);
+
+        layout.addView(ip);
+        alert.setView(layout);
+
+        // El boton "Crear" crea la carpeta
+        alert.setPositiveButton("Listo!", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d("ELEGIR_SESION: ", "Hice click en Listo!. La IP introducida es: \"" + ip.getText().toString() + "\".");
+                MyDataArrays.setIP(ip.getText().toString());
+//                agregarCarpeta(ip.getText().toString());
+            }
+        });
+
+        // Un boton de cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("ELEGIR_SESION: ", "Hice click en Cancelar.");
+            }
+        });
+
+        alert.show();
+
+        Log.i("ELEGIR_SESION: ", "Mostre un dialogo para que introduzca la IP.");
     }
 
     @Override

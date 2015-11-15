@@ -6,6 +6,8 @@
     <color name="green">#99CC00</color>
     <color name="orange_dark">#FF8800</color>
     <color name="grey">#FF8800</color>
+    <color name="grey">#bbbbbb</color>
+
 
 
 </resources>
