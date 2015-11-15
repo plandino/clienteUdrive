@@ -198,6 +198,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
 
+                FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
+                filesFragment.mostrarFloatingButton();
+
                 menu.removeItem(R.id.buscar_nombre);
                 menu.removeItem(R.id.buscar_extension);
                 menu.removeItem(R.id.buscar_etiqueta);
@@ -218,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
+
+                FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
+                filesFragment.ocultarFloatingButton();
 
                 menu.removeItem(R.id.subir_archivo);
                 menu.removeItem(R.id.crear_carpeta);
@@ -246,10 +252,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     public void startActivity(Intent intent) {
 
+        Log.i("MAIN: ", "Voy a iniciar una nueva activity.");
+
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String busqueda = intent.getStringExtra(SearchManager.QUERY);
             buscarPorMetadatos(busqueda);
+            Log.i("MAIN: ", "Me quedo en MainActivity porque es una busqueda.");
         } else {
+            Log.i("MAIN: ", "Es una Activity diferente.");
             super.startActivity(intent);
         }
     }
@@ -260,9 +270,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     public void buscarPorMetadatos(final String busqueda){
 
-//        busque = true;
+        Log.i("MAIN: ", "Voy a realizar una busqueda.");
 
-        String myQuery = MyDataArrays.direccion + "/metadata/" ;
+        String QUERY_URL = MyDataArrays.direccion + "/metadata/" ;
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -270,46 +280,70 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         params.put("token", token);
         params.put("user", username);
         if(buscarNombre.isChecked()){
+            Log.d("MAIN: ", "Busco por nombre: \"" + busqueda + "\".");
             params.put("nombre", busqueda);
         }
         if(buscarExtension.isChecked()){
+            Log.d("MAIN: ", "Busco por extension: \"" + busqueda + "\".");
             params.put("extension", busqueda);
 
         }
         if(buscarEtiquetas.isChecked()){
+            Log.d("MAIN: ", "Busco por etiquetas: \"" + busqueda + "\".");
             params.put("etiqueta", busqueda);
 
         }
         if(buscarPropietario.isChecked()){
+            Log.d("MAIN: ", "Busco por propietario: \"" + busqueda + "\".");
             params.put("propietario", busqueda);
-
         }
-//        params.put("propietario", busqueda);
 
+        Log.d("MAIN: ", "Ingrese los siguientes datos en los parametros del GET: ");
+        Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
+        Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
 
-        client.get(myQuery, params, new JsonHttpResponseHandler() {
+        Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
+
+        client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                     @Override
                     public void onSuccess(int status, JSONObject jsonObject) {
+                        Log.i("MAIN: ", "Pude hacer la busqueda correctamente.");
+
                         if (jsonObject != null) {
                             try {
                                 estructuraCarpetasJSON = jsonObject.getJSONObject("busqueda");
+                                Log.d("MAIN: ", "La estructura de la busqueda es: \"" + estructuraCarpetasJSON.toString() + "\".");
+
                             } catch (JSONException e) {
                                 Log.e("MAIN: ", e.getMessage());
                                 Log.e("MAIN: ", "No pude obtener los datos del JSON de la busqueda de archivos.");
                                 e.printStackTrace();
                             }
                             crearNuevoFragmento(estructuraCarpetasJSON.toString());
-
-
-
                         }
                     }
 
                     @Override
-                    public void onFailure ( int statusCode, Throwable throwable, JSONObject error){
-                        Toast.makeText(getApplicationContext(), "Error al conectar con el servidor en recibir", Toast.LENGTH_LONG).show();
-                    }
+                    public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                        Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
+
+                        if (error == null) {
+                            Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
+
+                            Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+                                Log.e("MAIN: ", "Hubo un problema al obtener la estructura de la busqueda.");
+                                Log.e("MAIN: ", error.getString("error"));
+
+                                Toast.makeText(getApplicationContext(), error.getString("error"), Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                Log.e("MAIN: ", e.getMessage());
+                                Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
+                                e.printStackTrace();
+                            }
+                        }                    }
                 }
 
         );
@@ -693,7 +727,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     @Override
     public void onDownScroll(){
-        get(null);
+        if( menuActualizado){
+            get(null);
+        }
         Toast.makeText(getApplicationContext(), "Actualizado", Toast.LENGTH_LONG).show();
     }
 

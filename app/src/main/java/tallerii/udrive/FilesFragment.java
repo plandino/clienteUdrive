@@ -49,6 +49,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     ExpandableListView expandableListView;
     MyCustomAdapter adapter;
 
+    ActionButton actionButton;
+
     // TODO: Rename and change types of parameters. LO DEJO POR LAS DUDAS PARA MAS ADELANTE
     public static FilesFragment newInstance(String param1, String param2) {
         FilesFragment fragment = new FilesFragment();
@@ -81,13 +83,14 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_files, container, false);
 
-        ActionButton actionButton = (ActionButton) view.findViewById(R.id.action_button);
-//        actionButton.setImageResource(R.id.up);
+        actionButton = (ActionButton) view.findViewById(R.id.action_button);
+        actionButton.setButtonColor(getResources().getColor(R.color.violeta));
+        actionButton.setImageResource(R.drawable.fab_plus_icon);
+
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.subirFAB();
-//                subirArchivo();
             }
         });
 
@@ -216,6 +219,14 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         public void onDownScroll();
         public void eliminar();
         public void subirFAB();
+    }
+
+    public void ocultarFloatingButton(){
+        actionButton.hide();
+    }
+
+    public void mostrarFloatingButton(){
+        actionButton.show();
     }
 
 }

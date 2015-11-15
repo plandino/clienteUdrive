@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:divider="@color/grey"
-    android:dividerHeight="10dp"/>
+    android:dividerHeight="3dp"/>
 
     <com.software.shell.fab.ActionButton
         android:id="@+id/action_button"
@@ -18,6 +18,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/fab_margin"
-        />
+        android:layout_marginBottom="@dimen/fab_margin" />
 </FrameLayout>
