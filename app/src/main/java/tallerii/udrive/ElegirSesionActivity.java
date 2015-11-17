@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -114,6 +115,7 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         alert.setMessage("Introduzca su IP por favor");
 
         final EditText ip = new EditText(this);
+        ip.setKeyListener(DigitsKeyListener.getInstance("0123456789."));
 
         // Luego creo un LinearLayout y los configuro para ordenar todos los items anteriores y
         // mostrarlos bien en el AlertDialog TODO: unificar esto
@@ -136,7 +138,7 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
                 // Guardo en la memoria, la IP usada
                 SharedPreferences.Editor e = mSharedPreferences.edit();
                 e.remove(MyDataArrays.IP);
-                e.putString(MyDataArrays.IP, MyDataArrays.direccion);
+                e.putString(MyDataArrays.IP, ip.getText().toString());
                 e.apply();
             }
         });

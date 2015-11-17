@@ -89,9 +89,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private MenuItem buscarEtiquetas;
     private MenuItem buscarPropietario;
 
+    private Menu menu;
+
     private String PATH_CARPETAS = "/";
 
-    private TextView vistaVaciaTextView;
+    private TextView ubicacionActualTextView;
 
 
     @Override
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         String ip = mSharedPreferences.getString(MyDataArrays.IP, MyDataArrays.direccion);
         MyDataArrays.setIP(ip);
 
-//        vistaVaciaTextView = (TextView) findViewById(R.id.vistaVacia);
+        ubicacionActualTextView = (TextView) findViewById(R.id.vistaVacia);
 
         usuariosCompartidos = new JSONArray();
 
@@ -176,6 +178,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        this.menu = menu;
+        return true;
+    }
+
     /**
      * Agrega el menu principal a la aplicacion.
      * @param menu Menu principal de la aplicacion el cual es configurado.
@@ -183,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     public void agregarMenu(final Menu menu){
 
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        this.menu = menu;
 
         // Agrega al menu la barra de busqueda
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -386,6 +396,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.i("MAIN: ", "Hice click en el boton para acceder a la papelera.");
                 get(MyDataArrays.caracterReservado + "trash");
                 return true;
+            case R.id.atras:
+                Log.i("MAIN: ", "Hice click en atras del menu hamburguesa.");
+                onBackPressed();
+                return true;
             case R.id.ver_perfil:
                 Log.i("MAIN: ", "Hice click en el boton para ver el perfil.");
                 pasarAVerPerfil();
@@ -555,7 +569,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     Log.e("MAIN: ", "No pude obtener los datos del JSON.");
                     e.printStackTrace();
                 }
-
                 crearNuevoFragmento(estructuraCarpetasJSON.toString(), MyDataArrays.CARPETA);
             }
 
@@ -755,6 +768,38 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // que me devuelva la estructura de carpetas y archivos que estan adentro de esa.
         // Luego creo un nuevo fragmento con esa estructura y reemplazo el anterior
 
+        // Si estoy en la vista de navegar por las carpetas, pongo un textview diciendo donde estoy ubicado
+        if(tipo.equals(MyDataArrays.CARPETA)){
+            ubicacionActualTextView.setVisibility(View.VISIBLE);
+            String textoUbicacion;
+
+            // Si estoy en la papelera
+            if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "trash")){
+                textoUbicacion = "Ubicacion: /papelera/";
+                tipo = MyDataArrays.PAPELERA;
+
+                this.menu.findItem(R.id.papelera).setVisible(false);
+
+                this.menu.findItem(R.id.atras).setVisible(true);
+
+                // Si estoy en los archivos compartidos
+            } else if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
+                textoUbicacion = "Ubicacion: /compartidos/";
+                tipo = MyDataArrays.COMPARTIDOS;
+
+                this.menu.findItem(R.id.carpetas_compartidas).setVisible(false);
+
+                this.menu.findItem(R.id.atras).setVisible(true);
+                
+            } else {
+                textoUbicacion = "Ubicacion: " + PATH_CARPETAS;
+            }
+            ubicacionActualTextView.setText(textoUbicacion);
+        } else {
+            // Si estoy en busquedas, no muestro la ubicacion
+            ubicacionActualTextView.setVisibility(View.INVISIBLE);
+        }
+
         //Paso 3: Creo un nuevo fragmento
         FilesFragment fragment = new FilesFragment();
 
@@ -815,7 +860,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private void subir(final String path, boolean forzar){
 
 //        String pathSinEspacios = path.replace(" ", String.valueOf(MyDataArrays.caracterReservado));
-        String pathSinEspacios = path.replace(" ", "~");
+        String pathSinEspacios = path.replace(" ", MyDataArrays.caracterReemplazaEspacios);
 
 
         Log.i("MAIN: ", "Voy a subir un archivo.");
@@ -1041,8 +1086,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.d("MAIN: ", "Hice click en Crear. El nombre introducido es: \"" + nombreCarpeta.getText().toString() + "\".");
-
-                agregarCarpeta(nombreCarpeta.getText().toString());
+                String nombreCarpetaString = nombreCarpeta.getText().toString();
+                nombreCarpetaString = nombreCarpetaString.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+                agregarCarpeta(nombreCarpetaString);
             }
         });
 
@@ -1356,6 +1402,21 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.i("MAIN: ", "Hice click en el boton para atras.");
         Log.d("MAIN: ", "Mi PATH_CARPETAS actual es: \"" + PATH_CARPETAS + "\".");
+
+        if(PATH_CARPETAS.contains("trash")){
+            Log.i("MAIN: ", "Saco el boton de atras y pongo el de papelera de vuelta.");
+
+            this.menu.findItem(R.id.atras).setVisible(false);
+
+            this.menu.findItem(R.id.papelera).setVisible(true);
+
+        } else if( PATH_CARPETAS.contains("permisos")){
+            Log.i("MAIN: ", "Saco el boton de atras y pongo el de archivos compartidos de vuelta.");
+
+            this.menu.findItem(R.id.atras).setVisible(false);
+
+            this.menu.findItem(R.id.carpetas_compartidas).setVisible(true);
+        }
 
         if(PATH_CARPETAS.equals("/")){
             Log.i("MAIN: ", "No queda volver mas para atras asi que cierro la aplicacion.");

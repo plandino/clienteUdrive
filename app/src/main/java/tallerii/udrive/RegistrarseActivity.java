@@ -70,9 +70,12 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         Log.i("REGISTRARSE: ", "Se hizo click en el boton para registrarse.");
 
         String usuario      = usuarioEditText.getText().toString();
+        usuario = usuario.trim();
         String contrasenia  = contraseniaEditText.getText().toString();
         String mail         = mailEditText.getText().toString();
+        mail = mail.trim();
         String nombre       = nombreEditText.getText().toString();
+        nombre = nombre.trim();
 
         // TODO: SACAR ESTE HARDOCDEO
 //        mail = "pancheitor@gmail.com";
@@ -88,28 +91,35 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         if(usuario.isEmpty()) {
             Log.d("REGISTRARSE: ", "Se ingreso un usuario vacio.");
 
-            Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio.",
+            Toast.makeText(getApplicationContext(), "No puede ingresar un nombre de usuario vacio",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        if(usuario.contains(" ")){
+            Log.d("REGISTRARSE: ", "Se ingreso un usuario con un espacio.");
+
+            Toast.makeText(getApplicationContext(), "El nombre de usuario no puede tener un espacio",
                     Toast.LENGTH_LONG).show();
         }
 
         if(contrasenia.isEmpty()){
             Log.d("REGISTRARSE: ", "Se ingreso una contraseña vacia.");
 
-            Toast.makeText(getApplicationContext(), "No puede ingresar una contraseña vacia.",
+            Toast.makeText(getApplicationContext(), "No puede ingresar una contraseña vacia",
                     Toast.LENGTH_LONG).show();
         }
 
         if(mail.isEmpty()){
             Log.d("REGISTRARSE: ", "Se ingreso un mail vacio.");
 
-            Toast.makeText(getApplicationContext(), "No puede ingresar un mail vacio.",
+            Toast.makeText(getApplicationContext(), "No puede ingresar un mail vacio",
                     Toast.LENGTH_LONG).show();
         }
 
         if(nombre.isEmpty()){
             Log.d("REGISTRARSE: ", "Se ingreso un nombre vacio.");
 
-            Toast.makeText(getApplicationContext(), "No puede ingresar un nombre vacio.",
+            Toast.makeText(getApplicationContext(), "No puede ingresar un nombre vacio",
                     Toast.LENGTH_LONG).show();
         }
 

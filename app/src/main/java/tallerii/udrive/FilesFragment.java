@@ -81,11 +81,23 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             if( estructuraCarpetas != null ){
 
                 String texto;
-                if(tipo.equals(MyDataArrays.BUSQUEDA)){
-                    texto = "La busqueda no devolvio ningun resultado.";
-                    actionButton.hide();
-                } else {
-                    texto = "Carpeta vacia. Sube algun archivo!";
+                switch (tipo){
+                    case MyDataArrays.BUSQUEDA:
+                        texto = "La busqueda no devolvio ningun resultado.";
+                        break;
+                    case MyDataArrays.PAPELERA:
+                        texto = "La papelera se encuentra vacia.";
+                        break;
+                    case MyDataArrays.COMPARTIDOS:
+                        texto = "Nadie te ha compartido archivos.";
+                        break;
+                    case MyDataArrays.CARPETA:
+                        texto = "Carpeta vacia. Sube algún archivo!";
+                        break;
+                    default:
+                        texto = "Error: \"" + tipo + "\".";
+                        Log.e("FILES_FRAGMENT: ", "Me pasaron un tipo incorrecto: \"" + tipo + "\".");
+                        break;
                 }
 
                 if (estructuraCarpetas.equals("{}")) {

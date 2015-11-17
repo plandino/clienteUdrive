@@ -5,6 +5,7 @@ package tallerii.udrive;
 * */
 public class MyDataArrays {
     static char     caracterReservado = '!';
+    static String   caracterReemplazaEspacios = "~";
     static char     divisor = ';';
     static String[] opcionesArchivos = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};
     static String[] opcionesPapelera = {"Restaurar", "Eliminar"};
@@ -35,11 +36,18 @@ public class MyDataArrays {
     static final String ARCHIVOS_DESCARGADOS = "descargados";
     static final String IP          = "IP";
 
-    static final String BUSQUEDA = "BUSQUEDA";
-    static final String CARPETA  = "CARPETA";
+    static final String BUSQUEDA     = "BUSQUEDA";
+    static final String CARPETA      = "CARPETA";
+    static final String PAPELERA     = "PAPELERA";
+    static final String COMPARTIDOS  = "COMPARTIDOS";
+
 
     // MI CASA
     public static String direccion = "http://192.168.0.27:8080";
+
+    // CASA CAMI
+//    public static String direccion = "http://192.168.1.106:8080";
+
 
     public static void setIP(String ip){
         direccion = "http://" + ip + ":8080";

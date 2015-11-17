@@ -7,7 +7,7 @@
         <TextView android:id="@+id/textViewChild"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@color/orange_dark"
+            android:background="@color/blue"
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
             android:textAppearance="?android:attr/textAppearanceLarge"

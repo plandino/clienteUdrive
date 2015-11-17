@@ -10,15 +10,19 @@
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView"/>
 
-    <item android:id="@+id/subir_archivo"
-        android:icon="@android:drawable/ic_menu_upload"
-        android:title="@string/subir"
+    <!--android:icon="@android:drawable/ic_input_add"-->
+    <!--         android:icon="@android:drawable/ic_menu_upload"
+-->
+
+    <item android:id="@+id/crear_carpeta"
+        android:icon="@mipmap/newfolder"
+        android:title="@string/crear_carpeta"
         android:orderInCategory="2"
         app:showAsAction="collapseActionView|ifRoom"/>
 
-    <item android:id="@+id/crear_carpeta"
-        android:icon="@android:drawable/ic_input_add"
-        android:title="@string/crear_carpeta"
+    <item android:id="@+id/subir_archivo"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:title="@string/subir"
         android:orderInCategory="3"
         app:showAsAction="collapseActionView|ifRoom"/>
 
@@ -32,6 +36,11 @@
         android:orderInCategory="5"
         app:showAsAction="never"/>
 
+    <item android:id="@+id/atras"
+        android:title="@string/atras"
+        android:visible="false"
+        android:orderInCategory="5"
+        app:showAsAction="never"/>
 
     <item android:id="@+id/papelera"
         android:title="@string/papelera"
