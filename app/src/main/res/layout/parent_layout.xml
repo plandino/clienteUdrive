@@ -19,7 +19,8 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
         android:textColor="@color/black"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:singleLine="true"/>
 
         <!-- Shows an image from your drawable resources -->
         <ImageView

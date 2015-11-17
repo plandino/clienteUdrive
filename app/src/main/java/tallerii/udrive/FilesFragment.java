@@ -12,7 +12,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.software.shell.fab.ActionButton;
 
@@ -156,33 +155,15 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         });
 
 
-//        expandableListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//                if (scrollState == SCROLL_STATE_FLING) mListener.onDownScroll();
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//                if ()
-//            }
-//        });
-
         expandableListView.setOnTouchListener(new OnSwipeTouchListener(getActivity().getApplicationContext()) {
             public void onSwipeTop() {
-                Toast.makeText(getActivity(), "top", Toast.LENGTH_SHORT).show();
             }
             public void onSwipeRight() {
-                Toast.makeText(getActivity(), "right", Toast.LENGTH_SHORT).show();
             }
             public void onSwipeLeft() {
-                Toast.makeText(getActivity(), "left" + " X: " + getX() + " Y: " + getY(), Toast.LENGTH_SHORT).show();
-//                expandableListView.getSelectedPosition();
-                mListener.eliminar();
             }
             public void onSwipeBottom() {
                 mListener.onDownScroll();
-//                Toast.makeText(getActivity(), "bottom", Toast.LENGTH_SHORT).show();
             }
 
             public boolean onTouch(View v, MotionEvent event) {
@@ -228,7 +209,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         public void onGroupClick(String idGroup);
         public void onOptionClick(String idCarpeta, String opcion);
         public void onDownScroll();
-        public void eliminar();
         public void subirFAB();
     }
 

@@ -58,12 +58,14 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         token = getIntent().getStringExtra("token");
         username = getIntent().getStringExtra("username");
         String pathArchivo = getIntent().getStringExtra("pathArchivo");
+        String propietario = getIntent().getStringExtra("propietario");
 
         Log.d("METADATOS: ", "Saque del Intent el token: \"" + token + "\".");
         Log.d("METADATOS: ", "Saque del Intent el username: \"" + username + "\".");
         Log.d("METADATOS: ", "Saque del Intent el pathArchivo: \"" + pathArchivo + "\".");
+        Log.d("METADATOS: ", "Saque del Intent el propietario: \"" + propietario + "\".");
 
-        QUERY_URL = QUERY_URL + username  + pathArchivo;
+        QUERY_URL += pathArchivo;
 
         Log.d("METADATOS: ", "Forme el URL: \"" + QUERY_URL + "\".");
 

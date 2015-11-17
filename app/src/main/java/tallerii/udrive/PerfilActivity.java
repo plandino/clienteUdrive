@@ -118,7 +118,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         Log.d("PERFIL: ", "Saque del Intent el token: \"" + token + "\".");
         Log.d("PERFIL: ", "Saque del Intent el username: \"" + username + "\".");
 
-        savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/perfil.jpg" ;
+        savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath();
 
         // Edit text para ingresar el usuario
         nombreEditText = (EditText) findViewById(R.id.perfil_nombre);
@@ -420,6 +420,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                         Log.i("PERFIL: ", "Obtuve el perfil desde el servidor.");
                         Log.d("PERFIL: ", "StatusCode: \"" + statusCode + "\".");
 
+                        String fotopath = "";
+
                         try {
 
                             JSONObject perfil = jsonObject.getJSONObject("perfil");
@@ -433,14 +435,14 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                             mailEditText.setText(email);
                             Log.d("PERFIL: ", "El mail obtenido es: \"" + email + "\".");
 
-                            String fotopath = perfil.getString("path foto de perfil");
+                            fotopath = perfil.getString("path foto de perfil");
                             Log.d("PERFIL: ", "El path a la foto de perfil obtenido es: \"" + fotopath + "\".");
 
                             int index = fotopath.lastIndexOf("/");
                             String nombreFoto = fotopath.substring(index + 1);
                             fotoEditText.setText(nombreFoto);
 
-                            obtenerFotoPerfil(fotopath);
+                            savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + nombreFoto;
 
                             JSONObject ubicacion = perfil.getJSONObject("ultima ubicacion");
                             Log.d("PERFIL: ", "La ultima ubicacion en formato JSON: \"" + ubicacion.toString() + "\".");
@@ -463,6 +465,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                                 ubicado = true;
                             }
                         }
+
+                        obtenerFotoPerfil(fotopath);
+
                     }
 
                     @Override
@@ -511,8 +516,6 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         Log.d("PERFIL: ", "Inclui en los parametros del GET los siguientes parametros.");
         Log.d("PERFIL: ", "Username: \"" + username + "\" con el token: \"" + token + "\".");
-
-//        savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/perfil.jpg" ;
 
         Log.d("PERFIL: ", "Guardo la foto en: \"" + savedPhotoFilePath + "\".");
 

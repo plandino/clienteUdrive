@@ -11,6 +11,7 @@
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white"
+            android:singleLine="true"/>
 
 </LinearLayout>

@@ -148,7 +148,7 @@
                 android:layout_gravity="center_horizontal"
                 android:singleLine="true"
                 android:nextFocusDown="@+id/metadatos_usrCompartidos"
-                android:imeOptions="actionNext"/>
+                android:imeOptions="actionDone"/>
         </LinearLayout>
 
         <LinearLayout

@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     HashMap<String, String> URLArchivos;
     HashMap<String, String> extensionesArchivos;
+    HashMap<String, String> propietariosArchivos;
     HashMap<String, Integer> versionesServidorArchivos;
 
     private TextView textoFallido;
@@ -70,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private static final int PICKFILE_RESULT_CODE = 1;
 
     MyLocationListener locationListener;
-
 
     private ArrayAdapter<String> usuariosAdapter;
 
@@ -359,7 +359,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 Log.e("MAIN: ", "No se pudo obtener el mensaje de error del JSON.");
                                 e.printStackTrace();
                             }
-                        }                    }
+                        }
+                    }
                 }
 
         );
@@ -515,7 +516,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 QUERY_CARPETAS += id + "/";
             }
         } else {
-            QUERY_CARPETAS = MyDataArrays.direccion + "/folder/" + username + PATH_CARPETAS;
+            // Al hacer un get(null) actualizo el path actual
+            // Depende de si vuelvo de permisos o no, es el orden del PATH y username
+            if(PATH_CARPETAS.contains("permisos")){
+                QUERY_CARPETAS = MyDataArrays.direccion + "/folder/" + PATH_CARPETAS + username;
+            } else {
+                QUERY_CARPETAS = MyDataArrays.direccion + "/folder/" + username + PATH_CARPETAS;
+            }
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -737,7 +744,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             get(idClick);
         } else {
             Log.i("MAIN: ", "Obtengo los metadatos del archivo.");
-            obtenerMetadatos(idClick);
+            // Solo se puede acceder a los metadatos si el archivo no esta en la papelera
+            if( ! PATH_CARPETAS.contains("trash")){
+                obtenerMetadatos(idClick);
+            } else {
+                Toast.makeText(getApplicationContext(), "No puede acceder a los datos del archivo desde la papelera", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -746,14 +758,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         if( menuActualizado){
             get(null);
         }
-        Toast.makeText(getApplicationContext(), "Actualizado", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Vista actualizada", Toast.LENGTH_LONG).show();
     }
-
-    @Override
-    public void eliminar(){
-        Toast.makeText(getApplicationContext(), "elimino", Toast.LENGTH_LONG).show();
-    }
-
 
     /**
      * Crea un nuevo fragmento para mostrar la estructura de la carpeta seleccionada.
@@ -790,7 +796,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 this.menu.findItem(R.id.carpetas_compartidas).setVisible(false);
 
                 this.menu.findItem(R.id.atras).setVisible(true);
-                
+
             } else {
                 textoUbicacion = "Ubicacion: " + PATH_CARPETAS;
             }
@@ -1389,7 +1395,15 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Agrego la informacion que quiero al Intent
         metadatosIntent.putExtra("token", token);
         metadatosIntent.putExtra("username", username);
-        metadatosIntent.putExtra("pathArchivo", PATH_CARPETAS + nombreArchivo + extension);
+        metadatosIntent.putExtra("pathArchivo", obtenerURLArchivo(nombreArchivo));
+
+        // Le tengo que mandar el propietario ademas, si estoy en la carpeta de archivos compartidos
+        // el propietario no soy yo
+        if(PATH_CARPETAS.contains("permisos")){
+            metadatosIntent.putExtra("propietario", obtenerPropietarioArchivo(nombreArchivo));
+        } else {
+            metadatosIntent.putExtra("propietario", username);
+        }
 
         // Inicio la actividad con el Intent
         startActivityForResult(metadatosIntent, METADATOS);
@@ -1496,6 +1510,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         extensionesArchivos         = new HashMap<>();
         URLArchivos                 = new HashMap<>();
         versionesServidorArchivos   = new HashMap<>();
+        propietariosArchivos        = new HashMap<>();
 
         Iterator<?> keys = estructuraCarpetasJSON.keys();
 
@@ -1503,13 +1518,15 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             int indexPunto;
             int indexCaracterReservado;
-            int nroVersion = 50;
+            int indexPrimeraBarra;
+            int numeroVersionInt = 50;
 
             String URL = (String)keys.next();
             String nombreArchivo    = "";
             String extension        = "";
-            String numeroVersion    = "";
+            String numeroVersionString;
             String value            = "";
+            String propietario      = "";
 
             Log.d("MAIN: ", "Saque el path de la estructura: \"" + URL + "\".");
 
@@ -1525,9 +1542,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             indexPunto = value.lastIndexOf(".");
             indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+            indexPrimeraBarra = URL.indexOf("/");
 
             Log.d("MAIN: ", "La ubicacion del punto es: \"" + indexPunto + "\".");
             Log.d("MAIN: ", "La ubicacion del caracter reservado es: \"" + indexCaracterReservado + "\".");
+            Log.d("MAIN: ", "La ubicacion de la primera contra barra es: \"" + indexPrimeraBarra + "\".");
 
             /*
              * Si es el archivo tiene un punto y un caracter reservado juntos, es porque tiene un punto
@@ -1546,10 +1565,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 nombreArchivo   = value.substring(0, indexCaracterReservado);
             }
 
-            numeroVersion       = value.substring(indexCaracterReservado + 1);
-            if( !numeroVersion.equals("folder")){
-                nroVersion          = Integer.parseInt(numeroVersion);
+            numeroVersionString       = value.substring(indexCaracterReservado + 1);
+            if( !numeroVersionString.equals("folder")){
+                numeroVersionInt          = Integer.parseInt(numeroVersionString);
             }
+
+            propietario = URL.substring(0, indexPrimeraBarra);
 
             Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con la extension: \"" + extension + "\".");
             extensionesArchivos.put(nombreArchivo, extension);
@@ -1557,8 +1578,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con la URL: \"" + URL + "\".");
             URLArchivos.put(nombreArchivo, URL);
 
-            Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con el numero de version: \"" + nroVersion + "\".");
-            versionesServidorArchivos.put(nombreArchivo, nroVersion);
+            Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con el numero de version: \"" + numeroVersionInt + "\".");
+            versionesServidorArchivos.put(nombreArchivo, numeroVersionInt);
+
+            Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con el propietario: \"" + propietario + "\".");
+            propietariosArchivos.put(nombreArchivo, propietario);
         }
     }
 
@@ -1571,6 +1595,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         String extension = extensionesArchivos.get(nombre);
         Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la extension: \"" + extension + "\".");
         return extension;
+    }
+
+    /**
+     * Devuelve el propietario del archivo.
+     * @param nombre nombre del archivo de la cual se quiere conocer la extensión.
+     * @return El propietario del archivo.
+     */
+    private String obtenerPropietarioArchivo(String nombre){
+        String propietario = propietariosArchivos.get(nombre);
+        Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene el propietario: \"" + propietario + "\".");
+        return propietario;
     }
 
     /**
@@ -1643,25 +1678,33 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                         Log.e("MAIN: ", "Error al agregar un usuario al JSONArray de usuarios compartidos.");
                         e.printStackTrace();
                     }
-                } else { // En cambio si el usuario fue destildado, quiero sacarlo
-                    Log.i("MAIN: ", "El usuario clickeado SI estaba en la lista.");
-                    int cant = usuariosCompartidos.length();
-                    for (int i = 0; i < cant; i++) {
-                        try{
-                            String usuario = usuariosCompartidos.getString(i);
-                            if (usuario.equals(usuarioClickeado)) {
-                                Log.d("MAIN: ", "Saco al usuario de la lista de usuarios compartidos: \"" + usuarioClickeado + "\".");
-                                usuariosCompartidos.remove(i);
-                                usuariosAdapter.remove(usuarioClickeado);
+                } else {
+                    /* En cambio si el usuario fue destildado, quiero sacarlo
+                     * No puedo destildar al propietario del archivo
+                     */
+                    if(usuarioClickeado.equals(obtenerPropietarioArchivo(nombreArchivo))){
+                        listaCompartidos.setItemChecked(pos, true);
+                        Toast.makeText(getApplicationContext(), "No puede descompartir un archivo con el propietario", Toast.LENGTH_LONG).show();
+                    } else {
+                        Log.i("MAIN: ", "El usuario clickeado SI estaba en la lista.");
+                        int cant = usuariosCompartidos.length();
+                        for (int i = 0; i < cant; i++) {
+                            try{
+                                String usuario = usuariosCompartidos.getString(i);
+                                if (usuario.equals(usuarioClickeado)) {
+                                    Log.d("MAIN: ", "Saco al usuario de la lista de usuarios compartidos: \"" + usuarioClickeado + "\".");
+                                    usuariosCompartidos.remove(i);
+                                    usuariosAdapter.remove(usuarioClickeado);
+                                }
+                            } catch (JSONException e){
+                                Log.e("MAIN: ", e.getMessage());
+                                Log.e("MAIN: ", "Error al sacar al usuario del JSONArray de los usuarios compartidos.");
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e){
-                            Log.e("MAIN: ", e.getMessage());
-                            Log.e("MAIN: ", "Error al sacar al usuario del JSONArray de los usuarios compartidos.");
-                            e.printStackTrace();
                         }
+                        Log.i("MAIN: ", "Saque al usuario clickeado de la lista de usuarios compartidos.");
+                        Log.d("MAIN: ", "La lista quedo asi: \"" + usuariosCompartidos.toString() + "\".");
                     }
-                    Log.i("MAIN: ", "Saque al usuario clickeado de la lista de usuarios compartidos.");
-                    Log.d("MAIN: ", "La lista quedo asi: \"" + usuariosCompartidos.toString() + "\".");
                 }
             }
         });

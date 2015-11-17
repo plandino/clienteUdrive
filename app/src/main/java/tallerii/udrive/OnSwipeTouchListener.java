@@ -23,21 +23,6 @@ public class OnSwipeTouchListener implements OnTouchListener {
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent){
 
-//        float x = motionEvent.getX();
-//        float y = motionEvent.getY();
-//
-//        switch (motionEvent.getAction()) {
-//            case MotionEvent.ACTION_MOVE:
-//
-//                float dx = x - mPreviousX;
-//                float dy = y - mPreviousY;
-//
-//
-//
-//        }
-//
-//        mPreviousX = x;
-//        mPreviousY = y;
         return true;
     }
 
