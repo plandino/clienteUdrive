@@ -5,6 +5,7 @@ package tallerii.udrive;
 * */
 public class MyDataArrays {
     static char     caracterReservado = '!';
+    static final String folderExtension = "." + caracterReservado + "folder";
     static String   caracterReemplazaEspacios = "~";
     static char     divisor = ';';
     static String[] opcionesArchivos = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};

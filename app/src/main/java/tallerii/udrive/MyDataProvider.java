@@ -7,9 +7,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Esta clase se encarga de proveer los datos necesarios para poblar la expandable list
@@ -23,11 +24,11 @@ public class MyDataProvider {
      * @param json la estructura de la carpeta a mostrar
      * @return el hashmap con los pares de clave valor
      */
-    public static HashMap<String, List<String>> getDataHashMap(JSONObject json) {
+    public static Map<String, List<String>> getDataMap(JSONObject json) {
 
         Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el dataHashMap con la estructura de las carpetas.");
 
-        HashMap<String, List<String>> miHashMap = new HashMap<>();
+        Map<String, List<String>> miHashMap = new TreeMap<>(new CustomComparator());
 
         List<String> opcionesArchivosList = new ArrayList<>();
         opcionesArchivosList.addAll(Arrays.asList(MyDataArrays.opcionesArchivos));
@@ -80,6 +81,18 @@ public class MyDataProvider {
                     nombreArchivo   = value.substring(0, indexCaracterReservado);
                 }
 
+                if(value.contains(MyDataArrays.caracterReservado + "folder")){
+                    indexCaracterReservado = value.length();
+                } else {
+                    indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+                }
+                nombreArchivo = value.substring(0, indexCaracterReservado);
+
+//                if( extension.equals(MyDataArrays.caracterReservado + "folder")  ){
+//                    nombreArchivo = value.substring(0, indexCaracterReservado - 1);
+//                } else {
+//                    nombreArchivo = value.substring(0, indexCaracterReservado);
+//                }
 
                 Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + nombreArchivo + "\".");
                 Log.d("MY_DATA_PROVIDER: ", "Con la extension: \"" + extension + "\".");
@@ -91,7 +104,7 @@ public class MyDataProvider {
             }
 
 
-            if( ( ! nombreArchivo.equals(MyDataArrays.caracterReservado + "trash") ) && ( ! nombreArchivo.equals(MyDataArrays.caracterReservado + "compartidos")) ){
+            if( ( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "trash") ) && ( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "compartidos")) ){
                 if(estamosEnPapelera){
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de la papelera.");
                     miHashMap.put(nombreArchivo, opcionesPapelera);
@@ -104,6 +117,7 @@ public class MyDataProvider {
                 }
             }
         }
+
         return miHashMap;
 
     }
@@ -119,11 +133,11 @@ public class MyDataProvider {
     }
 
 
-    public static HashMap<String, String> getTypeHashMap(JSONObject json) {
+    public static Map<String, String> getTypeMap(JSONObject json) {
 
         Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el typeHashMap con la estructura de las carpetas.");
 
-        HashMap<String, String> hashTipoArchivos = new HashMap<>();
+        Map<String, String> hashTipoArchivos = new TreeMap<>(new CustomComparator());
 
         Iterator<?> keys = json.keys();
 
@@ -161,6 +175,19 @@ public class MyDataProvider {
                     extension       = value.substring(indexPunto + 1, indexCaracterReservado);
                 } else if(indexCaracterReservado > 0) {
                     nombreArchivo   = value.substring(0, indexCaracterReservado);
+                }
+
+//                if(value.contains(MyDataArrays.caracterReservado + "folder")){
+//                    indexCaracterReservado = value.length();
+//                } else {
+//                    indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+//                }
+//                nombreArchivo = value.substring(0, indexCaracterReservado);
+
+                if( extension.equals(MyDataArrays.caracterReservado + "folder")  ){
+                    nombreArchivo = value.substring(0, indexCaracterReservado - 1);
+                } else {
+                    nombreArchivo = value.substring(0, indexCaracterReservado);
                 }
 
                 Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + nombreArchivo + "\".");

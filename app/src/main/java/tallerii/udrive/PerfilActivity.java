@@ -356,6 +356,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
 
+                recibirPerfil();
+
                 Log.i("PERFIL: ", "Pude actualizar el perfil.");
                 Log.d("PERFIL: ", "StatusCode: \"" + statusCode + "\".");
 

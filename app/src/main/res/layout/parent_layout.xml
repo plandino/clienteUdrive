@@ -14,20 +14,21 @@
 
         <TextView
         android:id="@+id/textViewParent"
-        android:layout_width="wrap_content"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
         android:textColor="@color/black"
-        android:textStyle="bold"
-        android:singleLine="true"/>
+        android:singleLine="true"
+            />
 
         <!-- Shows an image from your drawable resources -->
         <ImageView
             android:id="@+id/arrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"/>
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="10dp" />
 
 
 </LinearLayout>

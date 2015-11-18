@@ -1,6 +1,7 @@
 package tallerii.udrive;
 
 import android.app.FragmentManager;
+import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -92,6 +94,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private Menu menu;
 
     private String PATH_CARPETAS = "/";
+
+    private int idDescargado = 1;
+    private int idSubido = 1;
 
     private TextView ubicacionActualTextView;
 
@@ -542,34 +547,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                 try {
                     estructuraCarpetas = jsonObject.getString("estructura");
+                    estructuraCarpetas = estructuraCarpetas.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+                    estructuraCarpetasJSON = new JSONObject(estructuraCarpetas);
                     Log.d("MAIN: ", "La estructura de la carpeta en formato String: \"" + estructuraCarpetas + "\".");
 
-                    estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
-                    Log.d("MAIN: ", "La estructura de la carpeta en formato JSON: \"" + estructuraCarpetasJSON + "\".");
+//                    estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
+//                    Log.d("MAIN: ", "La estructura de la carpeta en formato JSON: \"" + estructuraCarpetasJSON + "\".");
 
                     guardarDatosEstructuraArchivos(estructuraCarpetasJSON);
-
-//                    Log.d("MAIN: ", "Extension UNO: \"" + obtenerExtensionArchivo("cuadrocomparativo") + "\".");
-//                    Log.d("MAIN: ", "Extension DOS: \"" + obtenerExtensionArchivo("Derechos_industriales") + "\".");
-//                    Log.d("MAIN: ", "Extension TRES: \"" + obtenerExtensionArchivo("texto") + "\".");
-//                    Log.d("MAIN: ", "Extension CUATRO: \"" + obtenerExtensionArchivo("app-debug") + "\".");
-//                    Log.d("MAIN: ", "Extension CINCO: \"" + obtenerExtensionArchivo("ejteo_clase5") + "\".");
-//                    Log.d("MAIN: ", "Extension SEIS: \"" + obtenerExtensionArchivo("FileDialog") + "\".");
-//
-//                    Log.d("MAIN: ", "URL UNO: \"" + obtenerURLArchivo("cuadrocomparativo") + "\".");
-//                    Log.d("MAIN: ", "URL DOS: \"" + obtenerURLArchivo("Derechos_industriales") + "\".");
-//                    Log.d("MAIN: ", "URL TRES: \"" + obtenerURLArchivo("texto") + "\".");
-//                    Log.d("MAIN: ", "URL CUATRO: \"" + obtenerURLArchivo("app-debug") + "\".");
-//                    Log.d("MAIN: ", "URL CINCO: \"" + obtenerURLArchivo("ejteo_clase5") + "\".");
-//                    Log.d("MAIN: ", "URL SEIS: \"" + obtenerURLArchivo("FileDialog") + "\".");
-//
-//                    Log.d("MAIN: ", "version UNO: \"" + obtenerNumeroVersionServidorArchivo("cuadrocomparativo") + "\".");
-//                    Log.d("MAIN: ", "version DOS: \"" + obtenerNumeroVersionServidorArchivo("Derechos_industriales") + "\".");
-//                    Log.d("MAIN: ", "version TRES: \"" + obtenerNumeroVersionServidorArchivo("texto") + "\".");
-//                    Log.d("MAIN: ", "version CUATRO: \"" + obtenerNumeroVersionServidorArchivo("app-debug") + "\".");
-//                    Log.d("MAIN: ", "version CINCO: \"" + obtenerNumeroVersionServidorArchivo("ejteo_clase5") + "\".");
-//                    Log.d("MAIN: ", "version SEIS: \"" + obtenerNumeroVersionServidorArchivo("FileDialog") + "\".");
-
 
                 } catch (JSONException e) {
                     Log.e("MAIN: ", e.getMessage());
@@ -741,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         if(tipoDeArchivo.equals(MyDataArrays.caracterReservado + "folder")) {
             Log.i("MAIN: ", "Accedo y obtengo la estructura interna de la carpeta.");
+            idClick = idClick.replace(" ", MyDataArrays.caracterReemplazaEspacios);
             get(idClick);
         } else {
             Log.i("MAIN: ", "Obtengo los metadatos del archivo.");
@@ -758,7 +744,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         if( menuActualizado){
             get(null);
         }
-        Toast.makeText(getApplicationContext(), "Vista actualizada", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Carpeta actualizada", Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -781,24 +767,29 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             // Si estoy en la papelera
             if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "trash")){
-                textoUbicacion = "Ubicacion: /papelera/";
+                textoUbicacion = "Ubicación: /papelera/";
                 tipo = MyDataArrays.PAPELERA;
 
+                this.menu.findItem(R.id.crear_carpeta).setVisible(false);
+                this.menu.findItem(R.id.subir_archivo).setVisible(false);
                 this.menu.findItem(R.id.papelera).setVisible(false);
-
+                this.menu.findItem(R.id.carpetas_compartidas).setVisible(true);
                 this.menu.findItem(R.id.atras).setVisible(true);
 
                 // Si estoy en los archivos compartidos
             } else if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
-                textoUbicacion = "Ubicacion: /compartidos/";
+                textoUbicacion = "Ubicación: /compartidos/";
                 tipo = MyDataArrays.COMPARTIDOS;
 
                 this.menu.findItem(R.id.carpetas_compartidas).setVisible(false);
-
+                this.menu.findItem(R.id.crear_carpeta).setVisible(false);
+                this.menu.findItem(R.id.subir_archivo).setVisible(false);
+                this.menu.findItem(R.id.papelera).setVisible(true);
                 this.menu.findItem(R.id.atras).setVisible(true);
 
             } else {
-                textoUbicacion = "Ubicacion: " + PATH_CARPETAS;
+                String path = PATH_CARPETAS.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+                textoUbicacion = "Ubicación: " + path;
             }
             ubicacionActualTextView.setText(textoUbicacion);
         } else {
@@ -833,6 +824,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     public void onOptionClick(String idPadre, String opcion) {
 
+        idPadre = idPadre.replace(MyDataArrays.folderExtension, "");
+
         if(opcion.equals("Descargar")){
             Log.i("MAIN: ", "Hice click en la opcion DESCARGAR.");
             descargarArchivo(idPadre, obtenerNumeroVersionServidorArchivo(idPadre));
@@ -865,21 +858,16 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private void subir(final String path, boolean forzar){
 
-//        String pathSinEspacios = path.replace(" ", String.valueOf(MyDataArrays.caracterReservado));
         String pathSinEspacios = path.replace(" ", MyDataArrays.caracterReemplazaEspacios);
-
 
         Log.i("MAIN: ", "Voy a subir un archivo.");
 
         int index = pathSinEspacios.lastIndexOf("/");
         final String filename = pathSinEspacios.substring(index + 1);
 
-        index = filename.lastIndexOf(".");
-        String nombreArchivo = filename.substring(0, index);
-
         final int numeroVersionDescargado;
         if(forzar){
-            numeroVersionDescargado = obtenerNumeroVersionServidorArchivo(nombreArchivo) + 1;
+            numeroVersionDescargado = obtenerNumeroVersionServidorArchivo(filename) + 1;
             Log.d("MAIN: ", "Mi numero de version a subir, forzando: \"" + numeroVersionDescargado + "\".");
 
         } else {
@@ -920,9 +908,40 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
+
+        idSubido += 1;
+
+        final int myIdSubido = idSubido;
+
+        final NotificationCompat.Builder mBuilderSubidaExitosa = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.stat_sys_upload_done)
+                .setContentTitle("Subida completada")
+                .setContentText("Se subio correctamente el archivo: " + filename);
+
+        final NotificationCompat.Builder mBuilderSubidaFallida = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_delete)
+                .setContentTitle("Subida fallida")
+                .setContentText("Error al subir el archivo: " + filename);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                        .setSmallIcon(android.R.drawable.stat_sys_upload)
+                        .setContentTitle("Subiendo...")
+                        .setContentText("Subiendo archivo: " + filename)
+                        .setProgress(100, 0, true)
+                        .setOngoing(true);
+
+
+        final NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(myIdSubido, mBuilder.build());
+
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
+
+                mNotificationManager.cancel(myIdSubido);
+
+                mNotificationManager.notify(myIdSubido, mBuilderSubidaExitosa.build());
 
                 guardarVersionArchivo(PATH_CARPETAS + filename, numeroVersionDescargado);
 
@@ -936,6 +955,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+
+                mNotificationManager.cancel(myIdSubido);
+
+                mNotificationManager.notify(myIdSubido, mBuilderSubidaFallida.build());
+
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
                 if (error == null) {
@@ -999,12 +1023,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.d("MAIN: ", "El username ingresado es: \"" + username + "\".");
         Log.d("MAIN: ", "El token ingresado es: \"" + token + "\".");
 
-        String extension = obtenerExtensionArchivo(nombreArchivo);
-        if( ! extension.equals("") )
-            extension = "." + extension;
-
-        final String filename = nombreArchivo + extension;
-        final String savedFilePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + filename;
+        final String savedFilePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + nombreArchivo;
 
         Log.d("MAIN: ", "Guardo el archivo en el path: \"" + savedFilePath + "\".");
 
@@ -1012,18 +1031,43 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
+        idDescargado += 1;
+
+        final int myIdDescargado = idDescargado;
+
+        final NotificationCompat.Builder mBuilderDescargaExitosa = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setContentTitle("Descarga completada")
+                .setContentText("Se descargo correctamente el archivo: " + nombreArchivo);
+
+        final NotificationCompat.Builder mBuilderDescargaFallida = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_delete)
+                .setContentTitle("Descarga fallida")
+                .setContentText("Error al subir el archivo: " + nombreArchivo);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.stat_sys_download)
+                .setContentTitle("Descargando")
+                .setContentText("Descargando archivo: " + nombreArchivo)
+                .setProgress(100, 0, true)
+                .setOngoing(true);
+
+        final NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(myIdDescargado, mBuilder.build());
+
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
-                    //                        @Override
-                    //                        public void onProgress(int bytesWritten, int totalSize) {
-                    //                            Toast.makeText(getApplicationContext(), "Descargando...", Toast.LENGTH_LONG).show();
-                    //                        }
 
                     @Override
                     public void onSuccess(File file) {
 
+                        mNotificationManager.cancel(myIdDescargado);
+
+                        mNotificationManager.notify(myIdDescargado, mBuilderDescargaExitosa.build());
+
+
                         Toast.makeText(getApplicationContext(), "Se ha descargado el archivo exitosamente!", Toast.LENGTH_LONG).show();
 
-                        guardarVersionArchivo(PATH_CARPETAS + filename, numeroVersion);
+                        guardarVersionArchivo(PATH_CARPETAS + nombreArchivo, numeroVersion);
 
                         Log.i("MAIN: ", "Exito al descarga el archivo.");
 
@@ -1052,6 +1096,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                     @Override
                     public void onFailure(int statusCode, Throwable e, File response) {
+
+                        mNotificationManager.cancel(myIdDescargado);
+
+                        mNotificationManager.notify(myIdDescargado, mBuilderDescargaFallida.build());
+
+
                         Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
                         Log.e("MAIN: ", "Hubo un problema al descargar un archivo.");
 
@@ -1274,6 +1324,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         QUERY_URL += obtenerURLArchivo(nombreArchivo);
 
+        QUERY_URL = QUERY_URL.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
@@ -1338,6 +1390,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.d("MAIN: ", "Le pego a la URL: \"" + QUERY_URL + "\".");
 
+        Toast.makeText(getApplicationContext(), "Cerrando sesión...", Toast.LENGTH_LONG).show();
+
         client.delete(getApplicationContext(), QUERY_URL, header, params, new JsonHttpResponseHandler() {
 
             @Override
@@ -1395,7 +1449,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         // Agrego la informacion que quiero al Intent
         metadatosIntent.putExtra("token", token);
         metadatosIntent.putExtra("username", username);
-        metadatosIntent.putExtra("pathArchivo", obtenerURLArchivo(nombreArchivo));
+        String url = obtenerURLArchivo(nombreArchivo);
+        url = url.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+        metadatosIntent.putExtra("pathArchivo", url);
 
         // Le tengo que mandar el propietario ademas, si estoy en la carpeta de archivos compartidos
         // el propietario no soy yo
@@ -1423,6 +1479,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             this.menu.findItem(R.id.atras).setVisible(false);
 
             this.menu.findItem(R.id.papelera).setVisible(true);
+            this.menu.findItem(R.id.crear_carpeta).setVisible(true);
+            this.menu.findItem(R.id.subir_archivo).setVisible(true);
 
         } else if( PATH_CARPETAS.contains("permisos")){
             Log.i("MAIN: ", "Saco el boton de atras y pongo el de archivos compartidos de vuelta.");
@@ -1430,6 +1488,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             this.menu.findItem(R.id.atras).setVisible(false);
 
             this.menu.findItem(R.id.carpetas_compartidas).setVisible(true);
+            this.menu.findItem(R.id.papelera).setVisible(true);
+            this.menu.findItem(R.id.crear_carpeta).setVisible(true);
+            this.menu.findItem(R.id.subir_archivo).setVisible(true);
         }
 
         if(PATH_CARPETAS.equals("/")){
@@ -1570,6 +1631,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 numeroVersionInt          = Integer.parseInt(numeroVersionString);
             }
 
+            int indice = value.lastIndexOf(MyDataArrays.folderExtension);
+            if(indice > 0 ) {
+                nombreArchivo = value.substring(0, indice);
+            } else {
+                nombreArchivo = value.substring(0, indexCaracterReservado);
+            }
+
             propietario = URL.substring(0, indexPrimeraBarra);
 
             Log.d("MAIN: ", "Gaurdo el archivo: \"" + nombreArchivo + "\" con la extension: \"" + extension + "\".");
@@ -1628,7 +1696,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         int numeroVersionInt = 0;
         Integer numeroVersion = versionesServidorArchivos.get(nombre);
         if(numeroVersion != null){
-            numeroVersionInt =  numeroVersion.intValue();
+            numeroVersionInt =  numeroVersion;
         }
         Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene el numero de version: \"" + numeroVersionInt + "\".");
         return numeroVersionInt;
@@ -1761,6 +1829,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                 // Mando a compartir los nuevos usuarios poniendo un TRUE
                 recibirOActualizarMetadatos(nombreArchivo, MyDataArrays.MANDAR);
+
             }
         });
 
@@ -1821,6 +1890,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 // Le pongo los nuevos usuarios compartidos a los metadatos y los mando
                                 metadatos.put("usuarios", usuariosCompartidos);
                                 mandarMetadatos(metadatos);
+                                usuariosCompartidos = new JSONArray();
 
                                 // Si solo quiero recibir, los voy a agregar a la lista
                                 // Si la lista esta vacia, es porque es la carga inicial de la lista

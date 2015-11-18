@@ -1,18 +1,17 @@
 package tallerii.udrive;
 
 import android.content.Context;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
-import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Adapter para cargar la informacion en la expandable list.
@@ -20,11 +19,11 @@ import java.util.List;
 public class MyCustomAdapter extends BaseExpandableListAdapter {
 
     private Context context;
-    private HashMap<String, List<String>> hashMap;
+    private Map<String, List<String>> hashMap;
     private List<String> opciones;
-    private HashMap<String, String> hashTipoArchivos;
+    private Map<String, String> hashTipoArchivos;
 
-    public MyCustomAdapter(Context context, HashMap<String, List<String>> hashMap, List<String> list, HashMap<String, String> hashTipoArchivos) {
+    public MyCustomAdapter(Context context, Map<String, List<String>> hashMap, List<String> list, Map<String, String> hashTipoArchivos) {
         this.context = context;
         this.hashMap = hashMap;
         this.opciones = list;
@@ -77,15 +76,19 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
 
         TextView parentTextView = (TextView) convertView.findViewById(R.id.textViewParent);
         ImageView listHeaderArrow = (ImageView) convertView.findViewById(R.id.arrow);
-        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams( Gravity.TOP | Gravity.END);
 
-        listHeaderArrow.setLayoutParams(layoutParams);
-
+        if(groupTitle.contains(MyDataArrays.caracterReservado + "folder")){
+            groupTitle = groupTitle.replace(MyDataArrays.folderExtension, "");
+        }
         parentTextView.setText(groupTitle);
 
         ImageView iconImage;
         iconImage = (ImageView) convertView.findViewById(R.id.icono);
+//        iconImage.set
         String tipo = hashTipoArchivos.get(groupTitle);
+
+        Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + groupTitle + "\".");
+
 
         if(tipo.equals(MyDataArrays.caracterReservado + "folder")){
             iconImage.setImageResource(R.mipmap.folder);
@@ -101,7 +104,7 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
         int imageResourceId = isExpanded ? android.R.drawable.arrow_up_float : android.R.drawable.arrow_down_float;
         listHeaderArrow.setImageResource(imageResourceId);
         listHeaderArrow.setScaleX(2.0f);
-        listHeaderArrow.setScaleY(2.0f);
+        listHeaderArrow.setScaleY(3.0f);
 
         listHeaderArrow.setOnClickListener(new View.OnClickListener() {
 

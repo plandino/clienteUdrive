@@ -41,6 +41,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
 
     private String token = "";
     private String username = "";
+    private String nombreArchivoViejo = "";
 
     private String propietario = "";
     private JSONArray usrCompartidosJSONArray;
@@ -145,6 +146,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                             } else {
                                 nombreArchivo = nombre;
                             }
+                            nombreArchivoViejo = nombreArchivo;
                             Log.d("METADATOS: ", "Nombre del archivo: \"" + nombreArchivo + "\".");
                             nombreEditText.setText(nombreArchivo);
 
@@ -338,6 +340,10 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             //
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
+
+                QUERY_URL = QUERY_URL.replace(nombreArchivoViejo, nombreArchivo);
+                recibirMetadatos();
+
                 Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
 
                 Log.i("METADATOS: ", "Archivo actualizado.");

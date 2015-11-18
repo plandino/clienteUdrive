@@ -19,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -35,13 +35,15 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     private OnFragmentInteractionListener mListener;
 
-    HashMap<String, List<String>> miHashMap;
-    HashMap<String, String>       hashTipoArchivos;
+    Map<String, List<String>> miMap;
+    Map<String, String>       hashTipoArchivos;
     List<String> hasMapKeys;
     ExpandableListView expandableListView;
     MyCustomAdapter adapter;
 
     ActionButton actionButton;
+
+    private int grupoAbierto = -1;
 
     // CONSTRUCTOR VACIO
     public FilesFragment() {
@@ -85,13 +87,15 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
                         texto = "La busqueda no devolvio ningun resultado.";
                         break;
                     case MyDataArrays.PAPELERA:
-                        texto = "La papelera se encuentra vacia.";
+                        actionButton.hide();
+                        texto = "La papelera se encuentra vacía.";
                         break;
                     case MyDataArrays.COMPARTIDOS:
+                        actionButton.hide();
                         texto = "Nadie te ha compartido archivos.";
                         break;
                     case MyDataArrays.CARPETA:
-                        texto = "Carpeta vacia. Sube algún archivo!";
+                        texto = "Carpeta vacía. Sube algún archivo!";
                         break;
                     default:
                         texto = "Error: \"" + tipo + "\".";
@@ -113,34 +117,35 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             Log.e("FILES_FRAGMENT: ", "No se pudo obtener crear el JSON con la estructura de las carpetas.");
             e.printStackTrace();
         }
-        miHashMap = MyDataProvider.getDataHashMap(estructuraCarpetasJSON);
-        hashTipoArchivos = MyDataProvider.getTypeHashMap(estructuraCarpetasJSON);
+        miMap = MyDataProvider.getDataMap(estructuraCarpetasJSON);
+        hashTipoArchivos = MyDataProvider.getTypeMap(estructuraCarpetasJSON);
 
-        hasMapKeys = new ArrayList<>(miHashMap.keySet());
+        hasMapKeys = new ArrayList<>(miMap.keySet());
 
-        adapter = new MyCustomAdapter(getActivity(), miHashMap, hasMapKeys, hashTipoArchivos);
+        adapter = new MyCustomAdapter(getActivity(), miMap, hasMapKeys, hashTipoArchivos);
         expandableListView.setAdapter(adapter);
 
         expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
             @Override
             public void onGroupExpand(int groupPosition) {
-//                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " expanded", Toast.LENGTH_SHORT).show();
+                if(grupoAbierto > 0 ){
+                    expandableListView.collapseGroup(grupoAbierto);
+                }
+                grupoAbierto = groupPosition;
             }
         });
 
         expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
             @Override
             public void onGroupCollapse(int groupPosition) {
-//                Toast.makeText(getActivity(), hasMapKeys.get(groupPosition) + " collapsed", Toast.LENGTH_SHORT).show();
             }
         });
 
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View clickedView, int groupPosition, int childPosition, long id) {
-//                Toast.makeText(getActivity(), "Selected " + miHashMap.get(hasMapKeys.get(groupPosition)).get(childPosition)
-//                        + " from " + hasMapKeys.get(groupPosition), Toast.LENGTH_SHORT).show();
-                mListener.onOptionClick(hasMapKeys.get(groupPosition), miHashMap.get(hasMapKeys.get(groupPosition)).get(childPosition));
+
+                mListener.onOptionClick(hasMapKeys.get(groupPosition), miMap.get(hasMapKeys.get(groupPosition)).get(childPosition));
                 return false;
             }
         });
@@ -148,8 +153,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView expandableListView, View vista, int groupPosition, long id) {
-
-                mListener.onGroupClick(hasMapKeys.get(groupPosition));
+                String idGrupo = hasMapKeys.get(groupPosition).replace(MyDataArrays.folderExtension, "");
+                mListener.onGroupClick(idGrupo);
                 return true;
             }
         });
