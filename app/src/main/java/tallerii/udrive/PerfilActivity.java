@@ -1,6 +1,5 @@
 package tallerii.udrive;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -8,9 +7,7 @@ import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -53,8 +50,6 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     Button actualizarButton;
     EditText nombreEditText;
     EditText mailEditText;
-    EditText fotoEditText;
-    EditText ubicacionEditText;
 
     String nombreUsuario = "";
     String email = "";
@@ -70,13 +65,12 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
     MyLocationListener locationListener;
 
+    private CircularProgressView progressView;
     private GoogleMap mMap;
 
     ScrollView mScrollView;
 
-    NotificationManager mNotifyManager;
-
-    NotificationCompat.Builder mBuilder;
+    private static final int PICKFILE_RESULT_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,39 +114,41 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
         savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath();
 
+        Log.d("PERFIL: ", "La ubicacion de mi foto de perfil interna es: \"" + savedPhotoFilePath + "\".");
+
         // Edit text para ingresar el usuario
         nombreEditText = (EditText) findViewById(R.id.perfil_nombre);
 
         // Edit text para ingresar el mail
         mailEditText = (EditText) findViewById(R.id.perfil_mail);
 
-        // Edit para el path de la foto
-        fotoEditText = (EditText) findViewById(R.id.perfil_foto);
-        fotoEditText.setText(savedPhotoFilePath);
-
-        fotoEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus){
-
-                    Log.i("PERFIL: ", "Voy a buscar la nueva foto de perfil.");
-
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    int PICKFILE_RESULT_CODE = 1;
-                    startActivityForResult(intent,PICKFILE_RESULT_CODE);
-                }
-            }
-        });
-
-        // Edit para la ubicacion
-        ubicacionEditText = (EditText) findViewById(R.id.perfil_ubicacion);
+        // Rueda circular que muestra como se carga o descarga una foto
+        progressView = (CircularProgressView) findViewById(R.id.progress_view);
+        progressView.setVisibility(View.INVISIBLE);
 
         // Boton para iniciar sesion
         actualizarButton = (Button) findViewById(R.id.actualizar);
         actualizarButton.setOnClickListener(this);
 
         fotoPerfil = (ImageView) findViewById(R.id.foto);
+        fotoPerfil.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("MAIN: ", "Voy a visualizar la foto de perfil.");
+
+                // Cuando la descarga es una foto o un archivo de texto, cambio a otra
+                // activity para ver el archivo
+                Intent intentDisplay = new Intent(PerfilActivity.this, DisplayActivity.class);
+
+                intentDisplay.putExtra("filePath", savedPhotoFilePath);
+                intentDisplay.putExtra("editable", true);
+
+                Log.d("MAIN: ", "Le agrego al Intent el bool editable: \"" + true + "\".");
+                Log.d("MAIN: ", "Le agrego al Intent el path a la foto guardada: \"" + savedPhotoFilePath + "\".");
+
+                startActivityForResult(intentDisplay, PICKFILE_RESULT_CODE);
+            }
+        });
 
         recibirPerfil();
 
@@ -179,35 +175,29 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         Log.d("PERFIL: ", "El request code es: \"" + requestCode + "\".");
 
         switch(requestCode){
-            case 1:
+            case PICKFILE_RESULT_CODE:
                 if(resultCode==RESULT_OK){
+
+                    savedPhotoFilePath = data.getStringExtra("pathFotoNueva");
 
                     Log.i("PERFIL: ", "El resultado de la activity es OK.");
 
-                    if (data == null){
-                        Log.i("PERFIL: ", "No hay data en el resultado de la activity.");
-                        return;
-                    }
+                    Log.d("PERFIL: ", "El path a la nueva foto es: \"" + savedPhotoFilePath + "\".");
 
-                    String selectedImagePath;
-                    Uri selectedImageUri = data.getData();
+                    Log.i("PERFIL: ", "Muestro la nueva foto.");
 
-                    // Tengo que obtener el path del archivo. Uso el FilePathGetter para traducir
-                    // de una Uri a un file path absoluto
-                    selectedImagePath = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
-                    Log.d("PERFIL: ", "El path de la foto de perfil seleccionada es: " + selectedImagePath);
-
-                    fotoEditText.setText(selectedImagePath);
+                    Bitmap bitmap = BitmapFactory.decodeFile(savedPhotoFilePath);
+                    fotoPerfil.setImageBitmap(bitmap);
                 }
                 break;
-
         }
     }
 
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        Log.i("PERFIL: ", "Ubico el mapa.");
+
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
@@ -242,13 +232,11 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         String nombre = nombreEditText.getText().toString();
         String mail = mailEditText.getText().toString();
-        String fotoPath = fotoEditText.getText().toString();
 
         Log.i("PERFIL: ", "Se hizo click en el boton para actualizar el perfil.");
 
         Log.d("PERFIL: ", "El nombre ingresado es: \"" + nombre + "\".");
         Log.d("PERFIL: ", "El mail ingresado es: \"" + mail + "\".");
-        Log.d("PERFIL: ", "El path a la foto es: \"" + fotoPath + "\".");
 
         if (nombre.isEmpty()) {
             Log.d("PERFIL: ", "Se ingreso un nombre vacio.");
@@ -261,7 +249,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
             Toast.makeText(getApplicationContext(), "No puede ingresar un mail vacio.",
                     Toast.LENGTH_LONG).show();
         } else {
-            actualizarPerfil(nombre, mail, fotoPath);
+            actualizarPerfil(nombre, mail);
         }
     }
 
@@ -269,9 +257,8 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
      * Se encarga de mandar los datos actualizados del perfil del usuario, al servidor.
      * @param nombre nombre actualizado del usuario
      * @param mail mail actualizado del usuario
-     * @param fotoPath path interno del telefono movil, de donde se va a subir la nueva foto de perfil
      */
-    public void actualizarPerfil(final String nombre, String mail, String fotoPath){
+    public void actualizarPerfil(final String nombre, String mail){
 
         Log.i("PERFIL: ", "Voy mandar el perfil actualizado.");
 
@@ -292,8 +279,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         Log.d("PERFIL: ", "El mail ingresados es: \"" + mail + "\".");
 
         try{
-            if(fotoPath.lastIndexOf("/") > 0 ){
-                File archivo = new File(fotoPath);
+            Log.d("PERFIL: ", "El path a la foto es: \"" + savedPhotoFilePath + "\".");
+            if(savedPhotoFilePath.lastIndexOf("/") > 0 ){
+                File archivo = new File(savedPhotoFilePath);
                 params.put("picture", archivo);
             }
         } catch (FileNotFoundException e){
@@ -304,50 +292,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
             Toast.makeText(getApplicationContext(), "No se pudo encontrar el archivo de la foto de perfil", Toast.LENGTH_LONG).show();
         }
 
-        final int id = 1;
-        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setContentTitle("Picture Download")
-                .setContentText("Download in progress")
-                .setSmallIcon(R.drawable.ic_cast_light);
-
-//// Start a lengthy operation in a background thread
-//        new Thread(
-//                new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        int incr;
-//                        // Do the "lengthy" operation 20 times
-//                        for (incr = 0; incr <= 100; incr+=5) {
-//                            // Sets the progress indicator to a max value, the
-//                            // current completion percentage, and "determinate"
-//                            // state
-//                            mBuilder.setProgress(0, 0, true);
-//
-////                            mBuilder.setProgress(100, incr, false);
-//                            // Displays the progress bar for the first time.
-//                            mNotifyManager.notify(id, mBuilder.build());
-//                            // Sleeps the thread, simulating an operation
-//                            // that takes time
-//                            try {
-//                                // Sleep for 5 seconds
-//                                Thread.sleep(5*1000);
-//                            } catch (InterruptedException e) {
-//                                Log.d("PERFIL:", "sleep failure");
-//                            }
-//                        }
-//                        // When the loop is finished, updates the notification
-//                        mBuilder.setContentText("Download complete")
-//                                // Removes the progress bar
-//                                .setProgress(0,0,false);
-//                        mNotifyManager.notify(id, mBuilder.build());
-//                    }
-//                }
-//// Starts the thread by calling the run() method in its Runnable
-//        ).start();
-
         // Creo un spinner circular para mostrar que la foto se esta subiendo
-        final CircularProgressView progressView = (CircularProgressView) findViewById(R.id.progress_view);
         progressView.setVisibility(View.VISIBLE);
         progressView.startAnimation();
 
@@ -442,9 +387,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
                             int index = fotopath.lastIndexOf("/");
                             String nombreFoto = fotopath.substring(index + 1);
-                            fotoEditText.setText(nombreFoto);
 
                             savedPhotoFilePath = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + nombreFoto;
+                            Log.d("PERFIL: ", "Nuevo path para la foto de perfil guardada: \"" + savedPhotoFilePath + "\".");
+
 
                             JSONObject ubicacion = perfil.getJSONObject("ultima ubicacion");
                             Log.d("PERFIL: ", "La ultima ubicacion en formato JSON: \"" + ubicacion.toString() + "\".");
@@ -522,11 +468,18 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         Log.d("PERFIL: ", "Guardo la foto en: \"" + savedPhotoFilePath + "\".");
 
         File file=new File(savedPhotoFilePath);
+
+        // Creo un spinner circular para mostrar que la foto se esta subiendo
+        progressView.setVisibility(View.VISIBLE);
+        progressView.startAnimation();
+
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
 
                     @Override
                     public void onSuccess(File file) {
                         Log.i("PERFIL: ", "Recibi la foto.");
+
+                        progressView.setVisibility(View.INVISIBLE);
 
                         Bitmap bitmap = BitmapFactory.decodeFile(savedPhotoFilePath);
                         fotoPerfil.setImageBitmap(bitmap);
@@ -537,6 +490,9 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
 
                     @Override
                     public void onFailure(int statusCode, Throwable e, File response) {
+
+                        progressView.setVisibility(View.INVISIBLE);
+
                         Log.d("PERFIL: ", "StatusCode: \"" + statusCode + "\".");
                         Log.d("PERFIL: ", "No se pudo descargar la foto de perfil.");
                         Toast.makeText(getApplicationContext(), "Error al descargar la foto", Toast.LENGTH_LONG).show();

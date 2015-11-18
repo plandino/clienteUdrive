@@ -935,6 +935,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(myIdSubido, mBuilder.build());
 
+        Toast.makeText(getApplicationContext(), "Subiendo archivo", Toast.LENGTH_LONG).show();
+
         client.put(QUERY_URL, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
@@ -1055,6 +1057,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         final NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(myIdDescargado, mBuilder.build());
 
+        Toast.makeText(getApplicationContext(), "Descargando archivo", Toast.LENGTH_LONG).show();
+
         client.get(QUERY_URL, params, new FileAsyncHttpResponseHandler(file) {
 
                     @Override
@@ -1063,7 +1067,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                         mNotificationManager.cancel(myIdDescargado);
 
                         mNotificationManager.notify(myIdDescargado, mBuilderDescargaExitosa.build());
-
 
                         Toast.makeText(getApplicationContext(), "Se ha descargado el archivo exitosamente!", Toast.LENGTH_LONG).show();
 
