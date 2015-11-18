@@ -8,7 +8,8 @@ public class MyDataArrays {
     static final String folderExtension = "." + caracterReservado + "folder";
     static String   caracterReemplazaEspacios = "~";
     static char     divisor = ';';
-    static String[] opcionesArchivos = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};
+    static String[] opcionesArchivos    = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};
+    static String[] opcionesCompartidos = {"Descargar", "Versiones anteriores", "Actualizar", "Compartir", "Eliminar"};
     static String[] opcionesPapelera = {"Restaurar", "Eliminar"};
     static String[] opcionesCarpetas = {"Eliminar"};
 

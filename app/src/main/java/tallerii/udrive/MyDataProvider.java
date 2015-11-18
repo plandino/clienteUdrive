@@ -24,7 +24,7 @@ public class MyDataProvider {
      * @param json la estructura de la carpeta a mostrar
      * @return el hashmap con los pares de clave valor
      */
-    public static Map<String, List<String>> getDataMap(JSONObject json) {
+    public static Map<String, List<String>> getDataMap(JSONObject json, String username) {
 
         Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el dataHashMap con la estructura de las carpetas.");
 
@@ -39,17 +39,26 @@ public class MyDataProvider {
         List<String> opcionesPapelera = new ArrayList<>();
         opcionesPapelera.addAll(Arrays.asList(MyDataArrays.opcionesPapelera));
 
+        List<String> opcionesCompartidos = new ArrayList<>();
+        opcionesCompartidos.addAll(Arrays.asList(MyDataArrays.opcionesCompartidos));
+
         Iterator<?> keys = json.keys();
 
         while( keys.hasNext() ) {
 
             int indexPunto;
             int indexCaracterReservado;
+            int indexPrimerBarra;
 
             String URL = (String)keys.next();
             String nombreArchivo    = "";
             String extension        = "";
             String value            = "";
+
+            String propietario      = "";
+            indexPrimerBarra = URL.indexOf("/");
+            propietario = URL.substring(0, indexPrimerBarra);
+
 
             boolean estamosEnPapelera = estamosEnPapelera(URL);
 
@@ -63,6 +72,7 @@ public class MyDataProvider {
 
                 indexPunto = value.lastIndexOf(".");
                 indexCaracterReservado = value.lastIndexOf(MyDataArrays.caracterReservado);
+
 
                 /*
                  * Si es el archivo tiene un punto y un caracter reservado juntos, es porque tiene un punto
@@ -104,8 +114,11 @@ public class MyDataProvider {
             }
 
 
-            if( ( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "trash") ) && ( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "compartidos")) ){
-                if(estamosEnPapelera){
+            if( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "trash")){
+                if( ! username.equals(propietario) ){
+                    Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de los archivos compartidos.");
+                    miHashMap.put(nombreArchivo, opcionesCompartidos);
+                } else if(estamosEnPapelera){
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de la papelera.");
                     miHashMap.put(nombreArchivo, opcionesPapelera);
                 } else if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){

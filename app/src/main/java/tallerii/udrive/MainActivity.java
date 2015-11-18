@@ -69,9 +69,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     private TextView textoFallido;
 
-    private static final int METADATOS = 2;
 
     private static final int PICKFILE_RESULT_CODE = 1;
+    private static final int METADATOS = 2;
+    private static final int ACTUALIZAR_RESULT_CODE = 3;
+
 
     MyLocationListener locationListener;
 
@@ -95,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private Menu menu;
 
     private String PATH_CARPETAS = "/";
+
+    private String archivoAActualizar = "";
 
     private int idDescargado = 1;
     private int idSubido = 1;
@@ -168,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     @Override
     public void subirFAB(){
-        seleccionarArchivo();
+        seleccionarArchivo(false);
     }
 
     @Override
@@ -386,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 return true;
             case R.id.subir_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de subir archivo.");
-                seleccionarArchivo();
+                seleccionarArchivo(false);
                 return true;
             case R.id.crear_carpeta:
                 Log.i("MAIN: ", "Hice click en el boton de crear carpeta.");
@@ -813,6 +817,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Bundle bundle = new Bundle();
         bundle.putString("estructura", estructuraCarpetas);
         bundle.putString("tipo", tipo);
+        bundle.putString("username", username);
 
         // Le agrego el Bundle al fragmento
         fragment.setArguments(bundle);
@@ -845,6 +850,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             mostrarVersionesAnteriores(idPadre);
         }
 
+        if(opcion.equals("Actualizar")){
+            Log.i("MAIN: ", "Hice click en la opcion Actualizar.");
+            archivoAActualizar = idPadre.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+            seleccionarArchivo(true);
+        }
+
         if(opcion.equals("Compartir")){
             Log.i("MAIN: ", "Hice click en la opcion COMPARTIR.");
             compartirArchivo(idPadre);
@@ -872,7 +883,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.i("MAIN: ", "Voy a subir un archivo.");
 
         int index = pathSinEspacios.lastIndexOf("/");
-        final String filename = pathSinEspacios.substring(index + 1);
+        final String filename;
+
+        if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
+            filename = archivoAActualizar;
+        } else {
+            filename = pathSinEspacios.substring(index + 1);
+        }
+
 
         final int numeroVersionDescargado;
         if(forzar){
@@ -885,7 +903,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         }
 
-        String QUERY_URL = MyDataArrays.direccion + "/file" + "/" + username +  PATH_CARPETAS + filename + MyDataArrays.caracterReservado + numeroVersionDescargado;
+        String QUERY_URL = MyDataArrays.direccion + "/file/" + username +  PATH_CARPETAS + filename + MyDataArrays.caracterReservado + numeroVersionDescargado;
+
+        if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
+            QUERY_URL = MyDataArrays.direccion + "/file/" + obtenerURLArchivo(archivoAActualizar) + MyDataArrays.caracterReservado + numeroVersionDescargado;
+        }
+////            archivoAActualizar = "";
+
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -969,11 +993,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                 mNotificationManager.cancel(myIdSubido);
 
-                mNotificationManager.notify(myIdSubido, mBuilderSubidaFallida.build());
-
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
                 if (error == null) {
+
+                    mNotificationManager.notify(myIdSubido, mBuilderSubidaFallida.build());
+
                     Log.e("MAIN: ", "No se pudo comunicar con el servidor.");
 
                     Toast.makeText(getApplicationContext(), "Error al conectar con el servidor", Toast.LENGTH_LONG).show();
@@ -1004,13 +1029,31 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     /**
      * Crea un menu para seleccionar que archivo subir.
      */
-    private void seleccionarArchivo(){
+    private void seleccionarArchivo(boolean actualizar){
 
         Log.i("MAIN: ", "Voy a seleccionar un archivo para subir.");
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        startActivityForResult(intent, PICKFILE_RESULT_CODE);
+        String extension = obtenerExtensionArchivo(archivoAActualizar);
+        String filtroArchivo = "";
+        if (extension.equals("gif") || extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
+            filtroArchivo =  "image";
+        } else if(extension.equals("mp4") || extension.equals("mpeg") || extension.equals("aac") || extension.equals("wav") || extension.equals("ogg") || extension.equals("midi") || extension.equals("mp3") || extension.equals("mp5")){
+            filtroArchivo = "audio";
+        } else if(extension.equals("xml") || extension.equals("txt") || extension.equals("cfg") || extension.equals("csv") || extension.equals("conf") || extension.equals("rc") || extension.equals("html") || extension.equals("htm")){
+            filtroArchivo = "text";
+        } else if(extension.equals("pdf") || extension.equals("apk") || extension.equals("cfg") || extension.equals("csv") || extension.equals("conf") || extension.equals("rc") || extension.equals("html") || extension.equals("htm")){
+            filtroArchivo = "text";
+        }
+
+
+        if(actualizar){
+            intent.setType(filtroArchivo + "/*");
+            startActivityForResult(intent, PICKFILE_RESULT_CODE);
+        } else {
+            intent.setType("*/*");
+            startActivityForResult(intent, ACTUALIZAR_RESULT_CODE);
+        }
     }
 
     /**

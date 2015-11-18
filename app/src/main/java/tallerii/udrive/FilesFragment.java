@@ -75,9 +75,11 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
         JSONObject estructuraCarpetasJSON = new JSONObject();
+        String username = "";
         try{
             String estructuraCarpetas   = getArguments().getString("estructura");
             String tipo                 = getArguments().getString("tipo");
+            username             = getArguments().getString("username");
             if(tipo == null) tipo = MyDataArrays.CARPETA;
             if( estructuraCarpetas != null ){
 
@@ -117,7 +119,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             Log.e("FILES_FRAGMENT: ", "No se pudo obtener crear el JSON con la estructura de las carpetas.");
             e.printStackTrace();
         }
-        miMap = MyDataProvider.getDataMap(estructuraCarpetasJSON);
+        miMap = MyDataProvider.getDataMap(estructuraCarpetasJSON, username);
         hashTipoArchivos = MyDataProvider.getTypeMap(estructuraCarpetasJSON);
 
         hasMapKeys = new ArrayList<>(miMap.keySet());
