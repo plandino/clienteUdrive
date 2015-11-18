@@ -179,15 +179,23 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
                 if(resultCode==RESULT_OK){
 
                     savedPhotoFilePath = data.getStringExtra("pathFotoNueva");
+                    Boolean nuevafoto  = data.getBooleanExtra("nuevaFoto", false);
 
-                    Log.i("PERFIL: ", "El resultado de la activity es OK.");
+                    if(nuevafoto){
+                        Log.i("PERFIL: ", "El resultado de la activity es OK.");
 
-                    Log.d("PERFIL: ", "El path a la nueva foto es: \"" + savedPhotoFilePath + "\".");
+                        Log.d("PERFIL: ", "El path a la nueva foto es: \"" + savedPhotoFilePath + "\".");
 
-                    Log.i("PERFIL: ", "Muestro la nueva foto.");
+                        Log.i("PERFIL: ", "Muestro la nueva foto.");
+                        actualizarPerfil(nombreUsuario, email);
+                    } else {
+                        Log.i("PERFIL: ", "El resultado de la activity es OK.");
 
-                    Bitmap bitmap = BitmapFactory.decodeFile(savedPhotoFilePath);
-                    fotoPerfil.setImageBitmap(bitmap);
+                        Log.d("PERFIL: ", "Mantengo la misma foto.");
+                    }
+
+
+
                 }
                 break;
         }
@@ -508,7 +516,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
      * @param longitud las coordenadas de longitud de la ubicacion
      * @return devuelve verdadero o falso si pudo encontrar la direccion o no
      */
-    public boolean obtenerDireccion(double latitud, double longitud){
+    public boolean obtenerDireccion(double latitud, double longitud) {
 
         Log.i("PERFIL: ", "Voy a obtener la direccion a partir de las coordenadas.");
         Log.d("PERFIL: ", "Latitud: \"" + latitud + "\" || Longitud: \"" + longitud + "\".");
@@ -576,5 +584,4 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         // Anima la camara acercandola por 3 segundos
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 3000, null);
     }
-
 }

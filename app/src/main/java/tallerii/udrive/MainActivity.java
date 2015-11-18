@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -340,8 +341,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 e.printStackTrace();
                             }
                             crearNuevoFragmento(estructuraCarpetasJSON.toString(), MyDataArrays.BUSQUEDA);
-//                            FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
-//                            filesFragment.ocultarFloatingButton();
                         }
                     }
 
@@ -384,7 +383,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             // Menu para el movimiento normal por carpetas y archivos
             case R.id.buscar_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de buscar archivo.");
-//                onSearchRequested();
                 return true;
             case R.id.subir_archivo:
                 Log.i("MAIN: ", "Hice click en el boton de subir archivo.");
@@ -413,6 +411,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             case R.id.cerrar_sesion:
                 Log.i("MAIN: ", "Hice click en el boton para cerrar sesión.");
                 cerrarSesion();
+                return true;
+
+            case android.R.id.home:
+                this.onBackPressed();
                 return true;
 
             // Menu para las busquedas de archivos
@@ -492,6 +494,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.i("MAIN: ", "El request fue acceder a los metadatos.");
 
                 if(resultCode==RESULT_OK){
+                    FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
+                    filesFragment.colapsarFragmentos();
                     Log.i("MAIN: ", "El resultado de la activity es OK.");
                     get(null);
                 }
@@ -550,9 +554,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     estructuraCarpetas = estructuraCarpetas.replace(MyDataArrays.caracterReemplazaEspacios, " ");
                     estructuraCarpetasJSON = new JSONObject(estructuraCarpetas);
                     Log.d("MAIN: ", "La estructura de la carpeta en formato String: \"" + estructuraCarpetas + "\".");
-
-//                    estructuraCarpetasJSON = jsonObject.getJSONObject("estructura");
-//                    Log.d("MAIN: ", "La estructura de la carpeta en formato JSON: \"" + estructuraCarpetasJSON + "\".");
 
                     guardarDatosEstructuraArchivos(estructuraCarpetasJSON);
 
@@ -754,6 +755,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     public void crearNuevoFragmento(String estructuraCarpetas, String tipo){
         Log.i("MAIN: ", "Voy a crear un nuevo fragmento.");
         Log.d("MAIN: ", "La estructura a usar es: \"" + estructuraCarpetas + "\".");
+
+        // Si el path actual es == "/" no muestro la flecha para atras en el action bar
+        // Si el path es mas grande, si la muestro
+        if(PATH_CARPETAS.length() > 1){
+            mostrarFlechaParaAtras(true);
+        } else {
+            mostrarFlechaParaAtras(false);
+        }
 
 
         // Aca recibo desde el fragmento, la carpeta que seleccione y tengo que pedirle al servidor
@@ -1520,6 +1529,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             // Luego de actualizar el path, actualizo
             get(null);
+        }
+    }
+
+    /**
+     * Muestra u oculta la flecha para ir para atras en el ActionBar
+     * @param mostrar Si es true, muestra la flecha, si es false, la oculta
+     */
+    private void mostrarFlechaParaAtras(boolean mostrar){
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null){
+            actionBar.setDisplayHomeAsUpEnabled(mostrar);
         }
     }
 

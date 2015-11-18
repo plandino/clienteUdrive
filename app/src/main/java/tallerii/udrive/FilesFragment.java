@@ -225,4 +225,10 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         actionButton.show();
     }
 
+    public void colapsarFragmentos(){
+        if(grupoAbierto > 0 ){
+            expandableListView.collapseGroup(grupoAbierto);
+        }
+    }
+
 }

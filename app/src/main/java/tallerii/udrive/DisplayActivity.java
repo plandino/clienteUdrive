@@ -1,10 +1,12 @@
 package tallerii.udrive;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -26,6 +28,7 @@ public class DisplayActivity extends AppCompatActivity {
 
     private boolean esEditable;
     private String pathFotoNueva = "";
+    private String pathFotoVieja = "";
     private static final int PICKFILE_RESULT_CODE = 1;
 
     @Override
@@ -44,7 +47,7 @@ public class DisplayActivity extends AppCompatActivity {
             extensionArchivo = "noSeObtuvo";
         }
         String filePath = getIntent().getStringExtra("filePath");
-        pathFotoNueva = filePath;
+        pathFotoVieja = filePath;
         String nombreArchivo = getIntent().getStringExtra("nombreArchivo");
         TextView textView = (TextView) findViewById(R.id.textview);
         StringBuilder stringBuffer = new StringBuilder();
@@ -166,15 +169,58 @@ public class DisplayActivity extends AppCompatActivity {
     public void onBackPressed() {
 
         Log.i("DISPLAY: ", "Aprete para atras.");
-
         if(esEditable){
-            Log.i("DISPLAY: ", "Vengo desde la PerfilActivity");
-            Log.i("DISPLAY: ", "Le agrego al Intent de regreso el path a la foto nueva: \"" + pathFotoNueva + "\".");
-
-            Intent returnIntent = new Intent();
-            returnIntent.putExtra("pathFotoNueva", pathFotoNueva);
-            setResult(RESULT_OK, returnIntent);
+            confirmarNuevafoto();
+        } else {
+            finish();
         }
-        finish();
+    }
+
+    /**
+     * Muestra un AlertDialog preguntando al usuario si desea cambiar la foto de perfil.
+     */
+    private void confirmarNuevafoto(){
+        Log.i("DISPLAY: ", "Voy a crear un Alert Dialog preguntando al usuario si realmente desea cambiar la foto de perfil.");
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Cambiar foto");
+        alert.setMessage("¿Esta seguro que desea subir esta nueva foto de perfil?");
+
+        // El boton Sobreescribir sube el archivo igual
+        alert.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d("DISPLAY: ", "Hice click en Si.");
+                Log.i("DISPLAY: ", "Voy a cambiar la foto en PerfilActivity.");
+                Log.i("DISPLAY: ", "Le agrego al Intent de regreso el path a la foto nueva: \"" + pathFotoNueva + "\".");
+                Log.i("DISPLAY: ", "Le agrego al Intent de regreso que SI es una nueva foto: \"" + true + "\".");
+
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("pathFotoNueva", pathFotoNueva);
+                returnIntent.putExtra("nuevaFoto", true);
+                setResult(RESULT_OK, returnIntent);
+                finish();
+            }
+        });
+
+        // Un boton para cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("DISPLAY: ", "Hice click en Cancelar.");
+                Log.i("DISPLAY: ", "No voy a cambiar la foto en PerfilActivity.");
+                Log.i("DISPLAY: ", "Le agrego al Intent de regreso el path a la foto nueva: \"" + pathFotoNueva + "\".");
+                Log.i("DISPLAY: ", "Le agrego al Intent de regreso que NO es una nueva foto: \"" + false + "\".");
+
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("pathFotoNueva", pathFotoVieja);
+                returnIntent.putExtra("nuevaFoto", false);
+                setResult(RESULT_OK, returnIntent);
+                finish();
+            }
+        });
+
+        alert.show();
+
+        Log.i("DISPLAY: ", "Mostre un dialogo de advertencia para cambiar la foto de perfil.");
     }
 }
