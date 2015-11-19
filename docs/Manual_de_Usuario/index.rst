@@ -10,6 +10,6 @@ Contenido:
    inicio_sesion
    perfil
    archivos_y_carpetas
-   metadatos
+   metadatos_y_busquedas
    papelera
    compartidos
