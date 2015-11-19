@@ -49,7 +49,11 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         String token = mSharedPreferences.getString(MyDataArrays.TOKEN, "");
 
         if( (token.length() > 0 ) && (name.length() > 0 ) ){
+            Log.i("ELEGIR_SESION: ", "Tenia guardados los datos de una sesion previa.");
+            Log.d("ELEGIR_SESION: ", "Nombre: \"" + name + "\" || Token: \"" + token + "\".");
             pasarAlMain(token, name);
+        } else {
+            Log.i("ELEGIR_SESION: ", "No habian datos guardados de una sesion previa.");
         }
     }
 
@@ -106,6 +110,10 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
 
     }
 
+    /**
+     * Muestra un AlertDialog para que el usuario ingrese la IP que desea utilizar.
+     * Al confirmar el cambio, guarda la nueva IP en los datos de la aplicacion.
+     */
     public void ingresarIP(){
         Log.i("ELEGIR_SESION: ", "Voy a crear un alert dialog para que ingrese su IP.");
 
@@ -115,6 +123,7 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         alert.setMessage("Introduzca su IP por favor");
 
         final EditText ip = new EditText(this);
+        // Le agrego un KeyListener, para que muestre el teclado numerico y solo permita introducir numeros y puntos
         ip.setKeyListener(DigitsKeyListener.getInstance("0123456789."));
 
         // Luego creo un LinearLayout y los configuro para ordenar todos los items anteriores y
@@ -128,10 +137,10 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         alert.setView(layout);
 
         // El boton "Crear" crea la carpeta
-        alert.setPositiveButton("Listo!", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("Confirmar!", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d("ELEGIR_SESION: ", "Hice click en Listo!. La IP introducida es: \"" + ip.getText().toString() + "\".");
+                Log.d("ELEGIR_SESION: ", "Hice click en Confirmar!. La IP introducida es: \"" + ip.getText().toString() + "\".");
 
                 MyDataArrays.setIP(ip.getText().toString());
 
@@ -161,17 +170,18 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         if (requestCode == requestCodeUno) {
             // Me fijo que el resultado sea OK
             if (resultCode == RESULT_OK) {
+                Log.i("ELEGIR_SESION: ", "La nueva activity se termino bien, puedo cerrar esta.");
                 finish();
             }
         }
     }
 
     /**
-     * Paso a la MainActivity luego de recibir el token de la sesion.
-     * Le mando los siguientes parametros a traves del Intent.
+     * Cambia a la MainActivity luego de recibir el token de la sesion.
+     * Le mando los parametros recibidos a traves del Intent.
      *
-     * @param token que recibi desde el servidor
-     * @param user username del usuario con el que inicie sesion
+     * @param token que recibi desde el servidor.
+     * @param user username del usuario con el que inicie sesion.
      */
     private void pasarAlMain(String token, String user){
 
@@ -192,6 +202,7 @@ public class ElegirSesionActivity extends AppCompatActivity implements View.OnCl
         startActivity(mainIntent);
         Intent returnIntent = new Intent();
         setResult(RESULT_OK, returnIntent);
+        Log.i("ELEGIR_SESION: ", "Cambio a la MainActivity y cierro esta.");
         finish();
     }
 }

@@ -10,9 +10,9 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
 /**
- * Created by panchoubuntu on 20/10/15.
- * Esta clase sirve para obtener el FilePath del archivo seleccionado mediante
- * el INTENT.ACTION_GET_CONTENT. Este Intent devuelve una URI, la cual hay que traducir
+ * Clase externa al proyecto.
+ * Se encarga de obtener el FilePath del archivo seleccionado, a partir de una URI. Mediante
+ * el INTENT.ACTION_GET_CONTENT se obtiene una URI, la cual hay que traducir
  * para obtener el FilePath absoluto del archivo.
  */
 

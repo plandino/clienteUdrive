@@ -35,14 +35,15 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     private OnFragmentInteractionListener mListener;
 
-    Map<String, List<String>> miMap;
-    Map<String, String>       hashTipoArchivos;
-    List<String> hasMapKeys;
+    Map<String, List<String>> mapaArchivosOpciones;
+    Map<String, String> mapaExtensionArchivos;
+    List<String>              opcionesMapKeys;
     ExpandableListView expandableListView;
     MyCustomAdapter adapter;
 
     ActionButton actionButton;
 
+    // Este int sirve para saber que grupo fue abierto anteriormente y se debe cerrar.
     private int grupoAbierto = -1;
 
     // CONSTRUCTOR VACIO
@@ -58,14 +59,20 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        Log.i("FILES_FRAGMENT: ", "Creo un nuevo fragmento.");
+        // Expando la vista
         View view = inflater.inflate(R.layout.fragment_files, container, false);
 
+        // Obtengo el TextView para mostrar el mensaje en caso de que no haya archivos o carpetas para mostrar
         TextView vistaVaciaTextView = (TextView) view.findViewById(R.id.vistaVacia);
 
+        // Obtengo el floating action button que se usa para subir archivos
         actionButton = (ActionButton) view.findViewById(R.id.action_button);
         actionButton.setButtonColor(getResources().getColor(R.color.violeta));
         actionButton.setImageResource(R.drawable.fab_plus_icon);
 
+        // Le agrego el listener al boton
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,66 +80,89 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             }
         });
 
+        Log.i("FILES_FRAGMENT: ", "Agregue el floating action button.");
+
         expandableListView = (ExpandableListView) view.findViewById(R.id.expandableList);
         JSONObject estructuraCarpetasJSON = new JSONObject();
         String username = "";
         try{
             String estructuraCarpetas   = getArguments().getString("estructura");
+            Log.d("FILES_FRAGMENT: ", "Saco de los argumentos la estructura: \"" + estructuraCarpetas + "\".");
+
             String tipo                 = getArguments().getString("tipo");
+            Log.d("FILES_FRAGMENT: ", "Saco de los argumentos el tipo: \"" + tipo + "\".");
+
             username             = getArguments().getString("username");
-            if(tipo == null) tipo = MyDataArrays.CARPETA;
+            Log.d("FILES_FRAGMENT: ", "Saco de los argumentos el username: \"" + username + "\".");
+
+            if(tipo == null){
+                Log.i("FILES_FRAGMENT: ", "No obtuve ningun tipo, le seteo tipo == CARPETA");
+                tipo = MyDataArrays.CARPETA;
+            }
             if( estructuraCarpetas != null ){
 
-                String texto;
-                switch (tipo){
-                    case MyDataArrays.BUSQUEDA:
-                        texto = "La busqueda no devolvio ningun resultado.";
-                        break;
-                    case MyDataArrays.PAPELERA:
-                        actionButton.hide();
-                        texto = "La papelera se encuentra vacía.";
-                        break;
-                    case MyDataArrays.COMPARTIDOS:
-                        actionButton.hide();
-                        texto = "Nadie te ha compartido archivos.";
-                        break;
-                    case MyDataArrays.CARPETA:
-                        texto = "Carpeta vacía. Sube algún archivo!";
-                        break;
-                    default:
-                        texto = "Error: \"" + tipo + "\".";
-                        Log.e("FILES_FRAGMENT: ", "Me pasaron un tipo incorrecto: \"" + tipo + "\".");
-                        break;
-                }
-
                 if (estructuraCarpetas.equals("{}")) {
+                    Log.i("FILES_FRAGMENT: ", "La carpeta esta vacia.");
+                    String texto;
+                    switch (tipo){
+                        case MyDataArrays.BUSQUEDA:
+                            texto = "La busqueda no devolvio ningun resultado.";
+                            Log.i("FILES_FRAGMENT: ", "Seteo el texto de BUSQUEDA vacia.");
+                            break;
+                        case MyDataArrays.PAPELERA:
+                            actionButton.hide();
+                            texto = "La papelera se encuentra vacía.";
+                            Log.i("FILES_FRAGMENT: ", "Seteo el texto de PAPELERA vacia y oculto el action button.");
+                            break;
+                        case MyDataArrays.COMPARTIDOS:
+                            actionButton.hide();
+                            texto = "Nadie te ha compartido archivos.";
+                            Log.i("FILES_FRAGMENT: ", "Seteo el texto de COMPARTIDOS vacia y oculto el action button.");
+                            break;
+                        case MyDataArrays.CARPETA:
+                            texto = "Carpeta vacía. Sube algún archivo!";
+                            Log.i("FILES_FRAGMENT: ", "Seteo el texto de CARPETA vacia y oculto el action button.");
+                            break;
+                        default:
+                            texto = "Error: \"" + tipo + "\".";
+                            Log.e("FILES_FRAGMENT: ", "Me pasaron un tipo incorrecto: \"" + tipo + "\".");
+                            break;
+                    }
                     vistaVaciaTextView.setText(texto);
                     vistaVaciaTextView.setVisibility(View.VISIBLE);
+                    Log.i("FILES_FRAGMENT: ", "Muestro el cartel indicando que la carpeta esta vacia.");
+
                 } else {
+                    Log.i("FILES_FRAGMENT: ", "La carpeta contiene cosas, oculto el cartel que dice que esta vacia.");
                     vistaVaciaTextView.setVisibility(View.INVISIBLE);
                 }
-
                 estructuraCarpetasJSON = new JSONObject(estructuraCarpetas);
+                Log.i("FILES_FRAGMENT: ", "Cree un nuevo JSON con la estructura de la carpeta.");
             }
         }catch (JSONException e ){
             Log.e("FILES_FRAGMENT: ", e.getMessage());
             Log.e("FILES_FRAGMENT: ", "No se pudo obtener crear el JSON con la estructura de las carpetas.");
             e.printStackTrace();
         }
-        miMap = MyDataProvider.getDataMap(estructuraCarpetasJSON, username);
-        hashTipoArchivos = MyDataProvider.getTypeMap(estructuraCarpetasJSON);
+        mapaArchivosOpciones = MyDataProvider.getDataMap(estructuraCarpetasJSON, username);
+        Log.i("FILES_FRAGMENT: ", "Obtuve el mapa de archivos y opciones.");
 
-        hasMapKeys = new ArrayList<>(miMap.keySet());
+        mapaExtensionArchivos = MyDataProvider.getTypeMap(estructuraCarpetasJSON);
+        Log.i("FILES_FRAGMENT: ", "Obtuve el mapa de archivos y extensiones.");
 
-        adapter = new MyCustomAdapter(getActivity(), miMap, hasMapKeys, hashTipoArchivos);
+        opcionesMapKeys = new ArrayList<>(mapaArchivosOpciones.keySet());
+        Log.i("FILES_FRAGMENT: ", "Cree un ArrayList con las opciones.");
+
+        adapter = new MyCustomAdapter(getActivity(), mapaArchivosOpciones, opcionesMapKeys, mapaExtensionArchivos);
         expandableListView.setAdapter(adapter);
+        Log.i("FILES_FRAGMENT: ", "Cree y le agregue el Adapter a la ExpandableListView.");
 
         expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
             @Override
             public void onGroupExpand(int groupPosition) {
-                if(grupoAbierto > 0 ){
-                    expandableListView.collapseGroup(grupoAbierto);
-                }
+                // Primero colapso los fragmentos ya abiertos y luego expando el seleccionado.
+                colapsarFragmentos();
+                Log.d("FILES_FRAGMENT: ", "Expandi el grupo : \"" + groupPosition + "\".");
                 grupoAbierto = groupPosition;
             }
         });
@@ -140,6 +170,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
             @Override
             public void onGroupCollapse(int groupPosition) {
+                Log.d("FILES_FRAGMENT: ", "Colapse el grupo : \"" + groupPosition + "\".");
             }
         });
 
@@ -147,7 +178,10 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View clickedView, int groupPosition, int childPosition, long id) {
 
-                mListener.onOptionClick(hasMapKeys.get(groupPosition), miMap.get(hasMapKeys.get(groupPosition)).get(childPosition));
+                String opcion = mapaArchivosOpciones.get(opcionesMapKeys.get(groupPosition)).get(childPosition);
+                String idGrupo = opcionesMapKeys.get(groupPosition);
+                Log.d("FILES_FRAGMENT: ", "Hice click sobre la opcion : \"" + opcion + "\" del padre: \"" + idGrupo + "\".");
+                mListener.onOptionClick(idGrupo, opcion);
                 return false;
             }
         });
@@ -155,7 +189,8 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
         expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView expandableListView, View vista, int groupPosition, long id) {
-                String idGrupo = hasMapKeys.get(groupPosition).replace(MyDataArrays.folderExtension, "");
+                String idGrupo = opcionesMapKeys.get(groupPosition).replace(MyDataArrays.folderExtension, "");
+                Log.d("FILES_FRAGMENT: ", "Hice click sobre el padre: \"" + idGrupo + "\".");
                 mListener.onGroupClick(idGrupo);
                 return true;
             }
@@ -170,6 +205,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             public void onSwipeLeft() {
             }
             public void onSwipeBottom() {
+                Log.i("FILES_FRAGMENT: ", "El usuario deslizo el dedo hacia abajo.");
                 mListener.onDownScroll();
             }
 
@@ -220,15 +256,18 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
     }
 
     public void ocultarFloatingButton(){
+        Log.i("FILES_FRAGMENT: ", "Oculto el Floating Action Button.");
         actionButton.hide();
     }
 
     public void mostrarFloatingButton(){
+        Log.i("FILES_FRAGMENT: ", "Muestro el Floating Action Button.");
         actionButton.show();
     }
 
     public void colapsarFragmentos(){
         if(grupoAbierto > 0 ){
+            Log.d("FILES_FRAGMENT: ", "Colapse el grupo : \"" + grupoAbierto + "\".");
             expandableListView.collapseGroup(grupoAbierto);
         }
     }

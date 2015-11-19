@@ -19,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Esta clase se encarga de manejar la Activity para inciar sesion con un usuario ya existente.
+ * Maneja la Activity para inciar sesion con un usuario ya existente.
  */
 public class IniciarSesionActivity extends AppCompatActivity implements View.OnClickListener  {
 
@@ -91,7 +91,8 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     }
 
     /**
-     * Manda un POST a la QUERY_URL para iniciar sesion y obtener el token de la sesion.
+     * Se comunica con el servidor para iniciar sesion. Obtiene del servidor un token que representa
+     * a la sesion iniciada.
      *
      * @param usuario username con el cual se desea iniciar sesion
      * @param contrasenia contraseña del user con el cual se desea iniciar sesion
@@ -159,6 +160,11 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         });
     }
 
+    /**
+     * Guarda en los datos de la aplicacion el token y usuario
+     * @param token Token de la sesion a guardar.
+     * @param usuario Usuario de la sesion a guardar.
+     */
     private void guardarDatosUsuario(String token, String usuario){
 
         SharedPreferences mSharedPreferences;
@@ -174,8 +180,7 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
     }
 
     /**
-     * Paso a la MainActivity luego de recibir el token de la sesion.
-     * Le mando los siguientes parametros a traves del Intent.
+     * Pasa a la MainActivity luego de recibir el token de la sesion.
      *
      * @param token que recibi desde el servidor
      * @param user username del usuario con el que inicie sesion
@@ -199,6 +204,8 @@ public class IniciarSesionActivity extends AppCompatActivity implements View.OnC
         startActivity(mainIntent);
         Intent returnIntent = new Intent();
         setResult(RESULT_OK, returnIntent);
+
+        Log.i("INICIAR_SESION: ", "Cambio a la MainActivity y cierro esta.");
         finish();
     }
 }

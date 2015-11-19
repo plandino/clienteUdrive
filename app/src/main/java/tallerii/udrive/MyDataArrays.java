@@ -4,70 +4,48 @@ package tallerii.udrive;
 * www.101apps.co.za
 * */
 public class MyDataArrays {
-    static char     caracterReservado = '!';
-    static final String folderExtension = "." + caracterReservado + "folder";
-    static String   caracterReemplazaEspacios = "~";
-    static char     divisor = ';';
-    static String[] opcionesArchivos    = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};
-    static String[] opcionesCompartidos = {"Descargar", "Versiones anteriores", "Actualizar", "Compartir", "Eliminar"};
-    static String[] opcionesPapelera = {"Restaurar", "Eliminar"};
-    static String[] opcionesCarpetas = {"Eliminar"};
+    final static char     caracterReservado = '!';
+    final static String folderExtension = "." + caracterReservado + "folder";
+    final static String   caracterReemplazaEspacios = "~";
+    final static char     divisor = ';';
+    final static String[] opcionesArchivos    = {"Descargar", "Versiones anteriores", "Compartir", "Eliminar"};
+    final static String[] opcionesCompartidos = {"Descargar", "Versiones anteriores", "Actualizar", "Compartir", "Eliminar"};
+    final static String[] opcionesPapelera = {"Restaurar", "Eliminar"};
+    final static String[] opcionesCarpetas = {"Eliminar"};
 
-    static int BAD_REQUEST  = 400;
-    static int UNAUTHORIZED = 401;
-    static int NOT_FOUND    = 404;
-    static int UNSOPORTED_METHOD = 405;
-    static int CONFLICT     = 409;
-
-
-    static int SUCCESS          = 200;
-    static int RESOURCE_CREATED = 201;
-
-    static boolean RESTAURAR    = true;
-    static boolean ELIMINAR     = false;
-
-    static boolean RECIBIR      = false;
-    static boolean MANDAR       = true;
-
-    static boolean FORZAR       = true;
-    static boolean SIN_FORZAR   = false;
-
-    static final String SESION_DATA = "prefs";
-    static final String USERNAME    = "name";
-    static final String TOKEN       = "token";
-    static final String ARCHIVOS_DESCARGADOS = "descargados";
-    static final String IP          = "IP";
-
-    static final String BUSQUEDA     = "BUSQUEDA";
-    static final String CARPETA      = "CARPETA";
-    static final String PAPELERA     = "PAPELERA";
-    static final String COMPARTIDOS  = "COMPARTIDOS";
+    final static int BAD_REQUEST  = 400;
+    final static int UNAUTHORIZED = 401;
+    final static int NOT_FOUND    = 404;
+    final static int UNSOPORTED_METHOD = 405;
+    final static int CONFLICT     = 409;
 
 
-    // MI CASA
+    final static int SUCCESS          = 200;
+    final static int RESOURCE_CREATED = 201;
+
+    final static boolean RESTAURAR    = true;
+    final static boolean ELIMINAR     = false;
+
+    final static boolean RECIBIR      = false;
+    final static boolean MANDAR       = true;
+
+    final static boolean FORZAR       = true;
+    final static boolean SIN_FORZAR   = false;
+
+    final static String SESION_DATA = "prefs";
+    final static String USERNAME    = "name";
+    final static String TOKEN       = "token";
+    final static String ARCHIVOS_DESCARGADOS = "descargados";
+    final static String IP          = "IP";
+
+    final static String BUSQUEDA     = "BUSQUEDA";
+    final static String CARPETA      = "CARPETA";
+    final static String PAPELERA     = "PAPELERA";
+    final static String COMPARTIDOS  = "COMPARTIDOS";
+
     public static String direccion = "http://192.168.0.27:8080";
 
-    // CASA CAMI
-//    public static String direccion = "http://192.168.1.106:8080";
-
-
-    public static void setIP(String ip){
+    public final static void setIP(String ip){
         direccion = "http://" + ip + ":8080";
     }
-
-    // MI CASA COMPU SANTI
-//    public static String direccion = "http://192.168.0.39:8080";
-
-
-    // CASA SANTI
-//     public static String direccion = "http://192.168.0.31:8080";
-    // CELU TOBI
-//    public static String direccion = "http://192.168.43.224:8080";
-    // CASA TOBI
-//    public static String direccion = "http://192.168.1.113:8080";
-    // FACU LH
-//    public static String direccion = "http://10.30.1.91:8080";
-
-//    public static String direccion = "http://192.168.43.140:8080";
-
 }

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Esta clase sirve para mostrar el archivo descargado en caso de que se descargue
- * un archivo de texto o una foto. Los demas archivos no se muestran.
+ * Muestra el archivo descargado en caso de que se descargue un archivo de texto o una foto.
+ * Ademas permite que se seleccione una nueva foto, en caso de querer actualizar la foto de perfil.
  */
 public class DisplayActivity extends AppCompatActivity {
 
@@ -177,7 +177,7 @@ public class DisplayActivity extends AppCompatActivity {
     }
 
     /**
-     * Muestra un AlertDialog preguntando al usuario si desea cambiar la foto de perfil.
+     * Muestra un AlertDialog preguntando al usuario si esta seguro de cambiar la foto de perfil.
      */
     private void confirmarNuevafoto(){
         Log.i("DISPLAY: ", "Voy a crear un Alert Dialog preguntando al usuario si realmente desea cambiar la foto de perfil.");
