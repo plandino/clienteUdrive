@@ -23,13 +23,7 @@ import java.util.Map;
 import java.util.List;
 
 /**
- * A fragment representing a list of Items.
- * <p>
- * Large screen devices (such as tablets) are supported by replacing the ListView
- * with a GridView.
- * <p>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
+ * Fragmento que muestra las carpetas y archivos. Permite la interaccion con ellos.
  */
 public class FilesFragment extends Fragment implements AbsListView.OnItemClickListener {
 
@@ -198,12 +192,6 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
 
         expandableListView.setOnTouchListener(new OnSwipeTouchListener(getActivity().getApplicationContext()) {
-            public void onSwipeTop() {
-            }
-            public void onSwipeRight() {
-            }
-            public void onSwipeLeft() {
-            }
             public void onSwipeBottom() {
                 Log.i("FILES_FRAGMENT: ", "El usuario deslizo el dedo hacia abajo.");
                 mListener.onDownScroll();
@@ -228,6 +216,7 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     }
 
+
     @Override
     public void onDetach() {
         super.onDetach();
@@ -236,35 +225,53 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-//            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
-        }
+
     }
 
-    /* cualquier Activity que use este fragmento, debe implementar esta Interfaz,
-       para lograr una buena comunicacion desde el fragmento hacia la Activity.
-     */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-//        public void onFragmentInteraction(String id);
-        public void onGroupClick(String idGroup);
-        public void onOptionClick(String idCarpeta, String opcion);
-        public void onDownScroll();
-        public void subirFAB();
+        /**
+         * Detecta cuando el usuario hizo click sobre un grupo.
+         * @param idGroup nombre del grupo seleccionado.
+         */
+        void onGroupClick(String idGroup);
+
+        /**
+         * Detecta cuando el usuario hizo click sobre una opcion de un grupo.
+         * @param idgrupo nombre de el grupo expandido
+         * @param opcion nombre de la opcion clickeada
+         */
+        void onOptionClick(String idgrupo, String opcion);
+
+        /**
+         * Detecta cuando el usuario deslizo el dedo hacia abajo.
+         */
+        void onDownScroll();
+
+        /**
+         * Detecta cuando se apreto el Floating Action Button;
+         */
+        void subirFAB();
     }
 
+    /**
+     * Oculto el Floating Action Button
+     */
     public void ocultarFloatingButton(){
         Log.i("FILES_FRAGMENT: ", "Oculto el Floating Action Button.");
         actionButton.hide();
     }
 
+    /**
+     * Muestro el Floating Action Button
+     */
     public void mostrarFloatingButton(){
         Log.i("FILES_FRAGMENT: ", "Muestro el Floating Action Button.");
         actionButton.show();
     }
 
+    /**
+     * Colapsa los fragmentos abiertos.
+     */
     public void colapsarFragmentos(){
         if(grupoAbierto > 0 ){
             Log.d("FILES_FRAGMENT: ", "Colapse el grupo : \"" + grupoAbierto + "\".");

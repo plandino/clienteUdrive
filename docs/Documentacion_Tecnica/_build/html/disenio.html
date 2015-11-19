@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Documentacion de la arquitectura y diseño &mdash; documentación de UDrive - 1.0</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="documentación de UDrive - 1.0" href="index.html"/>
+        <link rel="next" title="Código" href="codigo.html"/>
+        <link rel="prev" title="Documentacion de las librerias y la compilación" href="librerias_y_compilacion.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> UDrive
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ambiente_de_desarrollo.html">Documentación del ambiente de desarrollo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="librerias_y_compilacion.html">Documentacion de las librerias y la compilación</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Documentacion de la arquitectura y diseño</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mainactivity">MainActivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="codigo.html">Código</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">UDrive</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Documentacion de la arquitectura y diseño</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/disenio.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="documentacion-de-la-arquitectura-y-diseno">
+<h1>Documentacion de la arquitectura y diseño<a class="headerlink" href="#documentacion-de-la-arquitectura-y-diseno" title="Enlazar permanentemente con este título">¶</a></h1>
+<p>Para dieseñar y desarrollar la aplicación, nos basamos principalmente en el diseño y funcionamiento de otras aplicaciones similares, que se encargan de subir, descargar y compartir archivos.</p>
+<p>Además usamos los convenios de diseño presentados por <a class="reference external" href="http://developer.android.com/intl/es/design/index.html">Android</a>.</p>
+<p>La aplicación cuenta de diversas Activities, las cuales representan a cada ventana diferente de la aplicación.
+Hay Activities triviales, como las de ElegirSesionActivity, IniciarSesionActivity y RegistrarseActivity que no tienen mucha lógica implementada, por lo cual pasaremos a explicar la implementación y deseño de las Activities mas significantes.</p>
+<div class="section" id="mainactivity">
+<h2>MainActivity<a class="headerlink" href="#mainactivity" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Es la Activity principal que se encarga de la mayoría de las tareas es la MainActivity.</p>
+<p>Permite:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Obtener la estructura interna de una carpeta y crear un fragmento para que la muestre.</li>
+<li>Sube y descarga archivos.</li>
+</ul>
+</div></blockquote>
+<p>+Descarga versiones anteriores de los archivos y avisa en caso de querer subir un archivo luego de haber descargado una version antigua.
++Crea nuevas carpetas.
++Elimina archivos y carpetas.
++Accede a la papelera, desde la cual se pueden eliminar y restaurar archivos.
++Accede a los archivos compartidos conmigo y permite actualizarlos, además de todas las opciones clasicas de una carpeta normal.
++Accede a los metadatos de un archivo.
++Accede al perfil de un usuario.
++Cierra sesión.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="codigo.html" class="btn btn-neutral float-right" title="Código" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="librerias_y_compilacion.html" class="btn btn-neutral" title="Documentacion de las librerias y la compilación" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Pablo Ciruzzi, Santiago Fernandez, Francisco Landino, Tobias Lichtig.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

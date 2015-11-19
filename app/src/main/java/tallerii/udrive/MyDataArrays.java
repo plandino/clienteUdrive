@@ -1,8 +1,8 @@
 package tallerii.udrive;
 
-/*created using Android Studio (Beta) 0.8.14
-* www.101apps.co.za
-* */
+/**
+ * Contiene los datos(Strings, ints y booleans) que usa la aplicacion.
+ */
 public class MyDataArrays {
     final static char     caracterReservado = '!';
     final static String folderExtension = "." + caracterReservado + "folder";
@@ -45,7 +45,11 @@ public class MyDataArrays {
 
     public static String direccion = "http://192.168.0.27:8080";
 
-    public final static void setIP(String ip){
+    /**
+     * Setea la nueva IP de la aplicacion.
+     * @param ip ip a usar.
+     */
+    public static void setIP(String ip){
         direccion = "http://" + ip + ":8080";
     }
 }

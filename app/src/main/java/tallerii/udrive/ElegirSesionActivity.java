@@ -15,6 +15,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+/**
+ * Permite elegir entre iniciar sesion con una cuenta existente o registrar una nueva.
+ */
 public class ElegirSesionActivity extends AppCompatActivity implements View.OnClickListener{
 
     Button nuevoUsuarioButton;

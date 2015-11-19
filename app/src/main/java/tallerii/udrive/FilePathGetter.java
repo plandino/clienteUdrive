@@ -10,7 +10,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
 /**
- * Clase externa al proyecto.
+ * Clase externa al proyecto, traduce desde una URI a un Path absoluto dentro del del telefono.
  * Se encarga de obtener el FilePath del archivo seleccionado, a partir de una URI. Mediante
  * el INTENT.ACTION_GET_CONTENT se obtiene una URI, la cual hay que traducir
  * para obtener el FilePath absoluto del archivo.

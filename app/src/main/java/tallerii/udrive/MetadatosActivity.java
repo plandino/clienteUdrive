@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Esta clase maneja la Activity donde se muestran y modifican los metadatos.
+ * Manjea la Activity donde se muestran y modifican los metadatos.
  */
 public class MetadatosActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -107,7 +107,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
     }
 
     /**
-     * Se encarga de hacer un GET al servidor para obtener los metadatos del archivo.
+     * Recibe los metadatos del archivo.
      */
     public void recibirMetadatos(){
 
@@ -256,9 +256,8 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
 
     /**
      * Se encarga de mandar los metadatos actualizados al servidor.
-     * Manda un PUT, poniendo un JSON en un parametro, con los datos adentro.
-     * @param nombreArchivo es el nombre del archivo a enviar con los metadatos
-     * @param etiquetas son las etiquetas a enviar con los metadatos
+     * @param nombreArchivo es el nombre del archivo a enviar con los metadatos.
+     * @param etiquetas son las etiquetas a enviar con los metadatos.
      */
     public void mandarMetadatos(final String nombreArchivo, String etiquetas){
 

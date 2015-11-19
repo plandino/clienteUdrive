@@ -11,9 +11,8 @@ import android.widget.FrameLayout;
 import com.google.android.gms.maps.MapFragment;
 
 /**
- * Created by panchoubuntu on 20/10/15.
- * Crea un mapa de Google Maps adentro de un ScrollView y permite que se distinga
- * cuando se quiere scrollear la vista y cuando se quiere mover o hacer zoom en el mapa.
+ * Crea un mapa de Google Maps adentro de un ScrollView y permite que se distinga el scroll.
+ * Disingue cuando se quiere scrollear la vista y cuando se quiere mover o hacer zoom en el mapa.
  */
 public class CustomMapFragment extends MapFragment {
     private OnTouchListener mListener;

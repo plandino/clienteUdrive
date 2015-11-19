@@ -19,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Esta clase se encargar de controlar la activity para registrar un nuevo usuario.
+ * Controla el registro de de un nuevo usuario.
  */
 public class RegistrarseActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -29,7 +29,7 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
     EditText nombreEditText;
     EditText mailEditText;
 
-    public String QUERY_URL;
+    private String QUERY_URL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +64,11 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         return true;
     }
 
+
     @Override
+    /**
+     * {@inheritDoc}
+     */
     public void onClick(View v) {
 
         Log.i("REGISTRARSE: ", "Se hizo click en el boton para registrarse.");
@@ -76,12 +80,6 @@ public class RegistrarseActivity extends AppCompatActivity implements View.OnCli
         mail = mail.trim();
         String nombre       = nombreEditText.getText().toString();
         nombre = nombre.trim();
-
-        // TODO: SACAR ESTE HARDOCDEO
-//        mail = "pancheitor@gmail.com";
-//        nombre = "pancheitor";
-//        usuario = "p";
-//        contrasenia = "pppppppp";
 
         Log.d("REGISTRARSE: ", "El nombre ingresado es: \"" + nombre + "\".");
         Log.d("REGISTRARSE: ", "El usuario ingresado es: \"" + usuario + "\".");

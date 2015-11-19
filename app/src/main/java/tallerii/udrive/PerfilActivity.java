@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Esta clase se encarga de manejar la Activity que recibe y manda los datos del perfil del usuario
+ * Maneja la Activity que recibe y manda los datos del perfil del usuario
  *
  */
 public class PerfilActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback {
@@ -201,6 +201,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    /**
+     * Agrega un nuevo marcador y mueve la camara cuando detecta que el mapa esta listo.
+     * @param googleMap el mapa de GoogleMaps
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
@@ -346,8 +350,7 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     /**
-     * Hace un request al servidor, solicitando los datos del perfil del usuario.
-     * Al obtener los datos se encarga de mostrarlos correctamente.
+     * Recibe y muestra los datos del perfil.
      */
     public void recibirPerfil(){
 
@@ -510,11 +513,10 @@ public class PerfilActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     /**
-     * A partir de las siguientes coordenadas obtiene una direccion de una calle, en un barrio y una ciudad
-     * TODO: El formato de la direccion esta en INGLES, pero no pude encontrar el formato en español
+     * A partir de las siguientes coordenadas obtiene una direccion de una calle, en un barrio y una ciudad.
      * @param latitud las coordenadas de latitud de la ubicacion
      * @param longitud las coordenadas de longitud de la ubicacion
-     * @return devuelve verdadero o falso si pudo encontrar la direccion o no
+     * @return devuelve true si pudo encontrar la direccion, o false en caso contrario.
      */
     public boolean obtenerDireccion(double latitud, double longitud) {
 

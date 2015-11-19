@@ -13,22 +13,22 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Esta clase se encarga de proveer los datos necesarios para poblar la expandable list
+ * Esta clase se encarga de proveer los datos necesarios para poblar la expandable list.
  */
 public class MyDataProvider {
 
     /**
-     * Devuelve un hashmap con un String como clave y una lista de Stirng como valor.
+     * Devuelve un Map con un String como clave y una lista de Stirng como valor.
      * La clave es el titulo del padre en la expandable list.
      * El valor son las opciones que aparecen cuando se despliegan los hijos de la expandable list.
-     * @param json la estructura de la carpeta a mostrar
-     * @return el hashmap con los pares de clave valor
+     * @param json la estructura de la carpeta a mostrar.
+     * @return el Map con los pares de clave valor.
      */
     public static Map<String, List<String>> getDataMap(JSONObject json, String username) {
 
-        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el dataHashMap con la estructura de las carpetas.");
+        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el dataMap con la estructura de las carpetas.");
 
-        Map<String, List<String>> miHashMap = new TreeMap<>(new CustomComparator());
+        Map<String, List<String>> miMap = new TreeMap<>(new CustomComparator());
 
         List<String> opcionesArchivosList = new ArrayList<>();
         opcionesArchivosList.addAll(Arrays.asList(MyDataArrays.opcionesArchivos));
@@ -117,25 +117,30 @@ public class MyDataProvider {
             if( ! nombreArchivo.contains(MyDataArrays.caracterReservado + "trash")){
                 if( ! username.equals(propietario) ){
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de los archivos compartidos.");
-                    miHashMap.put(nombreArchivo, opcionesCompartidos);
+                    miMap.put(nombreArchivo, opcionesCompartidos);
                 } else if(estamosEnPapelera){
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de la papelera.");
-                    miHashMap.put(nombreArchivo, opcionesPapelera);
+                    miMap.put(nombreArchivo, opcionesPapelera);
                 } else if((extension.equals(MyDataArrays.caracterReservado + "folder"))   ){
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de las carpetas.");
-                    miHashMap.put(nombreArchivo, opcionesCarpetasList);
+                    miMap.put(nombreArchivo, opcionesCarpetasList);
                 } else {
                     Log.i("MY_DATA_PROVIDER: ", "Le pongo las opciones de los archivos.");
-                    miHashMap.put(nombreArchivo, opcionesArchivosList);
+                    miMap.put(nombreArchivo, opcionesArchivosList);
                 }
             }
         }
 
-        return miHashMap;
+        return miMap;
 
     }
 
 
+    /**
+     * Permite saber si la estructura pasada de la carpeta a mostrar, es de la papelera o no.
+     * @param URL URL de un archivo.
+     * @return true si se encuentra en la papelera, false si no se encuentra en la papelera.
+     */
     public static boolean estamosEnPapelera(String URL){
         String[] partes = URL.split("/");
         boolean estamosEnPapelera = false;
@@ -146,11 +151,18 @@ public class MyDataProvider {
     }
 
 
+    /**
+     * Devuelve un Map con un String como clave y otro de Stirng como valor.
+     * La clave es el nombre del archivo o carpeta.
+     * El valor es la extension del archivo o carpeta.
+     * @param json la estructura de la carpeta a mostrar.
+     * @return el Map con los pares de clave valor.
+     */
     public static Map<String, String> getTypeMap(JSONObject json) {
 
-        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el typeHashMap con la estructura de las carpetas.");
+        Log.i("MY_DATA_PROVIDER: ", "Voy a obtener el typeMap con la estructura de las carpetas.");
 
-        Map<String, String> hashTipoArchivos = new TreeMap<>(new CustomComparator());
+        Map<String, String> mapTipoArchivos = new TreeMap<>(new CustomComparator());
 
         Iterator<?> keys = json.keys();
 
@@ -211,9 +223,9 @@ public class MyDataProvider {
                 e.printStackTrace();
             }
 
-            hashTipoArchivos.put(nombreArchivo, extension);
+            mapTipoArchivos.put(nombreArchivo, extension);
         }
 
-        return hashTipoArchivos;
+        return mapTipoArchivos;
     }
 }

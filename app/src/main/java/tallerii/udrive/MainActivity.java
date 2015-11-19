@@ -47,6 +47,11 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * Maneja la actividad principal de la aplicacion. Muestra las carpetas y archivos que tiene el usuario.
+ * Se comunica con el servidor para subir y bajar archivos o carpetas.
+ * Se usa para compartir archivos con otros usuarios.
+ */
 public class MainActivity extends AppCompatActivity implements FilesFragment.OnFragmentInteractionListener {
 
     FragmentManager fragmentManager;
@@ -106,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private TextView ubicacionActualTextView;
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -374,11 +382,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         );
     }
 
-    /**
-     * Detecta que opcion del menu de "hamburguesa" se clickeo.
-     * @param item item del menu de "hamburguesa" clickeado.
-     * @return Siempre tiene que devolver true
-     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -457,13 +460,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
     }
 
-
-    /**
-     * Atrapa el resultado de una Activity que fue llamada, de la cual se esperaba un resultado.
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -714,12 +710,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         });
     }
 
-    /**
-     * Maneja los clicks hechos sobre un padre en la ExpandableList.
-     * Cuando es una carpeta, accede a ella y obtiene la estructura interna.
-     * Cuando es un archivo, busca los metadatos del archivo.
-     * @param idClick nombre del item padre(carpeta o archivo) del cual se hizo click.
-     */
     @Override
     public void onGroupClick(String idClick) {
 
@@ -744,6 +734,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * Actualiza la vista de la carpeta cuando detecta que el usuario deslizo el dedo hacia abajo.
+     */
     @Override
     public void onDownScroll(){
         if( menuActualizado){
@@ -823,18 +817,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         fragment.setArguments(bundle);
 
         //Paso 2: Crear una nueva transacción
-//        FragmentTransaction transaction2 =
         fragmentManager.beginTransaction().replace(R.id.contenedor, fragment).commit();
-
-        //Paso 4: Confirmar el cambio
-//        transaction2.commit();
     }
 
-    /**
-     * Detecta que opcion se clickeo dentro del menu desplegable de la ExpandableList.
-     * @param idPadre nombre del padre de la opción clickeada.
-     * @param opcion nombre de la opción clickeada.
-     */
     @Override
     public void onOptionClick(String idPadre, String opcion) {
 
@@ -908,7 +893,6 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
             QUERY_URL = MyDataArrays.direccion + "/file/" + obtenerURLArchivo(archivoAActualizar) + MyDataArrays.caracterReservado + numeroVersionDescargado;
         }
-////            archivoAActualizar = "";
 
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -978,6 +962,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
                 mNotificationManager.notify(myIdSubido, mBuilderSubidaExitosa.build());
 
+                archivoAActualizar = "";
+
                 guardarVersionArchivo(PATH_CARPETAS + filename, numeroVersionDescargado);
 
                 Log.i("MAIN: ", "Exito al subir un archivo.");
@@ -1035,6 +1021,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         String extension = obtenerExtensionArchivo(archivoAActualizar);
+        if(extension == null){
+            extension = "";
+        }
         String filtroArchivo = "";
         if (extension.equals("gif") || extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
             filtroArchivo =  "image";
@@ -1049,11 +1038,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         if(actualizar){
             intent.setType(filtroArchivo + "/*");
-            startActivityForResult(intent, PICKFILE_RESULT_CODE);
         } else {
             intent.setType("*/*");
-            startActivityForResult(intent, ACTUALIZAR_RESULT_CODE);
+//            startActivityForResult(intent, ACTUALIZAR_RESULT_CODE);
         }
+        startActivityForResult(intent, PICKFILE_RESULT_CODE);
+
     }
 
     /**
@@ -1915,12 +1905,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     }
 
     /**
-     * Recibe los metadatos del archivo. Si además se quiere volver a mandarlos, con los nuevos datos actualizados,
+     * Recibe los metadatos del archivo, si ademas se quiere volver a mandarlos, con los nuevos datos actualizados,
      * se tiene que poner un true en el parametro actualizar.
      * @param nombreArchivo nombre del archivo del cual se mantienen los metadatos
-     * @param actualizar
+     * @param actualizar true si se quiere actualizar los datos, false si solo se quiere recibir.
      */
-    // TODO: SEPARAR EN DOS ESTE METODO
     public void recibirOActualizarMetadatos(String nombreArchivo, final boolean actualizar){
 
         Log.i("MAIN: ", "Voy a los metadatos del archivo: \"" + nombreArchivo +"\".");

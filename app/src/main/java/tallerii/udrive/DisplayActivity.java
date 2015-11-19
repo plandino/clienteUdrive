@@ -30,7 +30,11 @@ public class DisplayActivity extends AppCompatActivity {
     private String pathFotoNueva = "";
     private String pathFotoVieja = "";
     private static final int PICKFILE_RESULT_CODE = 1;
+    private boolean cambieFoto = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -92,6 +96,9 @@ public class DisplayActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
 
@@ -102,6 +109,7 @@ public class DisplayActivity extends AppCompatActivity {
         }
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -155,6 +163,8 @@ public class DisplayActivity extends AppCompatActivity {
                     pathFotoNueva = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
                     Log.d("DISPLAY: ", "El path de la foto de perfil seleccionada es: " + pathFotoNueva);
 
+                    cambieFoto = true;
+
                     Bitmap bitmap = BitmapFactory.decodeFile(pathFotoNueva);
                     ImageView imageView = (ImageView) findViewById(R.id.imageView);
                     imageView.setImageBitmap(bitmap);
@@ -169,7 +179,7 @@ public class DisplayActivity extends AppCompatActivity {
     public void onBackPressed() {
 
         Log.i("DISPLAY: ", "Aprete para atras.");
-        if(esEditable){
+        if((esEditable) && (cambieFoto)){
             confirmarNuevafoto();
         } else {
             finish();

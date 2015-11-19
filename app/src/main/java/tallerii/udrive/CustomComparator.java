@@ -3,8 +3,7 @@ package tallerii.udrive;
 import java.util.Comparator;
 
 /**
- * Created by panchoubuntu on 17/11/15.
- * Comparador Case Insensitive y que además ordena primero las carpetas y luego el resto de los archivos
+ * Comparador Case Insensitive y que ademas ordena primero las carpetas y luego el resto de los archivos
  */
 public class CustomComparator implements Comparator<String> {
 
