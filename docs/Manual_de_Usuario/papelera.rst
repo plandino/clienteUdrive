@@ -15,7 +15,7 @@ Para poder ir a la papelera hay que seleccionar la opción *Papelera* que aparec
 	:scale: 20
 	:align: center
  
-Una vez en la papelera, si se ingresa al menú del archivo, aparece la posibilidad de restaurarlo o eliminlarlo de definitivamente.
+Una vez en la papelera, si se ingresa al menú del archivo, aparece la posibilidad de restaurarlo o eliminlarlo de definitivamente. Lo que no se podrá realizar en la papelera es la consulta de los metadatos de un archivo, ya que se vuelven inaccesibles.
 
 .. figure:: _static/papelera/3.png
 	:scale: 20
