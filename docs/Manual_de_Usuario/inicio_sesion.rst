@@ -46,5 +46,5 @@ Sesión iniciada
 Una vez iniciada la sesión, llegará a la siguiente pantalla, donde podrá comenzar a utilizar la aplicación **UDrive**.
 
 .. figure:: _static/inicio_sesion/5.png
-	:scale: 40
+	:scale: 20
 	:align: center

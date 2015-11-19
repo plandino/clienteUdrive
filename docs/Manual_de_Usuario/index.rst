@@ -6,6 +6,7 @@ Contenido:
 .. toctree::
    :maxdepth: 2
 
+   introduccion
    instalacion
    inicio_sesion
    perfil
