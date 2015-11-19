@@ -152,8 +152,9 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                             }
 
                             nombreArchivoViejo = nombreArchivo;
-                            nombreArchivo = nombreArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
 
+
+                            nombreArchivo = nombreArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
                             Log.d("METADATOS: ", "Nombre del archivo: \"" + nombreArchivo + "\".");
                             nombreEditText.setText(nombreArchivo);
 
@@ -349,10 +350,16 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
 
+
                 QUERY_URL = QUERY_URL.replace(nombreArchivoViejo, nombreSinEspacios);
+                Log.d("METADATOS: ", "Archivo viejo: " + nombreArchivoViejo);
+                Log.d("METADATOS: ", "Archivo nueov: " + nombreSinEspacios);
+
+
+                Log.d("METADATOS: ", "URL actualizada: " + QUERY_URL);
 
                 nombreArchivoViejo = nombreSinEspacios;
-                recibirMetadatos();
+//                recibirMetadatos();
 
                 Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
 
