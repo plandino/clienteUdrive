@@ -490,6 +490,47 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     subir(selectedFilePath, MyDataArrays.SIN_FORZAR);
                 }
                 break;
+            case ACTUALIZAR_RESULT_CODE:
+                Log.i("MAIN: ", "El request fue buscar un archivo para actualizar.");
+
+                if(resultCode==RESULT_OK){
+
+                    Log.i("MAIN: ", "El resultado de la activity es OK.");
+
+                    if (data == null){
+                        Log.i("MAIN: ", "No hay data en el resultado de la activity.");
+                        return;
+                    }
+
+                    String selectedFilePath;
+                    Uri selectedImageUri = data.getData();
+
+                    // Tengo que obtener el path del archivo. Uso el FilePathGetter para traducir
+                    // de una Uri a un file path absoluto
+                    selectedFilePath = FilePathGetter.getPath(getApplicationContext(), selectedImageUri);
+                    Log.d("MAIN: ", "El path del archivo seleccionado es: " + selectedFilePath);
+
+                    int index = selectedFilePath.lastIndexOf(".");
+                    String extensionNuevoArchivo = selectedFilePath.substring(index + 1);
+                    String archivoViejo = archivoAActualizar.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+                    String extensionViejoArchivo = obtenerExtensionArchivo(archivoViejo);
+
+                    Log.d("MAIN: ", "Extension vieja: " + extensionViejoArchivo);
+                    Log.d("MAIN: ", "Extension nuevo: " + extensionNuevoArchivo);
+
+
+                    if(extensionNuevoArchivo.equals(extensionViejoArchivo)){
+                        Log.d("MAIN: ", "subo normal");
+
+                        subir(selectedFilePath, MyDataArrays.SIN_FORZAR);
+                    } else {
+                        Log.d("MAIN: ", "subo avisando");
+
+                        avisarExtensionesDiferentes(selectedFilePath);
+                    }
+
+                }
+                break;
             case METADATOS:
                 Log.i("MAIN: ", "El request fue acceder a los metadatos.");
 
@@ -501,6 +542,39 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 }
 
         }
+    }
+
+    /**
+     * Muestra un AlertDialog avisando al usuario, que el archivo nuevo que quiere subir tiene una extension
+     * diferente a la original.
+     */
+    private void avisarExtensionesDiferentes(final String path){
+        Log.i("MAIN: ", "Voy a crear un Alert Dialog avisando que hay una colision entre extensiones de archivos");
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Advertencia!");
+        alert.setMessage("La extensión del archivo que quiere subir es diferente a la original, " +
+                "esto puede corromper el archivo. \n ¿Está seguro que quiere reemplazar el archivo?");
+
+        // El boton Sobreescribir sube el archivo igual
+        alert.setPositiveButton("Sobreescribir", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d("MAIN: ", "Hice click en sobreescribir.");
+                subir(path, MyDataArrays.SIN_FORZAR);
+            }
+        });
+
+        // Un boton para cancelar, que no hace nada (se cierra la ventana emergente)
+        alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.i("MAIN: ", "Hice click en Cancelar.");
+            }
+        });
+
+        alert.show();
+
+        Log.i("MAIN: ", "Mostre un dialogo de advertencia.");
     }
 
     /**
@@ -891,7 +965,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         String QUERY_URL = MyDataArrays.direccion + "/file/" + username +  PATH_CARPETAS + filename + MyDataArrays.caracterReservado + numeroVersionDescargado;
 
         if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
-            QUERY_URL = MyDataArrays.direccion + "/file/" + obtenerURLArchivo(archivoAActualizar) + MyDataArrays.caracterReservado + numeroVersionDescargado;
+            String archivoViejo = archivoAActualizar.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+            QUERY_URL = MyDataArrays.direccion + "/file/" + obtenerURLArchivo(archivoViejo) + MyDataArrays.caracterReservado + numeroVersionDescargado;
         }
 
 
@@ -1020,29 +1095,32 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.i("MAIN: ", "Voy a seleccionar un archivo para subir.");
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        String extension = obtenerExtensionArchivo(archivoAActualizar);
+        String archivoViejo = archivoAActualizar.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+        String extension = obtenerExtensionArchivo(archivoViejo);
         if(extension == null){
             extension = "";
         }
-        String filtroArchivo = "";
+        String filtroArchivo = "*";
         if (extension.equals("gif") || extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
             filtroArchivo =  "image";
         } else if(extension.equals("mp4") || extension.equals("mpeg") || extension.equals("aac") || extension.equals("wav") || extension.equals("ogg") || extension.equals("midi") || extension.equals("mp3") || extension.equals("mp5")){
             filtroArchivo = "audio";
         } else if(extension.equals("xml") || extension.equals("txt") || extension.equals("cfg") || extension.equals("csv") || extension.equals("conf") || extension.equals("rc") || extension.equals("html") || extension.equals("htm")){
             filtroArchivo = "text";
-        } else if(extension.equals("pdf") || extension.equals("apk") || extension.equals("cfg") || extension.equals("csv") || extension.equals("conf") || extension.equals("rc") || extension.equals("html") || extension.equals("htm")){
-            filtroArchivo = "text";
+        } else if(extension.equals("pdf") || extension.equals("apk") ){
+            filtroArchivo = "application";
         }
+
+        Log.i("MAIN: ", "Filtro el archivo por: \"" + filtroArchivo + "\".");
 
 
         if(actualizar){
             intent.setType(filtroArchivo + "/*");
+            startActivityForResult(intent, ACTUALIZAR_RESULT_CODE);
         } else {
             intent.setType("*/*");
-//            startActivityForResult(intent, ACTUALIZAR_RESULT_CODE);
+            startActivityForResult(intent, PICKFILE_RESULT_CODE);
         }
-        startActivityForResult(intent, PICKFILE_RESULT_CODE);
 
     }
 
@@ -1056,6 +1134,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
         Log.d("MAIN: ", "Descargo el archivo: \"" + nombreArchivo + "\" en su version: \"" + numeroVersion + "\".");
 
         String QUERY_URL = MyDataArrays.direccion + "/file/" +  obtenerURLArchivo(nombreArchivo) + MyDataArrays.caracterReservado + numeroVersion;
+
+        QUERY_URL = QUERY_URL.replace(" ", MyDataArrays.caracterReemplazaEspacios);
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -1740,7 +1820,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private String obtenerURLArchivo(String nombre){
         String URL = URLArchivos.get(nombre);
         Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la URL: \"" + URL + "\".");
-        return URL;
+        return URL.replace(" ", MyDataArrays.caracterReemplazaEspacios);
     }
 
     /**
@@ -1750,7 +1830,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private int obtenerNumeroVersionServidorArchivo(String nombre){
         int numeroVersionInt = 0;
-        Integer numeroVersion = versionesServidorArchivos.get(nombre);
+        String nombeConEspacios = nombre.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+        Integer numeroVersion = versionesServidorArchivos.get(nombeConEspacios);
         if(numeroVersion != null){
             numeroVersionInt =  numeroVersion;
         }
@@ -1914,6 +1995,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         Log.i("MAIN: ", "Voy a los metadatos del archivo: \"" + nombreArchivo +"\".");
         QUERY_URL_METADATOS = MyDataArrays.direccion + "/metadata/" + obtenerURLArchivo(nombreArchivo);
+
+        QUERY_URL_METADATOS = QUERY_URL_METADATOS.replace(" ", MyDataArrays.caracterReemplazaEspacios);
 
         AsyncHttpClient client = new AsyncHttpClient();
 
@@ -2113,6 +2196,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private void guardarVersionArchivo(String pathArchivo, int numeroVersion){
 
+        pathArchivo = pathArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+
         Log.d("MAIN: ", "Voy a guardar(en los datos guardados de la aplicacion) el numero" +
                 " de la ultima version que descargue del archivo: \"" + pathArchivo + "\".");
 
@@ -2147,6 +2232,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      * @return un int, con el ultimo numero de version de la ultima vez que descargue o subi el archivo
      */
     private int obtenerUltimoNumeroDeVersionDescargado(String pathArchivo){
+
+        pathArchivo = pathArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
 
         Log.d("MAIN: ", "Voy a obtener(desde los datos guardados de la aplicacion) el numero " +
                 "de la ultima version que descargue del archivo: \"" + pathArchivo + "\".");

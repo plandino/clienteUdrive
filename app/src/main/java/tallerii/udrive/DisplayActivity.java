@@ -121,6 +121,10 @@ public class DisplayActivity extends AppCompatActivity {
                 Log.i("DISPLAY: ", "Hice click en el boton de buscar archivo.");
                 seleccionarArchivo();
                 return true;
+            case android.R.id.home:
+                Log.i("DISPLAY: ", "Hice click en el boton para atras en la barra.");
+                this.onBackPressed();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

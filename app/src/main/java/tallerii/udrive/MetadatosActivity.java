@@ -100,6 +100,10 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                 Log.i("METADATOS: ", "Hice click en el boton de actualizar de la barra superior.");
                 recibirMetadatos();
                 return true;
+            case android.R.id.home:
+                Log.i("METADATOS: ", "Hice click en el boton para atras en la barra.");
+                this.onBackPressed();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -146,7 +150,11 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                             } else {
                                 nombreArchivo = nombre;
                             }
+
                             nombreArchivoViejo = nombreArchivo;
+
+
+                            nombreArchivo = nombreArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
                             Log.d("METADATOS: ", "Nombre del archivo: \"" + nombreArchivo + "\".");
                             nombreEditText.setText(nombreArchivo);
 
@@ -267,19 +275,21 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
 
         JSONObject jsonMetadatos = new JSONObject();
 
+        final String nombreSinEspacios = nombreArchivo.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+
         try{
 
             // Divido el nombre del archivo en nombre y extension para poder mandarlos
-            int index = nombreArchivo.lastIndexOf(".");
+            int index = nombreSinEspacios.lastIndexOf(".");
             String nombre;
             String extension = "";
 
             // Si el index es menor a 0, significa que no hay ningun punto en el archivo
             if(index > 0){
-                nombre = nombreArchivo.substring(0, index);
-                extension = nombreArchivo.substring(index + 1);
+                nombre = nombreSinEspacios.substring(0, index);
+                extension = nombreSinEspacios.substring(index + 1);
             } else {
-                nombre = nombreArchivo;
+                nombre = nombreSinEspacios;
             }
 
             jsonMetadatos.put("nombre", nombre);
@@ -340,8 +350,16 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
 
-                QUERY_URL = QUERY_URL.replace(nombreArchivoViejo, nombreArchivo);
-                recibirMetadatos();
+
+                QUERY_URL = QUERY_URL.replace(nombreArchivoViejo, nombreSinEspacios);
+                Log.d("METADATOS: ", "Archivo viejo: " + nombreArchivoViejo);
+                Log.d("METADATOS: ", "Archivo nueov: " + nombreSinEspacios);
+
+
+                Log.d("METADATOS: ", "URL actualizada: " + QUERY_URL);
+
+                nombreArchivoViejo = nombreSinEspacios;
+//                recibirMetadatos();
 
                 Toast.makeText(getApplicationContext(), "Archivo actualizado", Toast.LENGTH_LONG).show();
 
