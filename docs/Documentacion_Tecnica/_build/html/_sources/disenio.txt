@@ -65,7 +65,9 @@ Debido a que cada Activity funciona practicamente por si sola, la mejor forma de
 	:scale: 75%
 	:align: center
 
-.. figure:: _static/subir_version_vieja.png
+	Diagrama de estados para subir una versión nueva de un archivo, luego de haber descargado una versión anterior.
+
+.. figure:: _static/actualizar_vista.png
 	:scale: 75%
 	:align: center
 	

@@ -4,11 +4,11 @@ Documentacion de la arquitectura y diseño
 
 Para dieseñar y desarrollar la aplicación, nos basamos principalmente en el diseño y funcionamiento de otras aplicaciones similares, que se encargan de subir, descargar y compartir archivos.
 
-Además usamos los convenios de diseño presentados por `Android <http://developer.android.com/intl/es/design/index.html>`_.
+Además usamos los principios de diseño presentados por `Android <http://developer.android.com/intl/es/design/index.html>`_.
 
 La aplicación esta formada por diversas Activities, las cuales representan a cada ventana diferente de la aplicación.
 
-Hay Activities triviales, como las de ElegirSesionActivity, IniciarSesionActivity y RegistrarseActivity que no tienen mucha lógica implementada, por lo cual pasaremos a explicar la implementación y diseño de la MainActivity, la cual es la mas importa..
+Hay Activities triviales, como las de ElegirSesionActivity, IniciarSesionActivity y RegistrarseActivity que no tienen mucha lógica implementada, por lo cual pasaremos a explicar la implementación y diseño de la MainActivity, la cual es la mas importante.
 
 
 MainActivity
@@ -64,8 +64,12 @@ Debido a que cada Activity funciona practicamente por si sola, la mejor forma de
 .. figure:: _static/subir_version_vieja.png
 	:scale: 75%
 	:align: center
+
+.. figure:: _static/subir_version_vieja.png
+	:scale: 75%
+	:align: center
 	
-	Diagrama de estados para subir una versión vieja de un archivo.
+	Diagrama de estados para actualizar la vista de la estructura interna de una carpeta.
 
 
 
