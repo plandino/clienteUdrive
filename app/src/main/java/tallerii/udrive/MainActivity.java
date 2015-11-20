@@ -93,11 +93,14 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     private JSONArray usuariosCompartidos;
 
     private boolean menuActualizado = false;
+    private boolean yaObtuveLosUsuariosCompartidos = true;
 
     private MenuItem buscarNombre;
     private MenuItem buscarExtension;
     private MenuItem buscarEtiquetas;
     private MenuItem buscarPropietario;
+
+    private SearchView searchView;
 
     private Menu menu;
 
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         // Agrega al menu la barra de busqueda
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.buscar_archivo).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
         // Le agrego un Listener para detectar cuando expando la barra de busqueda y cuando la cierro
@@ -347,6 +350,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                                 estructuraCarpetasJSON = jsonObject.getJSONObject("busqueda");
                                 Log.d("MAIN: ", "La estructura de la busqueda es: \"" + estructuraCarpetasJSON.toString() + "\".");
 
+                                guardarDatosEstructuraArchivos(estructuraCarpetasJSON);
+
                             } catch (JSONException e) {
                                 Log.e("MAIN: ", e.getMessage());
                                 Log.e("MAIN: ", "No pude obtener los datos del JSON de la busqueda de archivos.");
@@ -414,6 +419,12 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             case R.id.ver_perfil:
                 Log.i("MAIN: ", "Hice click en el boton para ver el perfil.");
                 pasarAVerPerfil();
+                return true;
+            case R.id.actualizar:
+                if( menuActualizado){
+                    get(null);
+                }
+                Toast.makeText(getApplicationContext(), "Carpeta actualizada", Toast.LENGTH_LONG).show();
                 return true;
             case R.id.cerrar_sesion:
                 Log.i("MAIN: ", "Hice click en el boton para cerrar sesión.");
@@ -534,11 +545,13 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             case METADATOS:
                 Log.i("MAIN: ", "El request fue acceder a los metadatos.");
 
-                if(resultCode==RESULT_OK){
+                if((resultCode==RESULT_OK) && (menuActualizado)){
                     FilesFragment filesFragment = (FilesFragment) getFragmentManager().findFragmentById(R.id.contenedor);
                     filesFragment.colapsarFragmentos();
                     Log.i("MAIN: ", "El resultado de la activity es OK.");
                     get(null);
+                } else if( !menuActualizado){
+                    searchView.clearFocus();
                 }
 
         }
@@ -695,6 +708,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             public void onSuccess(JSONObject jsonObject) {
                 Log.i("MAIN: ", "Busqueda de usuarios para compartir exitosa.");
 
+                yaObtuveLosUsuariosCompartidos = true;
+
                 try {
                     usuariosParaCompartir = jsonObject.getJSONObject("busqueda");
                     Log.d("MAIN: ", "Los usuarios que concuerdan con la busqueda en formato JSON son: \"" + usuariosParaCompartir.toString() + "\".");
@@ -762,6 +777,9 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+
+                yaObtuveLosUsuariosCompartidos = true;
+
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
                 if (error == null) {
@@ -787,6 +805,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
     @Override
     public void onGroupClick(String idClick) {
 
+        idClick = idClick.replace(MyDataArrays.caracterReemplazaEspacios, " ");
         Log.d("MAIN: ", "Hice click sobre: \"" + idClick + "\".");
 
         String tipoDeArchivo = obtenerExtensionArchivo(idClick);
@@ -964,7 +983,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
 
         String QUERY_URL = MyDataArrays.direccion + "/file/" + username +  PATH_CARPETAS + filename + MyDataArrays.caracterReservado + numeroVersionDescargado;
 
-        if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos")){
+        if(PATH_CARPETAS.contains(MyDataArrays.caracterReservado + "permisos") || ( !archivoAActualizar.equals(""))){
             String archivoViejo = archivoAActualizar.replace(MyDataArrays.caracterReemplazaEspacios, " ");
             QUERY_URL = MyDataArrays.direccion + "/file/" + obtenerURLArchivo(archivoViejo) + MyDataArrays.caracterReservado + numeroVersionDescargado;
         }
@@ -1045,14 +1064,17 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
                 Toast.makeText(getApplicationContext(), "Archivo subido", Toast.LENGTH_LONG).show();
-                // Luego de subir un archivo actualizo la estructura de la carpeta
-                get(null);
+                // Luego de subir un archivo actualizo la estructura de la carpeta, si no estoy en busquedas.
+                if(menuActualizado)  get(null);
+                else searchView.clearFocus();
             }
 
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
 
                 mNotificationManager.cancel(myIdSubido);
+
+                searchView.clearFocus();
 
                 Log.d("MAIN: ", "StatusCode: \"" + statusCode + "\".");
 
@@ -1464,7 +1486,8 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                     Toast.makeText(getApplicationContext(), "Se ha eliminado " + nombreArchivo, Toast.LENGTH_LONG).show();
                 }
                 // Luego actualizo la vista
-                get(null);
+                if( menuActualizado) get(null);
+                else searchView.clearFocus();
             }
 
             @Override
@@ -1797,6 +1820,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private String obtenerExtensionArchivo(String nombre){
         String extension = extensionesArchivos.get(nombre);
+        if (extension == null){
+            nombre = nombre.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+            extension = extensionesArchivos.get(nombre);
+        }
         Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la extension: \"" + extension + "\".");
         return extension;
     }
@@ -1819,6 +1846,10 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
      */
     private String obtenerURLArchivo(String nombre){
         String URL = URLArchivos.get(nombre);
+        if (URL == null){
+            nombre = nombre.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+            URL = URLArchivos.get(nombre);
+        }
         Log.d("MAIN: ", "El archivo: \"" + nombre + "\" tiene la URL: \"" + URL + "\".");
         return URL.replace(" ", MyDataArrays.caracterReemplazaEspacios);
     }
@@ -1921,10 +1952,11 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 usuariosAdapter.clear();
-                if (s.length() > 0) {
+                if( (s.length() > 0) && (yaObtuveLosUsuariosCompartidos) ) {
+                    yaObtuveLosUsuariosCompartidos = false;
                     getUsuarios(s.toString());
-                } else {
-                    recibirOActualizarMetadatos(nombreArchivo, false);
+                } else if(yaObtuveLosUsuariosCompartidos){
+                    recibirOActualizarMetadatos(nombreArchivo, MyDataArrays.RECIBIR);
                 }
             }
 
@@ -1965,7 +1997,7 @@ public class MainActivity extends AppCompatActivity implements FilesFragment.OnF
                 Log.i("MAIN: ", "Hice click en Compartir.");
 
                 // Mando a compartir los nuevos usuarios poniendo un TRUE
-                recibirOActualizarMetadatos(nombreArchivo, MyDataArrays.MANDAR);
+                recibirOActualizarMetadatos(nombreArchivo, MyDataArrays.RECIBIR_Y_ACTUALIZAR);
 
             }
         });

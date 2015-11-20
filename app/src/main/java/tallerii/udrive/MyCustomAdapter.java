@@ -80,12 +80,16 @@ public class MyCustomAdapter extends BaseExpandableListAdapter {
         if(groupTitle.contains(MyDataArrays.caracterReservado + "folder")){
             groupTitle = groupTitle.replace(MyDataArrays.folderExtension, "");
         }
-        parentTextView.setText(groupTitle);
+
 
         ImageView iconImage;
         iconImage = (ImageView) convertView.findViewById(R.id.icono);
 //        iconImage.set
         String tipo = hashTipoArchivos.get(groupTitle);
+
+        groupTitle = groupTitle.replace(MyDataArrays.caracterReemplazaEspacios, " ");
+
+        parentTextView.setText(groupTitle);
 
         Log.d("MY_DATA_PROVIDER: ", "Obtuve el nombre del archivo: \"" + groupTitle + "\".");
 

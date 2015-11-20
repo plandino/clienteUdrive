@@ -27,7 +27,7 @@ public class MyDataArrays {
     final static boolean ELIMINAR     = false;
 
     final static boolean RECIBIR      = false;
-    final static boolean MANDAR       = true;
+    final static boolean RECIBIR_Y_ACTUALIZAR = true;
 
     final static boolean FORZAR       = true;
     final static boolean SIN_FORZAR   = false;

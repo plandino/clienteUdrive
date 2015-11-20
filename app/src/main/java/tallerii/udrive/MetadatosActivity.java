@@ -126,6 +126,8 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
         Log.d("METADATOS: ", "Inclui en los parametros del GET los siguientes parametros.");
         Log.d("METADATOS: ", "Username: \"" + username + "\" con el token: \"" + token + "\".");
 
+        QUERY_URL = QUERY_URL.replace(" ", MyDataArrays.caracterReemplazaEspacios);
+
         client.get(QUERY_URL, params, new JsonHttpResponseHandler() {
 
                     @Override
@@ -152,7 +154,6 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
                             }
 
                             nombreArchivoViejo = nombreArchivo;
-
 
                             nombreArchivo = nombreArchivo.replace(MyDataArrays.caracterReemplazaEspacios, " ");
                             Log.d("METADATOS: ", "Nombre del archivo: \"" + nombreArchivo + "\".");
@@ -350,6 +351,7 @@ public class MetadatosActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onSuccess(int statusCode, JSONObject jsonObject) {
 
+                String nombreViejo = nombreArchivoViejo.replace(" ", MyDataArrays.caracterReemplazaEspacios);
 
                 QUERY_URL = QUERY_URL.replace(nombreArchivoViejo, nombreSinEspacios);
                 Log.d("METADATOS: ", "Archivo viejo: " + nombreArchivoViejo);

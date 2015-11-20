@@ -95,6 +95,11 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
             }
             if( estructuraCarpetas != null ){
 
+                if(tipo.equals(MyDataArrays.CARPETA)){
+                    mostrarFloatingButton();
+                } else {
+                    ocultarFloatingButton();
+                }
                 if (estructuraCarpetas.equals("{}")) {
                     Log.i("FILES_FRAGMENT: ", "La carpeta esta vacia.");
                     String texto;
@@ -104,12 +109,10 @@ public class FilesFragment extends Fragment implements AbsListView.OnItemClickLi
                             Log.i("FILES_FRAGMENT: ", "Seteo el texto de BUSQUEDA vacia.");
                             break;
                         case MyDataArrays.PAPELERA:
-                            actionButton.hide();
                             texto = "La papelera se encuentra vacía.";
                             Log.i("FILES_FRAGMENT: ", "Seteo el texto de PAPELERA vacia y oculto el action button.");
                             break;
                         case MyDataArrays.COMPARTIDOS:
-                            actionButton.hide();
                             texto = "Nadie te ha compartido archivos.";
                             Log.i("FILES_FRAGMENT: ", "Seteo el texto de COMPARTIDOS vacia y oculto el action button.");
                             break;
